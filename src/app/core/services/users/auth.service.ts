@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
-import { LoginResponse, RegisterResponse } from '../../models/users/user.model';
+import { LoginResponse, RegisterDto, RegisterResponse } from '../../models/users/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -27,14 +27,14 @@ export class AuthService {
 
   login(emailOrPhone: string, password: string): Observable<LoginResponse> {
     const params = new HttpParams().set('emailOrPhone', emailOrPhone).set('password', password);
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, {}, {params}).pipe(
-      catchError(this.handleError)
-    );
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/login`, {}, { params })
+      .pipe(catchError(this.handleError));
   }
 
   register(userData: RegisterDto): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, userData).pipe(
-      catchError(this.handleError)
-    );
+    return this.http
+      .post<RegisterResponse>(`${this.apiUrl}/register`, userData)
+      .pipe(catchError(this.handleError));
   }
 }
