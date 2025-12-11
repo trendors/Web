@@ -1,14 +1,17 @@
 export interface User {
+  id: number;
   user_name: string;
   first_name: string;
   last_name: string;
   trendors_id: string;
   phone_number?: string;
   email: string;
-  password: string;
   twitter_handle?: string;
   facebook_username?: string;
   instagram_handle?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  deletedAt?: Date;
 }
 
 export interface LoginResponse {
@@ -30,4 +33,13 @@ export interface AuthState {
   isLoggedIn: boolean;
   loading: boolean;
   error: string | null;
+}
+
+export interface RegisterDto {
+  user_name: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  phone_number?: string;
 }
