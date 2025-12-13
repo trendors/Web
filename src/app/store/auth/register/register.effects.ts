@@ -1,20 +1,44 @@
 import { inject, Injectable } from '@angular/core';
-import * as RegisterActions from '../register/register.action';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { AuthService } from '../../../core/services/users/auth.service';
 import { Router } from '@angular/router';
-import { mergeMap } from 'rxjs';
+import { catchError, map, mergeMap, of, tap } from 'rxjs';
+import { RegisterActions } from './register.action';
 
 @Injectable()
 export class RegisterEffects {
-    private action$ = inject(Actions);
-    private authService = inject(AuthService);
-    private router = inject(Router);
+  private action$ = inject(Actions);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-    registerRequest$ = createEffect(() =>
+  registerRequest$ = createEffect(() =>
     this.action$.pipe(
-        ofType(RegisterActions.registerUser),
-        mergeMap(({ userData }) => 
-            this.authService.register(userData).pipe)
-    ))
+      ofType(RegisterActions.registerRequest),
+      mergeMap(({ userData }) =>
+        this.authService.register(userData).pipe(
+          map((response) => {
+            if (response.error) {
+              return RegisterActions.registerFailure({ error: response.message });
+            }
+            return RegisterActions.registerSuccess({ response });
+          }),
+          catchError((error) =>
+            of(
+              RegisterActions.registerFailure({ error: error.error?.message || 'Register failed' })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  registerSuccess$ = createEffect(() =>
+      this.action$.pipe(
+        ofType(RegisterActions.registerSuccess),
+        tap(() => {
+          this.router.navigate(['/login']);
+        })
+      ),
+    { dispatch: false }
+  );
 }
