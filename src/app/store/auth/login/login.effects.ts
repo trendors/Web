@@ -2,8 +2,8 @@ import { inject, Injectable } from '@angular/core';
 import { AuthService } from '../../../core/services/users/auth.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Router } from '@angular/router';
-import * as LoginActions from '../login/login.actions';
 import { catchError, map, mergeMap, of, tap } from 'rxjs';
+import { LoginActions } from './login.actions';
 
 @Injectable()
 export class LoginEffects {
@@ -13,17 +13,17 @@ export class LoginEffects {
 
   loginRequest$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(LoginActions.loginUser),
-      mergeMap(({ credentials }) =>
-        this.authService.login(credentials.email, credentials.password).pipe(
-          map((loginResponse) => {
-            if (loginResponse.error) {
-              return LoginActions.loginUserFailure({ error: loginResponse.messasge });
+      ofType(LoginActions.loginRequest),
+      mergeMap(({ email, password }) =>
+        this.authService.login(email, password).pipe(
+          map((response) => {
+            if (response.error) {
+              return LoginActions.loginFailure({ error: response.messasge });
             }
-            return LoginActions.loginUserSuccess({ loginResponse });
+            return LoginActions.loginSuccess({ response });
           }),
           catchError((error) =>
-            of(LoginActions.loginUserFailure({ error: error.error?.message || 'Login failed' }))
+            of(LoginActions.loginFailure({ error: error.error?.message || 'Login failed' }))
           )
         )
       )
@@ -32,9 +32,9 @@ export class LoginEffects {
 
   loginSuccess$ = createEffect(() =>
       this.actions$.pipe(
-        ofType(LoginActions.loginUserSuccess),
-        tap(({ loginResponse }) => {
-          localStorage.setItem('token', loginResponse.token);
+        ofType(LoginActions.loginSuccess),
+        tap(({ response }) => {
+          localStorage.setItem('token', response.token);
           this.router.navigate(['/home']);
         })
       ),
