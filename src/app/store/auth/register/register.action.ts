@@ -1,14 +1,11 @@
-import { createAction, props } from '@ngrx/store';
-import { RegisterResponse, User } from '../../../core/models/users/user.model';
+import { createActionGroup, props } from '@ngrx/store';
+import { RegisterResponse, RegisterDto } from '../../../core/models/users/user.model';
 
-export const registerUser = createAction('[Register Page] Register User', props<{ user: User }>());
-
-export const registerUserSuccess = createAction(
-  '[Register API] Register User Success',
-  props<{ registerResponse: RegisterResponse }>()
-);
-
-export const registerUserFailure = createAction(
-  '[Register API] Register User Failure',
-  props<{ error: string }>()
-);
+export const RegisterActions = createActionGroup({
+  source: 'Auth Register Flow',
+  events: {
+    'Register Request': props<{ userData: RegisterDto }>(),
+    'Register Success': props<{ response: RegisterResponse }>(),
+    'Register Failure': props<{ error: string }>(),
+  }
+});
