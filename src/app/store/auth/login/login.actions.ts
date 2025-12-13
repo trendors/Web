@@ -1,17 +1,13 @@
-import { createAction, props } from "@ngrx/store";
-import { LoginResponse, User } from "../../../core/models/users/user.model";
+import { createActionGroup, props } from '@ngrx/store';
+import { LoginResponse } from '../../../core/models/users/user.model';
 
-export const loginUser = createAction(
-    '[Login Page] Login User',
-    props<{credentials: {email: string; password: string}}>()
-);
+export const LoginActions = createActionGroup({
+  source: 'Auth Login Flow',
+  events: {
+    'Login Request': props<{ email: string; password: string }>(),
 
-export const loginUserSuccess = createAction(
-    '[Login API] Login User Success',
-    props<{loginResponse: LoginResponse}>()
-);
+    'Login Success': props<{ response: LoginResponse }>(),
 
-export const loginUserFailure = createAction(
-    '[Login API] Login User Failure',
-    props<{error: string}>()
-);
+    'Login Failure': props<{ error: string }>(),
+  },
+});
