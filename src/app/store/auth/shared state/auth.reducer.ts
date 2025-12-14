@@ -4,7 +4,6 @@ import { RegisterActions } from '../register/register.action';
 import { LoginActions } from '../login/login.actions';
 import { logoutUser } from '../logout/logout.action';
 
-
 export const authFeatureKey = 'auth';
 
 export interface AuthState {
