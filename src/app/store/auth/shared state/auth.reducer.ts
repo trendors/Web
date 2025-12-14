@@ -1,64 +1,73 @@
 import { createReducer, on } from '@ngrx/store';
-import { AuthState } from '../../../core/models/users/user.model';
-import * as LoginActions from '../login/login.actions';
-import * as RegisterActions from '../register/register.action';
-import * as LogoutUser from '../logout/logout.action';
+import { User } from '../../../core/models/users/user.model';
+import { RegisterActions } from '../register/register.action';
+import { LoginActions } from '../login/login.actions';
+import { logoutUser } from '../logout/logout.action';
+
 
 export const authFeatureKey = 'auth';
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isLoggedIn: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
 
 export const initiaState: AuthState = {
   user: null,
   token: null,
   isLoggedIn: false,
-  loading: false,
+  isLoading: false,
   error: null,
 };
 
 export const authReducer = createReducer(
   initiaState,
 
-  on(RegisterActions.registerUser, (state) => ({
+  on(RegisterActions.registerRequest, (state) => ({
     ...state,
-    loading: true,
+    isLoading: true,
     error: null,
   })),
 
-  on(RegisterActions.registerUserSuccess, (state, { registerResponse }) => ({
+  on(RegisterActions.registerSuccess, (state, { response }) => ({
     ...state,
-    user: registerResponse.user,
+    user: response.user,
     isLoggedIn: false,
-    loading: false,
+    isLoading: false,
     error: null,
   })),
 
-  on(RegisterActions.registerUserFailure, (state, { error }) => ({
+  on(RegisterActions.registerFailure, (state, { error }) => ({
     ...state,
-    loading: false,
+    isLoading: false,
     error: error || 'Registration failed',
   })),
 
-  on(LoginActions.loginUser, (state) => ({
+  on(LoginActions.loginRequest, (state) => ({
     ...state,
-    loading: true,
+    isLoading: true,
     error: null,
   })),
 
-  on(LoginActions.loginUserSuccess, (state, { loginResponse }) => ({
+  on(LoginActions.loginSuccess, (state, { response }) => ({
     ...state,
-    user: loginResponse.user,
-    token: loginResponse.token,
+    user: response.user,
+    token: response.token,
     isLoggedIn: true,
-    loading: false,
+    isLoading: false,
     error: null,
   })),
 
-  on(LoginActions.loginUserFailure, (state, { error }) => ({
+  on(LoginActions.loginFailure, (state, { error }) => ({
     ...state,
-    loading: false,
+    isLoading: false,
     error: error || 'Login failed',
   })),
 
-  on(LogoutUser.logoutUser, () => ({
+  on(logoutUser, () => ({
     ...initiaState,
   }))
 );
