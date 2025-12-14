@@ -1,9 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { AuthService } from '../../../core/services/users/auth.service';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Actions, createEffect, ofType, ROOT_EFFECTS_INIT } from '@ngrx/effects';
 import { Router } from '@angular/router';
-import { catchError, map, mergeMap, of, tap } from 'rxjs';
+import { catchError, filter, map, mergeMap, of, tap } from 'rxjs';
 import { LoginActions } from './login.actions';
+import { logoutUser } from '../logout/logout.action';
 
 @Injectable()
 export class LoginEffects {
@@ -18,7 +19,7 @@ export class LoginEffects {
         this.authService.login(email, password).pipe(
           map((response) => {
             if (response.error) {
-              return LoginActions.loginFailure({ error: response.messasge });
+              return LoginActions.loginFailure({ error: response.message });
             }
             return LoginActions.loginSuccess({ response });
           }),
@@ -30,14 +31,47 @@ export class LoginEffects {
     )
   );
 
-  loginSuccess$ = createEffect(() =>
+  loginSuccessPersist$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(LoginActions.loginSuccess),
+      tap(({ response }) => {
+        localStorage.setItem('token', response.token);
+      })
+    ),
+    { dispatch: false }
+  );
+
+  loginSuccessNavigate$ = createEffect(() =>
       this.actions$.pipe(
         ofType(LoginActions.loginSuccess),
-        tap(({ response }) => {
-          localStorage.setItem('token', response.token);
+        tap(() => {
           this.router.navigate(['/home']);
         })
       ),
+    { dispatch: false }
+  );
+
+  logout$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(logoutUser),
+      tap(() => {
+        localStorage.removeItem('token');
+        this.router.navigate(['/login']);
+      })
+    ),
+    { dispatch: false }
+  );
+
+  hydrateAuth$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ROOT_EFFECTS_INIT),
+      map(() => localStorage.getItem('token')),
+      filter((token): token is string => token !== null),
+      map((token) => 
+        LoginActions.loginSuccess({ response: { token, user: null, error: false, message: '' }, 
+        })
+      )
+    ),
     { dispatch: false }
   );
 }
