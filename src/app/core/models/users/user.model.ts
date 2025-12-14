@@ -16,23 +16,15 @@ export interface User {
 
 export interface LoginResponse {
   token: string;
-  user: User;
+  user: User | null;
   error: boolean;
-  messasge: string;
+  message: string;
 }
 
 export interface RegisterResponse {
   user: User;
   error: boolean;
   message: string;
-}
-
-export interface AuthState {
-  user: User | null;
-  token: string | null;
-  isLoggedIn: boolean;
-  loading: boolean;
-  error: string | null;
 }
 
 export interface RegisterDto {
