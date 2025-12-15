@@ -1,1 +1,56 @@
-<p>login works!</p>
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>Login to Trendors</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="error$ | async as error" class="error-message">
+        <mat-icon color="warn">error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" placeholder="test@example.com" />
+          <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+            Email is required
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="hidePassword = !hidePassword"
+            [attr.aria-label]="'Hide password'"
+            [attr.aria-pressed]="hidePassword"
+            type="button"
+          >
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+            Password is required
+          </mat-error>
+        </mat-form-field>
+
+        <div class="actions">
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="loginForm.invalid || (isLoading$ | async)"
+          >
+            <span *ngIf="!(isLoading$ | async)">Login</span>
+            <mat-spinner diameter="20" *ngIf="isLoading$ | async" color="accent"></mat-spinner>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+    <mat-card-footer>
+      <p>Don't have an account? <a routerLink="/register">Register</a></p>
+    </mat-card-footer>
+  </mat-card>
+</div>
