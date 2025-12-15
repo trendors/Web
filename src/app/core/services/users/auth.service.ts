@@ -6,7 +6,7 @@ import { LoginResponse, RegisterDto, RegisterResponse } from '../../models/users
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/user';
+  private apiUrl = 'http://localhost:3000/user';
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('AuthService Error:', error);
