@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -8,6 +8,7 @@ import { provideEffects } from '@ngrx/effects';
 import { authReducer } from './store/auth/shared state/auth.reducer';
 import { LoginEffects } from './store/auth/login/login.effects';
 import { RegisterEffects } from './store/auth/register/register.effects';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,11 +16,12 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(),
     provideStore({
-      auth: authReducer,
+        auth: authReducer,
     }),
     provideEffects([
-      LoginEffects,
-      RegisterEffects
+        LoginEffects,
+        RegisterEffects
     ]),
-  ],
+    provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() })
+],
 };
