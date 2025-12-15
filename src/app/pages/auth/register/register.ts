@@ -1,32 +1,57 @@
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { UserInterface } from '../../../interfaces/user/user-interface';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { RouterModule } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { selectAuthError, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
+import { last } from 'rxjs';
+import { RegisterActions } from '../../../store/auth/register/register.action';
+import { RegisterDto } from '../../../core/models/users/user.model';
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MatCardModule,
+    MatInputModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+  ],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
 export class Register {
-  fb = inject(FormBuilder);
-  http = inject(HttpClient);
+  private fb = inject(FormBuilder);
+  private store = inject(Store);
 
-  form = this.fb.group({
-    username: ['', Validators.required],
-    email: ['', Validators.required],
-    password: ['', Validators.required],
+  isLoading$ = this.store.select(selectIsLoading);
+  error$ = this.store.select(selectAuthError);
+  hidePassword = true;
+
+  registerForm = this.fb.group({
+    user_name: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    phone_number: [''],
+    first_name: ['', Validators.required],
+    last_name: ['', Validators.required],
   });
 
-  onSubmit(): void {
-    this.http
-      .post<{ user: UserInterface }>('http://localhost:3000/api#/user/UserController_create', {
-        user: this.form.getRawValue(),
-      })
-      .subscribe((response) => {
-        console.log('response', response);
-        localStorage.setItem('token', response.user.token);
-      });
+  onSubmit() {
+    if (this.registerForm.valid) {
+      const userData = this.registerForm.value as RegisterDto;
+      this.store.dispatch(RegisterActions.registerRequest({ userData }));
+    }
   }
 }
