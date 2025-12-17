@@ -12,4 +12,4 @@ export const PasswordRecoveryActions = createActionGroup({
         'Reset Password Success': props<{response: PasswordResetResponse}>(),
         'Reset Password Failure': props<{error: string}>(),
     }
-})
+}) 
