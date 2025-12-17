@@ -1,7 +1,17 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
-import { LoginResponse, RegisterDto, RegisterResponse } from '../../models/users/user.model';
+import {
+  ChangePasswordDto,
+  ChangePasswordResponse,
+  ForgetPasswordResponse,
+  ForgotPasswordDto,
+  LoginResponse,
+  PasswordResetResponse,
+  RegisterDto,
+  RegisterResponse,
+  ResetPasswordDto,
+} from '../../models/users/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -35,6 +45,24 @@ export class AuthService {
   register(userData: RegisterDto): Observable<RegisterResponse> {
     return this.http
       .post<RegisterResponse>(`${this.apiUrl}/register`, userData)
+      .pipe(catchError(this.handleError));
+  }
+
+  forgetPassword(data: ForgotPasswordDto): Observable<ForgetPasswordResponse> {
+    return this.http
+      .post<ForgetPasswordResponse>(`${this.apiUrl}/forgot-password`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  changePassword(data: ChangePasswordDto): Observable<ChangePasswordResponse> {
+    return this.http
+      .post<ChangePasswordResponse>(`${this.apiUrl}/change-password`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  resetPassword(userId: number, data: ResetPasswordDto): Observable<PasswordResetResponse> {
+    return this.http
+      .post<PasswordResetResponse>(`${this.apiUrl}/reset-password/${userId}`, data)
       .pipe(catchError(this.handleError));
   }
 }
