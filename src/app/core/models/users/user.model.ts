@@ -35,3 +35,32 @@ export interface RegisterDto {
   password: string;
   phone_number?: string;
 }
+
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+export interface ResetPasswordDto {
+  token: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordDto {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface PasswordResetResponse {
+  message: string;
+  error: boolean;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+  error: boolean;
+}
+
+export interface ForgetPasswordResponse {
+  message: string;
+  error: boolean;
+}
