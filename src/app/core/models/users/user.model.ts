@@ -36,7 +36,7 @@ export interface RegisterDto {
   phone_number?: string;
 }
 
-export interface ForgotPasswordDto {
+export interface ForgetPasswordDto {
   email: string;
 }
 
