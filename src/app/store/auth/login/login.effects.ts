@@ -31,17 +31,21 @@ export class LoginEffects {
     )
   );
 
-  loginSuccessPersist$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(LoginActions.loginSuccess),
-      tap(({ response }) => {
-        localStorage.setItem('token', response.token);
-      })
-    ),
+  loginSuccessPersist$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(LoginActions.loginSuccess),
+        tap(({ response }) => {
+          if (response.data) {
+            localStorage.setItem('token', response.data.token);
+          }
+        })
+      ),
     { dispatch: false }
   );
 
-  loginSuccessNavigate$ = createEffect(() =>
+  loginSuccessNavigate$ = createEffect(
+    () =>
       this.actions$.pipe(
         ofType(LoginActions.loginSuccess),
         tap(() => {
@@ -51,27 +55,30 @@ export class LoginEffects {
     { dispatch: false }
   );
 
-  logout$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(logoutUser),
-      tap(() => {
-        localStorage.removeItem('token');
-        this.router.navigate(['/login']);
-      })
-    ),
+  logout$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(logoutUser),
+        tap(() => {
+          localStorage.removeItem('token');
+          this.router.navigate(['/login']);
+        })
+      ),
     { dispatch: false }
   );
 
-  hydrateAuth$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(ROOT_EFFECTS_INIT),
-      map(() => localStorage.getItem('token')),
-      filter((token): token is string => token !== null),
-      map((token) => 
-        LoginActions.loginSuccess({ response: { token, user: null, error: false, message: '' }, 
-        })
-      )
-    ),
+  hydrateAuth$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(ROOT_EFFECTS_INIT),
+        map(() => localStorage.getItem('token')),
+        filter((token): token is string => token !== null),
+        map((token) =>
+          LoginActions.loginSuccess({
+            response: { data: { token, user: null }, error: false, message: '' },
+          })
+        )
+      ),
     { dispatch: false }
   );
 }
