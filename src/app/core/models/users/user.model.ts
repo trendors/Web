@@ -14,18 +14,20 @@ export interface User {
   deletedAt?: Date;
 }
 
-export interface LoginResponse {
-  token: string;
-  user: User | null;
-  error: boolean;
+export interface ApiResponse<T = null> {
   message: string;
+  error: boolean;
+  data?: T;
 }
 
-export interface RegisterResponse {
+export type LoginResponse = ApiResponse<{
+  token: string;
+  user: User | null;
+}>;
+
+export type RegisterResponse = ApiResponse<{
   user: User;
-  error: boolean;
-  message: string;
-}
+}>;
 
 export interface RegisterDto {
   user_name: string;
@@ -36,7 +38,7 @@ export interface RegisterDto {
   phone_number?: string;
 }
 
-export interface ForgetPasswordDto {
+export interface ForgotPasswordDto {
   email: string;
 }
 
@@ -50,17 +52,9 @@ export interface ChangePasswordDto {
   newPassword: string;
 }
 
-export interface PasswordResetResponse {
-  message: string;
-  error: boolean;
-}
 
-export interface ChangePasswordResponse {
-  message: string;
-  error: boolean;
-}
+export type PasswordResetResponse = ApiResponse<null>;
 
-export interface ForgetPasswordResponse {
-  message: string;
-  error: boolean;
-}
+export type ChangePasswordResponse = ApiResponse<null>;
+
+export type ForgotPasswordResponse = ApiResponse<null>;
