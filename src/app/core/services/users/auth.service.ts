@@ -4,7 +4,7 @@ import { catchError, Observable, throwError } from 'rxjs';
 import {
   ChangePasswordDto,
   ChangePasswordResponse,
-  ForgetPasswordResponse,
+  ForgotPasswordResponse,
   ForgotPasswordDto,
   LoginResponse,
   PasswordResetResponse,
@@ -48,9 +48,9 @@ export class AuthService {
       .pipe(catchError(this.handleError));
   }
 
-  forgetPassword(data: ForgotPasswordDto): Observable<ForgetPasswordResponse> {
+  forgotPassword(data: ForgotPasswordDto): Observable<ForgotPasswordResponse> {
     return this.http
-      .post<ForgetPasswordResponse>(`${this.apiUrl}/forgot-password`, data)
+      .post<ForgotPasswordResponse>(`${this.apiUrl}/forgot-password`, data)
       .pipe(catchError(this.handleError));
   }
 
@@ -60,9 +60,9 @@ export class AuthService {
       .pipe(catchError(this.handleError));
   }
 
-  resetPassword(userId: number, data: ResetPasswordDto): Observable<PasswordResetResponse> {
+  resetPassword(data: ResetPasswordDto): Observable<PasswordResetResponse> {
     return this.http
-      .post<PasswordResetResponse>(`${this.apiUrl}/reset-password/${userId}`, data)
+      .post<PasswordResetResponse>(`${this.apiUrl}/reset-password`, data)
       .pipe(catchError(this.handleError));
   }
 }
