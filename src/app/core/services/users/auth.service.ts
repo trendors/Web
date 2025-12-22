@@ -54,9 +54,9 @@ export class AuthService {
       .pipe(catchError(this.handleError));
   }
 
-  changePassword(data: ChangePasswordDto): Observable<ChangePasswordResponse> {
+  changePassword(userId: number, data: ChangePasswordDto): Observable<ChangePasswordResponse> {
     return this.http
-      .post<ChangePasswordResponse>(`${this.apiUrl}/change-password`, data)
+      .post<ChangePasswordResponse>(`${this.apiUrl}/change-password/${userId}`, data)
       .pipe(catchError(this.handleError));
   }
 
