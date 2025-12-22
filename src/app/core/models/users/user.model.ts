@@ -57,4 +57,4 @@ export type PasswordResetResponse = ApiResponse<null>;
 
 export type ChangePasswordResponse = ApiResponse<null>;
 
-export type ForgotPasswordResponse = ApiResponse<null>;
+export type ForgotPasswordResponse = ApiResponse<{ resetToken: string }>;
