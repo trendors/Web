@@ -6,11 +6,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { selectAuthError, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
 import { PasswordRecoveryActions } from '../../../store/auth/passwordRecovery/password-recovery.actions';
-import { MatIcon } from "@angular/material/icon";
+import { MatIcon } from '@angular/material/icon';
 import { Actions, ofType } from '@ngrx/effects';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -25,15 +25,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     MatFormFieldModule,
     MatProgressSpinnerModule,
     RouterModule,
-    MatIcon
-],
+    MatIcon,
+  ],
   templateUrl: './forget-password.html',
   styleUrl: './forget-password.scss',
 })
 export class ForgetPassword {
   private fb = inject(FormBuilder);
   private store = inject(Store);
-  private action$ = inject(Actions)
+  private action$ = inject(Actions);
+  private router = inject(Router);
 
   isLoading$ = this.store.select(selectIsLoading);
   error$ = this.store.select(selectAuthError);
@@ -41,17 +42,20 @@ export class ForgetPassword {
   emailSent = false;
 
   constructor() {
-    this.action$.pipe(
-      ofType(PasswordRecoveryActions.forgotPasswordSuccess),
-      takeUntilDestroyed() 
-    ).subscribe((action) => {
-      this.emailSent = true;
+    this.action$
+      .pipe(ofType(PasswordRecoveryActions.forgotPasswordSuccess), takeUntilDestroyed())
+      .subscribe((action) => {
+        this.emailSent = true;
 
-      const responseData = action.response.data?.resetToken;
-      if (responseData) {
-        console.log('Password reset token:', responseData);
-      }
-    })
+        const responseData = action.response.data?.resetToken;
+        if (responseData) {
+          const resetLink = `/reset-password?token=${responseData}`;
+          console.log('Password reset token:', responseData);
+          console.log('Password reset link:', resetLink);
+
+          this.router.navigateByUrl(resetLink);
+        }
+      });
   }
 
   fpForm = this.fb.group({
