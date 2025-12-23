@@ -36,6 +36,7 @@ export class LoginEffects {
       this.actions$.pipe(
         ofType(LoginActions.loginSuccess),
         tap(({ response }) => {
+          console.log(response);
           if (response.data) {
             localStorage.setItem('token', response.data.token);
           }
