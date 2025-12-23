@@ -10,6 +10,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { selectAuthError, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
 import { PasswordRecoveryActions } from '../../../store/auth/passwordRecovery/password-recovery.actions';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-reset-password',
@@ -22,6 +23,7 @@ import { PasswordRecoveryActions } from '../../../store/auth/passwordRecovery/pa
     MatFormFieldModule,
     MatProgressSpinnerModule,
     RouterModule,
+    MatIcon,
   ],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.scss',
@@ -36,22 +38,23 @@ export class ResetPassword {
 
   token: string | null = null;
 
-  resetForm = this.fb.group({
+  resetPasswordForm = this.fb.group({
     newPassword: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       this.token = params['token'] || null;
+      console.log('Reset token:', this.token);
     });
   }
 
   onSubmit() {
-    if (this.resetForm.valid && this.token) {
+    if (this.resetPasswordForm.valid && this.token) {
       this.store.dispatch(
         PasswordRecoveryActions.resetPasswordRequest({
           token: this.token,
-          newPassword: this.resetForm.value.newPassword!,
+          newPassword: this.resetPasswordForm.value.newPassword!,
         })
       );
     } else if (!this.token) {
