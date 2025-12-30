@@ -1,1 +1,37 @@
-<p>header works!</p>
+<mat-toolbar color="primary" class="header-toolbar">
+  <a routerLink="/" class="brand-logo">
+    <mat-icon class="logo-icon">trending_up</mat-icon>
+    <span>Trendors</span>
+  </a>
+
+  <span class="spacer"></span>
+
+  <div class="nav-links">
+    <ng-container *ngIf="!(isLoggedIn$ | async)">
+      <a mat-button routerLink="/login">Login</a>
+      <a mat-flat-button color="accent" routerLink="/register">Register</a>
+    </ng-container>
+
+    <ng-container *ngIf="isLoggedIn$ | async">
+      <a mat-button routerLink="/dashboard">Dashboard</a>
+
+      <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
+        <mat-icon>account_circle</mat-icon>
+        <span class="username">{{ (currentUser$ | async)?.first_name || 'User' }}</span>
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item routerLink="/change-password">
+          <mat-icon>lock</mat-icon>
+          <span>Change Password</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="onLogout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </ng-container>
+  </div>
+</mat-toolbar>
