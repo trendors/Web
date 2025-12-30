@@ -37,8 +37,11 @@ export class LoginEffects {
         ofType(LoginActions.loginSuccess),
         tap(({ response }) => {
           console.log(response);
-          if (response.data) {
-            localStorage.setItem('token', response.data.token);
+          if (response.data?.token) {
+            localStorage.setItem('token', response.data?.token);
+          }
+          if (response.data?.user) {
+            localStorage.setItem('user', JSON.stringify(response.data.user));
           }
         })
       ),
@@ -76,10 +79,14 @@ export class LoginEffects {
         filter((token): token is string => token !== null),
         map((token) =>
           LoginActions.loginSuccess({
-            response: { data: { token, user: null }, error: false, message: '' },
+            response: {
+              data: { token, user: null },
+              error: false,
+              message: 'Hydrated from localStorage',
+            },
           })
         )
       ),
-    { dispatch: false }
+    { dispatch: true }
   );
 }
