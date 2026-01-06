@@ -1,19 +1,29 @@
 import { createActionGroup, props } from '@ngrx/store';
-import { CreatePostDto, FetchPostsDto, Post } from '../../../core/models/posts/post.model';
+import {
+  CreatePostDto,
+  FetchPostDto,
+  LikePostDto,
+  LoadMoreDto,
+  Post,
+} from '../../../core/models/posts/post.model';
 
 export const PostActions = createActionGroup({
-  source: 'Home Feed',
+  source: 'Posts API',
   events: {
-    'Load Feed': props<{ query: FetchPostsDto }>(),
-    'Load Feed Success': props<{ posts: Post[]; count: number }>(),
-    'Load Feed Failure': props<{ error: string }>(),
+    'Find All Posts': props<{ query: FetchPostDto }>(),
+    'Find All Posts Success': props<{ list: Post[]; count: number }>(),
+    'Find All Posts Failure': props<{ error: string }>(),
 
-    'Create Post': props<{ data: CreatePostDto }>(),
-    'Create Post Success': props<{ post: Post }>(),
+    'Load More Posts': props<{ query: LoadMoreDto }>(),
+    'Load More Posts Success': props<{ list: Post[]; count: number }>(),
+    'Load More Posts Failure': props<{ error: string }>(),
+
+    'Create Post': props<{ dto: CreatePostDto }>(),
+    'Create Post Success': props<{ message: string }>(),
     'Create Post Failure': props<{ error: string }>(),
 
-    'Like Post': props<{ postId: number; userId: number }>(),
-    'Like Post Success': props<{ postId: number }>(),
+    'Like Post': props<{ dto: LikePostDto }>(),
+    'Like Post Success': props<{ message: string; postId: number }>(),
     'Like Post Failure': props<{ error: string }>(),
   },
 });
