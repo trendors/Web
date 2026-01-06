@@ -1,1 +1,102 @@
-<p>home works!</p>
+<div class="home-container">
+  <aside class="sidebar left">
+    <mat-card class="profile-card" *ngIf="user$ | async as user">
+      <div class="cover-photo"></div>
+      <div class="profile-info">
+        <div class="avatar-placeholder">{{ user.first_name[0] }}</div>
+        <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+        <p class="username">@{{ user.user_name }}</p>
+      </div>
+      <mat-card-actions>
+        <button mat-button class="full-width">My Profile</button>
+      </mat-card-actions>
+    </mat-card>
+  </aside>
+
+  <main class="feed">
+    <div class="search-bar">
+      <mat-icon>search</mat-icon>
+      <input type="text" placeholder="Search posts, people..." />
+    </div>
+
+    <mat-card class="create-post">
+      <form [formGroup]="postForm" (ngSubmit)="onSubmitPost()">
+        <div class="input-area">
+          <div class="avatar-small"></div>
+          <input
+            formControlName="text"
+            placeholder="What's on your mind, {{ (user$ | async)?.first_name }}?"
+          />
+        </div>
+        <div class="actions">
+          <div class="attachments">
+            <button mat-icon-button type="button">
+              <mat-icon class="icon-image">image</mat-icon>
+            </button>
+            <button mat-icon-button type="button">
+              <mat-icon class="icon-video">videocam</mat-icon>
+            </button>
+          </div>
+          <button mat-flat-button color="primary" type="submit" [disabled]="postForm.invalid">
+            Post
+          </button>
+        </div>
+      </form>
+    </mat-card>
+
+    <div class="posts-list">
+      <div *ngIf="loading$ | async" class="loading-spinner">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+
+      <mat-card *ngFor="let post of posts$ | async" class="post-card">
+        <mat-card-header>
+          <div mat-card-avatar class="post-avatar">{{ post.user?.first_name?.[0] }}</div>
+          <mat-card-title>{{ post.user?.first_name }} {{ post.user?.last_name }}</mat-card-title>
+          <mat-card-subtitle>{{ post.createdAt | date : 'mediumDate' }}</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <p>{{ post.text }}</p>
+          <img
+            *ngIf="post.images && post.images.length"
+            [src]="post.images[0]"
+            class="post-image"
+          />
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-button (click)="onLikePost(post.id)">
+            <mat-icon [class.liked]="false">favorite_border</mat-icon>
+            {{ post.likes?.length || 0 }} Likes
+          </button>
+          <button mat-button>
+            <mat-icon>chat_bubble_outline</mat-icon>
+            {{ post.comments?.length || 0 }} Comments
+          </button>
+          <span class="spacer"></span>
+          <button mat-icon-button><mat-icon>share</mat-icon></button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </main>
+
+  <aside class="sidebar right">
+    <mat-card class="suggestions-card">
+      <mat-card-header>
+        <mat-card-title>Trending</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- dummy text -->
+        <div class="trend">
+          <p class="hashtag">#Angular21</p>
+          <p class="count">12k posts</p>
+        </div>
+        <div class="trend">
+          <p class="hashtag">#WebDev</p>
+          <p class="count">8.5k posts</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </aside>
+</div>
