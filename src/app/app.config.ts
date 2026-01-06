@@ -12,6 +12,8 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { PasswordRecoveryEffects } from './store/auth/passwordRecovery/password-recovery.effects';
 import { ChangePasswordEffects } from './store/auth/changePassword/change-password.effects';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { postsReducer } from './store/posts/post/posts.reducer';
+import { PostsEffects } from './store/posts/post/posts.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,8 +24,9 @@ export const appConfig: ApplicationConfig = {
     ),
     provideStore({
       auth: authReducer,
+      posts: postsReducer
     }),
-    provideEffects([LoginEffects, RegisterEffects, PasswordRecoveryEffects, ChangePasswordEffects]),
+    provideEffects([LoginEffects, RegisterEffects, PasswordRecoveryEffects, ChangePasswordEffects, PostsEffects]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],
 };
