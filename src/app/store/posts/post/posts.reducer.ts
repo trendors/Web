@@ -43,8 +43,8 @@ export const postsReducer = createReducer(
     loadingMore: false,
   })),
 
-  // Create
   on(PostActions.createPost, (state) => ({ ...state, loading: true, error: null })),
-  on(PostActions.createPostSuccess, (state) => ({ ...state, loading: false })), // Effect will reload feed
+  on(PostActions.createPostSuccess, (state) => ({ ...state, loading: false })),
   on(PostActions.createPostFailure, (state, { error }) => ({ ...state, loading: false, error }))
+
 );
