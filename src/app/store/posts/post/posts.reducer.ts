@@ -2,6 +2,8 @@ import { createReducer, on } from '@ngrx/store';
 import { Post } from '../../../core/models/posts/post.model';
 import { PostActions } from './posts.actions';
 
+export const postsFeatureKey = 'posts'
+
 export interface PostsState {
   list: Post[];
   totalCount: number;
