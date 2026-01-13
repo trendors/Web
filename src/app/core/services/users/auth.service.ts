@@ -16,7 +16,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://trendors-main-service.onrender.com';
+  private apiUrl = 'http://localhost:3000/user';
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('AuthService Error:', error);
