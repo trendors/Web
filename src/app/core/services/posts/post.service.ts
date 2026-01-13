@@ -17,7 +17,7 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class PostService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://trendors-main-service.onrender.com';
+  private apiUrl = 'http://localhost:3000/posts';
 
   findAll(query: FetchPostDto): Observable<FetchPostsResponse> {
     const payload = {
@@ -41,5 +41,11 @@ export class PostService {
 
   likePost(dto: LikePostDto): Observable<LikeResponse> {
     return this.http.post<LikeResponse>(`${this.apiUrl}/like`, dto);
+  }
+
+  uploadImage(postId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.patch(`${this.apiUrl}/${postId}/upload/posts`, formData);
   }
 }
