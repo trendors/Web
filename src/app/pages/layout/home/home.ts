@@ -1,12 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-// PostCard removed from imports because template doesn't use it
 import { Store } from '@ngrx/store';
 import { selectCurrentUser } from '../../../store/auth/shared state/auth.selector';
 import { PostActions } from '../../../store/posts/post/posts.actions';
@@ -32,7 +30,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatFormFieldModule,
     MatInputModule,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
@@ -50,9 +47,11 @@ export class Home implements OnInit {
   user$ = this.store.select(selectCurrentUser);
 
   searchControl = this.fb.control('');
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
 
   postForm = this.fb.group({
-    text: ['', [Validators.required, Validators.minLength(1)]],
+    text: ['', [Validators.required, Validators.minLength(3)]],
   });
 
   ngOnInit() {
@@ -79,14 +78,13 @@ export class Home implements OnInit {
     );
   }
 
-  // TODO: Implement Infinite Scroll trigger to call this
   onLoadMore() {
-    // Determine the last post id and request older posts (infinite scroll)
     this.posts$.pipe(take(1)).subscribe((posts) => {
       if (!posts || posts.length === 0) return;
-      const lastId = posts[posts.length - 1].id;
+
+      const lastPost = posts[posts.length - 1].id;
       const query: LoadMoreDto = {
-        loadMoreOptions: { type: LoadType.LT, id: lastId },
+        loadMoreOptions: { type: LoadType.LT, id: lastPost },
         limit: 20,
         relations: ['user', 'likes', 'comments', 'shares'],
       };
@@ -94,30 +92,38 @@ export class Home implements OnInit {
     });
   }
 
-  onPost() {
+  onSubmitPost() {
     if (this.postForm.invalid) return;
 
     this.user$.pipe(take(1)).subscribe((user) => {
+      console.log('Submitting post', user);
       if (!user) return;
 
       const dto: CreatePostDto = {
         text: this.postForm.value.text!,
-        // Fallback or specific logic for userName/trendorsId generation
-        userName: user.user_name || user.first_name,
+        userName: user.user_name || `${user.first_name}_${user.last_name}`,
         userId: user.id,
         channel: Channel.PUBLIC,
         trendorsId: user.trendors_id || 'default_id',
         isSponsored: false,
-        images: [], // Future: Add image upload logic
+        images: [],
         generate_ai_rewrite: false,
+        heading: '',
+        link: '',
+        srcUrl: '',
+        srcName: '',
+        srcImgUrl: '',
+        incentiveShareCount: 0,
+        maxIncentiveShares: 0,
       };
 
-      this.store.dispatch(PostActions.createPost({ dto }));
+      this.store.dispatch(PostActions.createPost({ dto, file: this.selectedFile || undefined }));
       this.postForm.reset();
+      this.removeSelectedImage();
     });
   }
 
-  onLike(postId: number) {
+  onLikePost(postId: number) {
     this.user$.pipe(take(1)).subscribe((user) => {
       if (!user) return;
 
@@ -131,15 +137,21 @@ export class Home implements OnInit {
     });
   }
 
-  onSubmitPost(): void {
-    // Delegate to existing onPost logic which builds the DTO and dispatches
-    this.onPost();
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
-  onLikePost(postId: number | string): void {
-    if (postId === null || postId === undefined) return;
-    const id = typeof postId === 'string' ? Number(postId) : postId;
-    if (Number.isNaN(id)) return;
-    this.onLike(id);
+  removeSelectedImage() {
+    this.selectedFile = null;
+    this.imagePreview = null;
   }
 }
