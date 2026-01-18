@@ -12,6 +12,28 @@ export class LoginEffects {
   private authService = inject(AuthService);
   private router = inject(Router);
 
+  initAuth$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ROOT_EFFECTS_INIT),
+      map(() => localStorage.getItem('token')),
+      filter((token): token is string => !!token),
+      mergeMap(() =>
+        this.authService.validateToken().pipe(
+          map((response) =>
+            LoginActions.loginSuccess({
+              response: {
+                data: { token: localStorage.getItem('token')!, user: response.data!.user },
+                error: false,
+                message: 'Session restored',
+              },
+            }),
+          ),
+          catchError(() => of(logoutUser())),
+        ),
+      ),
+    ),
+  );
+
   loginRequest$ = createEffect(() =>
     this.actions$.pipe(
       ofType(LoginActions.loginRequest),
@@ -24,11 +46,11 @@ export class LoginEffects {
             return LoginActions.loginSuccess({ response });
           }),
           catchError((error) =>
-            of(LoginActions.loginFailure({ error: error.error?.message || 'Login failed' }))
-          )
-        )
-      )
-    )
+            of(LoginActions.loginFailure({ error: error.error?.message || 'Login failed' })),
+          ),
+        ),
+      ),
+    ),
   );
 
   loginSuccessPersist$ = createEffect(
@@ -43,9 +65,12 @@ export class LoginEffects {
           if (response.data?.user) {
             localStorage.setItem('user', JSON.stringify(response.data.user));
           }
-        })
+          if (this.router.url.includes('login') || this.router.url === '/') {
+            this.router.navigate(['/home']);
+          }
+        }),
       ),
-    { dispatch: false }
+    { dispatch: false },
   );
 
   loginSuccessNavigate$ = createEffect(
@@ -54,9 +79,9 @@ export class LoginEffects {
         ofType(LoginActions.loginSuccess),
         tap(() => {
           this.router.navigate(['/home']);
-        })
+        }),
       ),
-    { dispatch: false }
+    { dispatch: false },
   );
 
   logout$ = createEffect(
@@ -66,9 +91,9 @@ export class LoginEffects {
         tap(() => {
           localStorage.removeItem('token');
           this.router.navigate(['/login']);
-        })
+        }),
       ),
-    { dispatch: false }
+    { dispatch: false },
   );
 
   hydrateAuth$ = createEffect(
@@ -84,9 +109,9 @@ export class LoginEffects {
               error: false,
               message: 'Hydrated from localStorage',
             },
-          })
-        )
+          }),
+        ),
       ),
-    { dispatch: true }
+    { dispatch: true },
   );
 }
