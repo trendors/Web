@@ -12,9 +12,9 @@ import {
   selectAuthError,
   selectCurrentUser,
   selectIsLoading,
-} from '../../store/auth/shared state/auth.selector';
+} from '../../../store/auth/shared state/auth.selector';
 import { take } from 'rxjs';
-import { PasswordChangeActions } from '../../store/auth/changePassword/change-password.actions';
+import { PasswordChangeActions } from '../../../store/auth/changePassword/change-password.actions';
 
 @Component({
   selector: 'app-change-password',
