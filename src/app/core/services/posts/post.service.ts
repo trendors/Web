@@ -13,11 +13,13 @@ import {
   LikeResponse,
 } from '../../models/posts/post.model';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PostService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/posts';
+  // private apiUrl = 'http://localhost:3000/posts';
+   private apiUrl = `${environment.apiUrl}/posts`
 
   findAll(query: FetchPostDto): Observable<FetchPostsResponse> {
     const payload = {
@@ -40,7 +42,12 @@ export class PostService {
   }
 
   likePost(dto: LikePostDto): Observable<LikeResponse> {
+    console.log("is this called")
     return this.http.post<LikeResponse>(`${this.apiUrl}/like`, dto);
+  }
+
+  fetchAiRewrite(data:string): Observable<any>{
+   return this.http.post(`${this.apiUrl}/utility/airewriter`, {text:data});
   }
 
   uploadImage(postId: number, file: File): Observable<any> {

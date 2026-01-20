@@ -22,6 +22,10 @@ import {
   LoadMoreDto,
 } from '../../../core/models/posts/post.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TimeAgoPipe } from "../../../time-ago-pipe";
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { ShareSheet } from '../../../components/share-sheet/share-sheet';
+
 
 @Component({
   selector: 'app-home',
@@ -33,13 +37,16 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatInputModule,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
-  ],
+    TimeAgoPipe
+],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home implements OnInit {
   private store = inject(Store);
   private fb = inject(FormBuilder);
+constructor(private bottomSheet: MatBottomSheet) {}
+  
 
   posts$ = this.store.select(selectAllPosts);
   loading$ = this.store.select(selectIsLoadingPosts);
@@ -64,6 +71,12 @@ export class Home implements OnInit {
         this.loadInitialPosts(val || undefined);
       });
   }
+
+  openShareMenu(post: any): void {
+  this.bottomSheet.open(ShareSheet, {
+    data: { post: post }, // Pass the post data if needed
+    panelClass: 'custom-share-sheet'
+  })}
 
   loadInitialPosts(searchString?: string) {
     this.store.dispatch(
@@ -154,4 +167,6 @@ export class Home implements OnInit {
     this.selectedFile = null;
     this.imagePreview = null;
   }
+
+  
 }
