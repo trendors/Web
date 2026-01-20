@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { PostService } from '../../../core/services/posts/post.service';
-import { of, from } from 'rxjs';
-import { mergeMap, map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { mergeMap, map, catchError, switchMap } from 'rxjs/operators';
 import { PostActions } from './posts.actions';
 
 @Injectable()
@@ -17,15 +17,16 @@ export class PostsEffects {
         this.postsService.findAll(query).pipe(
           map((response) => {
             if (response.status !== 'SUCCESS') {
-              return PostActions.findAllPostsFailure({ error: response.message });
+              return PostActions.findAllPostsFailure({
+                error: response.message || 'Failed to fetch posts',
+              });
             }
-            const list = response.data?.list || [];
-            const count = response.data?.pagination?.total_items ?? list.length;
-            return PostActions.findAllPostsSuccess({ list, count });
+            return PostActions.findAllPostsSuccess({
+              list: response.data!.list,
+              pagination: response.data!.pagination,
+            });
           }),
-          catchError((error) =>
-            of(PostActions.findAllPostsFailure({ error: error?.message || 'error searching' }))
-          )
+          catchError((error) => of(PostActions.findAllPostsFailure({ error: error.message })))
         )
       )
     )
@@ -38,11 +39,13 @@ export class PostsEffects {
         this.postsService.loadMore(query).pipe(
           map((response) => {
             if (response.status !== 'SUCCESS') {
-              return PostActions.loadMorePostsFailure({ error: response.message });
+              return PostActions.loadMorePostsFailure({
+                error: response.message || 'Failed to load more posts',
+              });
             }
-            const list = response.data?.list || [];
-            const count = response.data?.pagination?.total_items ?? list.length;
-            return PostActions.loadMorePostsSuccess({ list, count });
+            return PostActions.loadMorePostsSuccess({ 
+              list: response.data!.list, 
+              pagination: response.data!.pagination });
           }),
           catchError((error) =>
             of(PostActions.loadMorePostsFailure({ error: error?.message || 'error loading more' }))
@@ -55,21 +58,27 @@ export class PostsEffects {
   createPost$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PostActions.createPost),
-      mergeMap(({ dto }) =>
+      mergeMap(({ dto, file }) =>
         this.postsService.create(dto).pipe(
-          mergeMap((response) => {
-            if (response.status !== 'SUCCESS') {
-              return of(PostActions.createPostFailure({ error: response.message }));
+          switchMap(response => {
+            const postId = response.id;
+
+            if (file && postId) {
+              return this.postsService.uploadImage(postId, file).pipe(
+                map(() => response)
+              );
             }
-            return from([
-              PostActions.createPostSuccess({ message: response.message }),
-              PostActions.findAllPosts({
-                query: { limit: 20, page: 0, relations: ['user', 'likes', 'comments', 'shares'] },
-              }),
-            ]);
+            return of(response);
           }),
+          map(response => {
+            return [
+              PostActions.createPostSuccess({ message: response.message }),
+                PostActions.findAllPosts({ query: { limit: 20, page: 0, relations: ['user', 'likes', 'comments', 'shares'] } })
+            ];
+          }),
+          mergeMap(actions => actions),
           catchError((error) =>
-            of(PostActions.createPostFailure({ error: error?.message || 'error creating post' }))
+            of(PostActions.createPostFailure({ error: error.message || 'error creating post' }))
           )
         )
       )
@@ -82,13 +91,13 @@ export class PostsEffects {
       mergeMap(({ dto }) =>
         this.postsService.likePost(dto).pipe(
           map((response) => {
-            if (response.status !== 'SUCCESS') {
-              return PostActions.likePostFailure({ error: response.message });
-            }
-            return PostActions.likePostSuccess({ message: response.message, postId: dto.postId! });
+            if (response.error) {
+                return PostActions.likePostFailure({ error: response.message, postId: dto.postId!, userId: dto.userId! });
+             }
+            return PostActions.likePostSuccess({ message: response.message, data: response.data });
           }),
           catchError((error) =>
-            of(PostActions.likePostFailure({ error: error?.message || 'error liking' }))
+            of(PostActions.likePostFailure({ error: error?.message || 'error liking', postId: dto.postId!, userId: dto.userId! }))
           )
         )
       )

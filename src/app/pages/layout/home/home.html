@@ -28,31 +28,38 @@
             placeholder="What's on your mind, {{ (user$ | async)?.first_name }}?"
           />
         </div>
+
+        <div class="image-preview" *ngIf="imagePreview">
+          <img [src]="imagePreview" alt="Selected Image" />
+          <button mat-icon-button class="remove-btn" type="button" (click)="removeSelectedImage()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
         <div class="actions">
           <div class="attachments">
-            <button mat-icon-button type="button">
+            <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" accept="image/*">
+            <button mat-icon-button type="button" (click)="fileInput.click()">
               <mat-icon class="icon-image">image</mat-icon>
             </button>
-            <button mat-icon-button type="button">
-              <mat-icon class="icon-video">videocam</mat-icon>
-            </button>
           </div>
-          <button mat-flat-button color="primary" type="submit" [disabled]="postForm.invalid">
-            Post
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="postForm.invalid || (loading$ | async)">
+            <span *ngIf="!(loading$ | async)">Post</span>
+            <mat-spinner diameter="20" *ngIf="loading$ | async"></mat-spinner>
           </button>
         </div>
       </form>
     </mat-card>
 
     <div class="posts-list">
-      <div *ngIf="loading$ | async" class="loading-spinner">
-        <mat-spinner diameter="40"></mat-spinner>
-      </div>
-
       <mat-card *ngFor="let post of posts$ | async" class="post-card">
         <mat-card-header>
-          <div mat-card-avatar class="post-avatar">{{ post.user?.first_name?.[0] }}</div>
-          <mat-card-title>{{ post.user?.first_name }} {{ post.user?.last_name }}</mat-card-title>
+          <div mat-card-avatar class="post-avatar">{{ post.user?.first_name?.[0] || 'U' }}</div>
+          <mat-card-title>{{ post.userName || 'User' }}</mat-card-title>
           <mat-card-subtitle>{{ post.createdAt | date : 'mediumDate' }}</mat-card-subtitle>
         </mat-card-header>
 
@@ -67,7 +74,7 @@
 
         <mat-card-actions>
           <button mat-button (click)="onLikePost(post.id)">
-            <mat-icon [class.liked]="false">favorite_border</mat-icon>
+            <mat-icon color="warn">favorite_border</mat-icon>
             {{ post.likes?.length || 0 }} Likes
           </button>
           <button mat-button>
@@ -78,6 +85,13 @@
           <button mat-icon-button><mat-icon>share</mat-icon></button>
         </mat-card-actions>
       </mat-card>
+      
+      <div class="load-more-container" *ngIf="(posts$ | async)?.length">
+        <button mat-button (click)="onLoadMore()" [disabled]="loadingMore$ | async">
+          <span *ngIf="!(loadingMore$ | async)">Load More</span>
+          <mat-spinner diameter="20" *ngIf="loadingMore$ | async"></mat-spinner>
+        </button>
+      </div>
     </div>
   </main>
 

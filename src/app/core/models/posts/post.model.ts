@@ -5,13 +5,16 @@ export enum LoadType {
   LT = 'LT',
 }
 
+export enum Channel {
+  PRIVATE = 'PRIVATE',
+  PUBLIC = 'PUBLIC',
+}
+export type OrderType = 'ASC' | 'DESC';
+
 export interface LoadMoreOptions {
   type: LoadType;
   id: number;
 }
-
-export type OrderType = 'ASC' | 'DESC';
-
 export interface GenericFilter {
   filter?: Record<string, any>;
   searchString?: string;
@@ -21,11 +24,6 @@ export interface GenericFilter {
   orderBy?: string;
   order?: OrderType;
   relations?: string[];
-}
-
-export enum Channel {
-  PRIVATE = 'PRIVATE',
-  PUBLIC = 'PUBLIC',
 }
 
 export interface Pagination {
@@ -100,6 +98,11 @@ export interface Sharing {
   createdAt: string | Date;
 }
 
+export interface PagedListData<T> {
+  list: T[];
+  pagination: Pagination;
+}
+
 export interface CreatePostDto {
   text: string;
   heading?: string;
@@ -121,12 +124,7 @@ export interface CreatePostDto {
 
 export type FetchPostDto = GenericFilter;
 
-export interface LoadMoreDto {
-  loadMoreOptions?: LoadMoreOptions;
-  searchString?: string;
-  limit?: number;
-  relations?: string[];
-}
+export type LoadMoreDto = FetchPostDto;
 
 export interface LikePostDto {
   postId?: number;
@@ -141,11 +139,18 @@ export interface ApiResponse<T> {
   error?: { code: string; message: string };
 }
 
-export interface PagedListData<T> {
-  list: T[];
-  pagination: Pagination;
-}
-
 export type FetchPostsResponse = ApiResponse<PagedListData<Post>>;
 export type FetchPostResponse = ApiResponse<Post>;
 export type CreateResponse = ApiResponse<Post>;
+
+export interface SaveOneResponse {
+  id: number;
+  message: string;
+  status: 'SUCCESS' | 'FAILED';
+}
+
+export interface LikeResponse {
+  error: boolean;
+  message: string;
+  data: LikePost;
+}
