@@ -1,0 +1,122 @@
+.share-sheet-container {
+
+//   border-radius: 16px 16px 0 0;
+}
+
+
+.share-row {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  scrollbar-width: none; /* Hide scrollbar for clean look */
+}
+
+.share-row::-webkit-scrollbar {
+  display: none;
+}
+
+.share-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+  cursor: pointer;
+}
+
+.share-item span {
+  font-size: 12px;
+  margin-top: 8px;
+  color: #1c1e21;
+}
+
+.icon-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Brand Colors */
+.link-bg { background-color: #e4e6eb; color: #1c1e21; }
+.whatsapp-bg { background-color: #25D366; }
+.twitter-bg { background-color: #1DA1F2; }
+.tiktok-bg { background-color: #000000; }
+
+.cancel-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #f0f2f5;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.version-list {
+margin-bottom: 5%;
+
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space from top to bottom */
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #65676b;
+  margin-bottom: 4px;
+}
+
+.text-card {
+  display: flex;
+  align-items: flex-start; /* Changed from center to top-aligned */
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid #e4e6eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: #fafafa;
+  /* Remove overflow: hidden if you had it */
+}
+
+.card-content {
+  flex: 1;
+  /* No min-width needed since we want it to push the card height */
+}
+
+.preview-text {
+  margin: 0;
+  font-size: 13px;
+  color: #1c1e21;
+  
+  /* CLEANUP: Remove all truncation logic */
+  display: block; 
+  white-space: normal; /* Allows text to wrap to multiple lines */
+  word-break: break-word; /* Prevents long URLs from breaking the layout */
+  overflow: visible;
+}
+
+.check-icon {
+  margin-left: 10px;
+  flex-shrink: 0; /* Prevents the icon from squishing when text is long */
+  color: #1877f2;
+}
+
+.version-label {
+  font-size: 11px;
+  color: #8a8d91;
+}
+
+.check-icon {
+  color: #1877f2;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+

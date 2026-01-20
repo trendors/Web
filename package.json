@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "ng:dev": "ng serve --host 0.0.0.0 --configuration development",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
@@ -36,6 +37,7 @@
     "@ngrx/router-store": "^21.0.1",
     "@ngrx/store": "^21.0.1",
     "@ngrx/store-devtools": "^21.0.1",
+    "ngx-timeago": "^4.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
