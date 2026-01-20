@@ -1,0 +1,58 @@
+<div class="share-sheet-container">
+  <div class="sheet-handle"></div>
+ 
+  <div class="version-list">
+  <p class="section-label">Select text style</p>
+
+ @for (version of (shareVersions$ | async); track version.version) {
+  <div class="text-card" 
+       [class.selected]="selectedVersionId === version.version"
+       (click)="selectVersion(version.version)">
+    <div class="card-content">
+      <p class="preview-text">{{ version.text }}</p>
+    </div>
+  </div>
+} @empty {
+  <div class="loading-state">
+÷    <p>AI is rewriting...</p>
+  </div>
+}
+  
+  
+
+
+
+</div>
+
+  <div class="share-row">
+    <div class="share-item" (click)="copyLink()">
+      <div class="icon-circle link-bg">
+        <mat-icon>link</mat-icon>
+      </div>
+      <span>Copy Link</span>
+    </div>
+
+    <div class="share-item" (click)="shareTo('whatsapp')">
+      <div class="icon-circle whatsapp-bg">
+        <mat-icon>chat</mat-icon>
+      </div>
+      <span>WhatsApp</span>
+    </div>
+
+    <div class="share-item" (click)="shareTo('twitter')">
+      <div class="icon-circle twitter-bg">
+        <mat-icon>share</mat-icon>
+      </div>
+      <span>Twitter</span>
+    </div>
+
+    <div class="share-item" (click)="shareTo('tiktok')">
+      <div class="icon-circle tiktok-bg">
+        <mat-icon>music_note</mat-icon>
+      </div>
+      <span>TikTok</span>
+    </div>
+  </div>
+
+  <button class="cancel-btn" (click)="close()">Cancel</button>
+</div>

@@ -12,11 +12,14 @@ import {
   RegisterResponse,
   ResetPasswordDto,
 } from '../../models/users/user.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/user';
+  // private apiUrl = 'http://192.168.1.6:3000/user';
+
+  private apiUrl = `${environment.apiUrl}/user`
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('AuthService Error:', error);

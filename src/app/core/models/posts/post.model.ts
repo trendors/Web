@@ -122,6 +122,10 @@ export interface CreatePostDto {
   maxIncentiveShares?: number;
 }
 
+export interface AirewriterPost {
+  text:string
+}
+
 export type FetchPostDto = GenericFilter;
 
 export type LoadMoreDto = FetchPostDto;
