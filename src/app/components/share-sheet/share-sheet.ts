@@ -14,9 +14,8 @@ import { AsyncPipe } from '@angular/common';
 @Component({
   selector: 'app-share-sheet',
   imports: [
-    MatListModule, MatIconModule, RouterLink, RouterLinkActive, AsyncPipe
-
-  ],
+    MatListModule, MatIconModule, AsyncPipe
+],
   templateUrl: './share-sheet.html',
   styleUrl: './share-sheet.scss',
 })
