@@ -12,28 +12,6 @@ export class LoginEffects {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  initAuth$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(ROOT_EFFECTS_INIT),
-      map(() => localStorage.getItem('token')),
-      filter((token): token is string => !!token),
-      mergeMap(() =>
-        this.authService.validateToken().pipe(
-          map((response) =>
-            LoginActions.loginSuccess({
-              response: {
-                data: { token: localStorage.getItem('token')!, user: response.data!.user },
-                error: false,
-                message: 'Session restored',
-              },
-            }),
-          ),
-          catchError(() => of(logoutUser())),
-        ),
-      ),
-    ),
-  );
-
   loginRequest$ = createEffect(() =>
     this.actions$.pipe(
       ofType(LoginActions.loginRequest),
@@ -64,9 +42,6 @@ export class LoginEffects {
           }
           if (response.data?.user) {
             localStorage.setItem('user', JSON.stringify(response.data.user));
-          }
-          if (this.router.url.includes('login') || this.router.url === '/') {
-            this.router.navigate(['/home']);
           }
         }),
       ),
