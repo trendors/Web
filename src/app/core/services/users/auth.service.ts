@@ -11,6 +11,8 @@ import {
   RegisterDto,
   RegisterResponse,
   ResetPasswordDto,
+  ApiResponse,
+  User,
 } from '../../models/users/user.model';
 import { environment } from '../../../../environments/environment';
 
@@ -59,7 +61,7 @@ export class AuthService {
 
   changePassword(userId: number, data: ChangePasswordDto): Observable<ChangePasswordResponse> {
     return this.http
-      .post<ChangePasswordResponse>(`${this.apiUrl}/change-password/${userId}`, data)
+      .patch<ChangePasswordResponse>(`${this.apiUrl}/change-password/${userId}`, data)
       .pipe(catchError(this.handleError));
   }
 
