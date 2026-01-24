@@ -1,10 +1,7 @@
 import { Component, Inject, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
-import { PostService } from '../../core/services/posts/post.service';
-import { catchError, map, Observable } from 'rxjs';
-import { Actions } from '@ngrx/effects';
+import { Observable } from 'rxjs';
 import { UtilService } from '../../core/services/utility/utility.service';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { AsyncPipe } from '@angular/common';
