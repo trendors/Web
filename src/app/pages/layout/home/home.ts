@@ -3,7 +3,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, CommonModule, SlicePipe, UpperCasePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { selectCurrentUser } from '../../../store/auth/shared state/auth.selector';
@@ -22,31 +22,33 @@ import {
   LoadMoreDto,
 } from '../../../core/models/posts/post.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { TimeAgoPipe } from "../../../time-ago-pipe";
+import { TimeAgoPipe } from '../../../time-ago-pipe';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ShareSheet } from '../../../components/share-sheet/share-sheet';
-
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
     MatInputModule,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
-    TimeAgoPipe
-],
+    TimeAgoPipe,
+    RouterLink,
+    UpperCasePipe,
+    AsyncPipe,
+    SlicePipe,
+  ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home implements OnInit {
   private store = inject(Store);
   private fb = inject(FormBuilder);
-constructor(private bottomSheet: MatBottomSheet) {}
-  
+  constructor(private bottomSheet: MatBottomSheet) {}
 
   posts$ = this.store.select(selectAllPosts);
   loading$ = this.store.select(selectIsLoadingPosts);
@@ -73,10 +75,11 @@ constructor(private bottomSheet: MatBottomSheet) {}
   }
 
   openShareMenu(post: any): void {
-  this.bottomSheet.open(ShareSheet, {
-    data: { post: post }, // Pass the post data if needed
-    panelClass: 'custom-share-sheet'
-  })}
+    this.bottomSheet.open(ShareSheet, {
+      data: { post: post }, // Pass the post data if needed
+      panelClass: 'custom-share-sheet',
+    });
+  }
 
   loadInitialPosts(searchString?: string) {
     this.store.dispatch(
@@ -87,7 +90,7 @@ constructor(private bottomSheet: MatBottomSheet) {}
           searchString,
           relations: ['user', 'likes', 'comments', 'shares'],
         },
-      })
+      }),
     );
   }
 
@@ -167,6 +170,4 @@ constructor(private bottomSheet: MatBottomSheet) {}
     this.selectedFile = null;
     this.imagePreview = null;
   }
-
-  
 }
