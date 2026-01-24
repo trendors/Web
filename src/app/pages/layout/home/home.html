@@ -1,133 +1,17 @@
-<!-- <div class="home-container">
-  <aside class="sidebar left">
-    <mat-card class="profile-card" *ngIf="user$ | async as user">
-      <div class="cover-photo"></div>
-      <div class="profile-info">
-        <div class="avatar-placeholder">{{ user.first_name[0] }}</div>
-        <h3>{{ user.first_name }} {{ user.last_name }}</h3>
-        <p class="username">@{{ user.user_name }}</p>
-      </div>
-      <mat-card-actions>
-        <button mat-button class="full-width">My Profile</button>
-      </mat-card-actions>
-    </mat-card>
-  </aside>
-
-  <main class="feed">
-    <div class="search-bar">
-      <mat-icon>search</mat-icon>
-      <input type="text" placeholder="Search posts, people..." />
-    </div>
-
-    <mat-card class="create-post">
-      <form [formGroup]="postForm" (ngSubmit)="onSubmitPost()">
-        <div class="input-area">
-          <div class="avatar-small"></div>
-          <input
-            formControlName="text"
-            placeholder="What's on your mind, {{ (user$ | async)?.first_name }}?"
-          />
-        </div>
-
-        <div class="image-preview" *ngIf="imagePreview">
-          <img [src]="imagePreview" alt="Selected Image" />
-          <button mat-icon-button class="remove-btn" type="button" (click)="removeSelectedImage()">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-
-        <div class="actions">
-          <div class="attachments">
-            <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" accept="image/*">
-            <button mat-icon-button type="button" (click)="fileInput.click()">
-              <mat-icon class="icon-image">image</mat-icon>
-            </button>
-          </div>
-          <button
-            mat-flat-button
-            color="primary"
-            type="submit"
-            [disabled]="postForm.invalid || (loading$ | async)">
-            <span *ngIf="!(loading$ | async)">Post</span>
-            <mat-spinner diameter="20" *ngIf="loading$ | async"></mat-spinner>
-          </button>
-        </div>
-      </form>
-    </mat-card>
-
-    <div class="posts-list">
-      <mat-card *ngFor="let post of posts$ | async" class="post-card">
-        <mat-card-header>
-          <div mat-card-avatar class="post-avatar">{{ post.user?.first_name?.[0] || 'U' }}</div>
-          <mat-card-title>{{ post.userName || 'User' }}</mat-card-title>
-          <mat-card-subtitle>{{ post.createdAt | date : 'mediumDate' }}</mat-card-subtitle>
-        </mat-card-header>
-
-        <mat-card-content>
-          <p>{{ post.text }}</p>
-          <img
-            *ngIf="post.images && post.images.length"
-            [src]="post.images[0]"
-            class="post-image"
-          />
-        </mat-card-content>
-
-        <mat-card-actions>
-          <button mat-button (click)="onLikePost(post.id)">
-            <mat-icon color="warn">favorite_border</mat-icon>
-            {{ post.likes?.length || 0 }} Likes
-          </button>
-          <button mat-button>
-            <mat-icon>chat_bubble_outline</mat-icon>
-            {{ post.comments?.length || 0 }} Comments
-          </button>
-          <span class="spacer"></span>
-          <button mat-icon-button><mat-icon>share</mat-icon></button>
-        </mat-card-actions>
-      </mat-card>
-      
-      <div class="load-more-container" *ngIf="(posts$ | async)?.length">
-        <button mat-button (click)="onLoadMore()" [disabled]="loadingMore$ | async">
-          <span *ngIf="!(loadingMore$ | async)">Load More</span>
-          <mat-spinner diameter="20" *ngIf="loadingMore$ | async"></mat-spinner>
-        </button>
-      </div>
-    </div>
-  </main>
-
-  <aside class="sidebar right">
-    <mat-card class="suggestions-card">
-      <mat-card-header>
-        <mat-card-title>Trending</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="trend">
-          <p class="hashtag">#Angular21</p>
-          <p class="count">12k posts</p>
-        </div>
-        <div class="trend">
-          <p class="hashtag">#WebDev</p>
-          <p class="count">8.5k posts</p>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </aside>
-</div> -->
-
-
-
 <div class="home-container">
   <!-- LEFT SIDEBAR: Profile Card -->
   <aside class="sidebar left">
-    <div class="profile-card" *ngIf="user$ | async as user">
-      <div class="cover-photo"></div>
-      <div class="profile-info">
-        <div class="avatar-placeholder">{{ user.first_name[0] }}</div>
-        <h3>{{ user.first_name }} {{ user.last_name }}</h3>
-        <p class="username">@{{ user.user_name }}</p>
-        <button class="profile-button">My Profile</button>
+    @if (user$ | async; as user) {
+      <div class="profile-card">
+        <div class="cover-photo"></div>
+        <div class="profile-info">
+          <div class="avatar-placeholder">{{ user.first_name[0] }}</div>
+          <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+          <p class="username">@{{ user.user_name }}</p>
+          <button routerLink="/dashboard" class="profile-button">My Profile</button>
+        </div>
       </div>
-    </div>
+    }
   </aside>
 
   <!-- MAIN FEED -->
@@ -142,28 +26,47 @@
       <form [formGroup]="postForm" (ngSubmit)="onSubmitPost()">
         <div class="input-area">
           <div class="avatar-small"></div>
-          <textarea formControlName="text" placeholder="What's on your mind, {{ (user$ | async)?.first_name }}?"
-            rows="1"></textarea>
+          <textarea
+            formControlName="text"
+            placeholder="What's on your mind, {{ (user$ | async)?.first_name }}?"
+            rows="1"
+          ></textarea>
         </div>
 
-        <div class="image-preview" *ngIf="imagePreview">
-          <img [src]="imagePreview" alt="Selected Image" />
-          <button class="remove-image-btn" type="button" (click)="removeSelectedImage()">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
+        @if (imagePreview) {
+          <div class="image-preview">
+            <img [src]="imagePreview" alt="Selected Image" />
+            <button class="remove-image-btn" type="button" (click)="removeSelectedImage()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
 
         <div class="actions">
           <div class="attachments">
-            <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" accept="image/*">
+            <input
+              type="file"
+              #fileInput
+              style="display: none"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+            />
             <button class="attachment-btn" type="button" (click)="fileInput.click()">
               <mat-icon>image</mat-icon>
               <span>Photo</span>
             </button>
           </div>
-          <button class="post-button" type="submit" [disabled]="postForm.invalid || (loading$ | async)">
-            <span *ngIf="!(loading$ | async)">Post</span>
-            <mat-spinner diameter="18" *ngIf="loading$ | async"></mat-spinner>
+          <button
+            class="post-button"
+            type="submit"
+            [disabled]="postForm.invalid || (loading$ | async)"
+          >
+            @if (!(loading$ | async)) {
+              <span>Post</span>
+            }
+            @if (loading$ | async) {
+              <mat-spinner diameter="18"></mat-spinner>
+            }
           </button>
         </div>
       </form>
@@ -171,123 +74,131 @@
 
     <!-- Posts List -->
     <div class="posts-list">
-      <article *ngFor="let post of posts$ | async" class="post-card">
-        <div class="post-header">
-          <div class="post-author">
-            <div class="post-avatar">
-              {{ post.user?.first_name?.[0] || 'U' | uppercase}}
-            </div>
-            <div class="post-author-info">
-              <h4>{{ post.userName || 'User' }}</h4>
-              <span class="post-date">{{ post.createdAt | timeAgo }}</span>
-            </div>
-          </div>
-          @if (post.isSponsored) {
-          <button class="post-menu-btn">
-            <mat-icon>money</mat-icon>
-          </button>
-          }
-
-        </div>
-
-        <div class="post-content">
-          <p>{{ post.text }}</p>
-
-          @if (post.isSponsored && (post.shares?.length || 0) < 100) { <div class="share-progress-container">
-            <div class="progress-labels">
-              <span></span>
-              <span>{{ post.incentiveShareCount }} / {{ post.maxIncentiveShares }} shares</span>
-            </div>
-            <div class="progress-track">
-              <div class="progress-fill"
-                [style.width.%]="((post.incentiveShareCount || 0) / 100) * post.maxIncentiveShares!">
+      @for (post of posts$ | async; track post) {
+        <article class="post-card">
+          <div class="post-header">
+            <div class="post-author">
+              <div class="post-avatar">
+                {{ post.user?.first_name?.[0] || 'U' | uppercase }}
+              </div>
+              <div class="post-author-info">
+                <h4>{{ post.userName || 'User' }}</h4>
+                <span class="post-date">{{ post.createdAt | timeAgo }}</span>
               </div>
             </div>
-        </div>
-        }
-
-        @if (post.images && post.images.length > 0) {
-        <div class="image-gallery" [class.multi-image]="post.images.length > 1">
-          @for (img of post.images | slice:0:2; track img; let i = $index) {
-          <div class="image-wrapper">
-            <img [src]="img" class="post-image" alt="Post image" />
-
-            @if (i === 1 && post.images.length > 2) {
-            <div class="more-overlay">
-              <span>+{{ post.images.length - 2 }}</span>
-            </div>
+            @if (post.isSponsored) {
+              <button class="post-menu-btn">
+                <mat-icon>money</mat-icon>
+              </button>
             }
           </div>
-          }
+
+          <div class="post-content">
+            <p>{{ post.text }}</p>
+
+            @if (post.isSponsored && (post.shares?.length || 0) < 100) {
+              <div class="share-progress-container">
+                <div class="progress-labels">
+                  <span></span>
+                  <span>{{ post.incentiveShareCount }} / {{ post.maxIncentiveShares }} shares</span>
+                </div>
+                <div class="progress-track">
+                  <div
+                    class="progress-fill"
+                    [style.width.%]="
+                      ((post.incentiveShareCount || 0) / 100) * post.maxIncentiveShares!
+                    "
+                  ></div>
+                </div>
+              </div>
+            }
+
+            @if (post.images && post.images.length > 0) {
+              <div class="image-gallery" [class.multi-image]="post.images.length > 1">
+                @for (img of post.images | slice: 0 : 2; track img; let i = $index) {
+                  <div class="image-wrapper">
+                    <img [src]="img" class="post-image" alt="Post image" />
+
+                    @if (i === 1 && post.images.length > 2) {
+                      <div class="more-overlay">
+                        <span>+{{ post.images.length - 2 }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="post-actions">
+            <button class="action-btn" (click)="onLikePost(post.id)">
+              <mat-icon>favorite_border</mat-icon>
+              <span>{{ post.likes?.length || 0 }}</span>
+            </button>
+            <div class="spacer"></div>
+
+            <button class="action-btn">
+              <mat-icon>chat_bubble_outline</mat-icon>
+              <span>{{ post.comments?.length || 0 }}</span>
+            </button>
+            <div class="spacer"></div>
+
+            <button (click)="openShareMenu(post)" class="action-btn">
+              <mat-icon>share</mat-icon>
+            </button>
+          </div>
+        </article>
+      }
+
+      <!-- Load More Button -->
+      @if ((posts$ | async)?.length) {
+        <div class="load-more-container">
+          <button class="load-more-btn" (click)="onLoadMore()" [disabled]="loadingMore$ | async">
+            @if (!(loadingMore$ | async)) {
+              <span>Load More</span>
+            }
+            @if (loadingMore$ | async) {
+              <mat-spinner diameter="18"></mat-spinner>
+            }
+          </button>
         </div>
-        }
+      }
     </div>
+  </main>
 
-    <div class="post-actions">
-      <button class="action-btn" (click)="onLikePost(post.id)">
-        <mat-icon>favorite_border</mat-icon>
-        <span>{{ post.likes?.length || 0 }}</span>
-      </button>
-      <div class="spacer"></div>
-
-      <button class="action-btn">
-        <mat-icon>chat_bubble_outline</mat-icon>
-        <span>{{ post.comments?.length || 0 }}</span>
-      </button>
-      <div class="spacer"></div>
-
-      <button (click)="openShareMenu(post)" class="action-btn">
-        <mat-icon>share</mat-icon>
-      </button>
-    </div>
-
-
-
-    </article>
-
-    <!-- Load More Button -->
-    <div class="load-more-container" *ngIf="(posts$ | async)?.length">
-      <button class="load-more-btn" (click)="onLoadMore()" [disabled]="loadingMore$ | async">
-        <span *ngIf="!(loadingMore$ | async)">Load More</span>
-        <mat-spinner diameter="18" *ngIf="loadingMore$ | async"></mat-spinner>
-      </button>
-    </div>
-</div>
-</main>
-
-<!-- RIGHT SIDEBAR: Trending -->
-<aside class="sidebar right">
-  <div class="trending-card">
-    <h3 class="card-title">Trending</h3>
-    <div class="trending-list">
-      <div class="trend-item">
-        <p class="hashtag">#Angular21</p>
-        <p class="count">12k posts</p>
-      </div>
-      <div class="trend-item">
-        <p class="hashtag">#WebDev</p>
-        <p class="count">8.5k posts</p>
+  <!-- RIGHT SIDEBAR: Trending -->
+  <aside class="sidebar right">
+    <div class="trending-card">
+      <h3 class="card-title">Trending</h3>
+      <div class="trending-list">
+        <div class="trend-item">
+          <p class="hashtag">#Angular21</p>
+          <p class="count">12k posts</p>
+        </div>
+        <div class="trend-item">
+          <p class="hashtag">#WebDev</p>
+          <p class="count">8.5k posts</p>
+        </div>
       </div>
     </div>
-  </div>
-</aside>
+  </aside>
 
-<nav class="mobile-bottom-nav">
-  <a routerLink="/home" routerLinkActive="active" class="nav-item">
-    <mat-icon>home</mat-icon>
-    <span>Home</span>
-  </a>
-  <a routerLink="/messages" routerLinkActive="active" class="nav-item">
-    <mat-icon>chat_bubble_outline</mat-icon>
-    <span>Messages</span>
-  </a>
-  <a routerLink="/notifications" routerLinkActive="active" class="nav-item">
-    <mat-icon>notifications_none</mat-icon>
-    <span>Alerts</span>
-  </a>
-  <a routerLink="/profile" routerLinkActive="active" class="nav-item">
-    <mat-icon>person_outline</mat-icon>
-    <span>Profile</span>
-  </a>
-</nav>
+  <nav class="mobile-bottom-nav">
+    <a routerLink="/home" routerLinkActive="active" class="nav-item">
+      <mat-icon>home</mat-icon>
+      <span>Home</span>
+    </a>
+    <a routerLink="/messages" routerLinkActive="active" class="nav-item">
+      <mat-icon>chat_bubble_outline</mat-icon>
+      <span>Messages</span>
+    </a>
+    <a routerLink="/notifications" routerLinkActive="active" class="nav-item">
+      <mat-icon>notifications_none</mat-icon>
+      <span>Alerts</span>
+    </a>
+    <a routerLink="/profile" routerLinkActive="active" class="nav-item">
+      <mat-icon>person_outline</mat-icon>
+      <span>Profile</span>
+    </a>
+  </nav>
 </div>
