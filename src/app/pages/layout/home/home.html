@@ -211,7 +211,6 @@
           @for (img of post.images | slice:0:2; track img; let i = $index) {
           <div class="image-wrapper">
             <img [src]="img" class="post-image" alt="Post image" />
-
             @if (i === 1 && post.images.length > 2) {
             <div class="more-overlay">
               <span>+{{ post.images.length - 2 }}</span>

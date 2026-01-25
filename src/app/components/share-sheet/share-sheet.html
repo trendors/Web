@@ -4,19 +4,29 @@
   <div class="version-list">
   <p class="section-label">Select text style</p>
 
- @for (version of (shareVersions$ | async); track version.version) {
-  <div class="text-card" 
-       [class.selected]="selectedVersionId === version.version"
-       (click)="selectVersion(version.version)">
+@let trends = (trends$ | async);
+
+@for (version of (shareVersions$ | async); track $index) {
+  <div class="text-card"
+       
+       (click)="selectVersion(version.text)">
+
     <div class="card-content">
       <p class="preview-text">{{ version.text }}</p>
+
+      <div class="trending-tags">
+        @for (trnd of trends?.slice(0,4); track $index) {
+          <small> {{ trnd.name }}</small>
+        }
+      </div>
     </div>
   </div>
 } @empty {
   <div class="loading-state">
-÷    <p>AI is rewriting...</p>
+    <p>Choose...</p>
   </div>
 }
+
   
   
 
@@ -39,7 +49,7 @@
       <span>WhatsApp</span>
     </div>
 
-    <div class="share-item" (click)="shareTo('twitter')">
+    <div class="share-item" (click)="shareToX(shareVersions$)">
       <div class="icon-circle twitter-bg">
         <mat-icon>share</mat-icon>
       </div>
