@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,11 +10,11 @@ import { Store } from '@ngrx/store';
 import { selectAuthError, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
 import { PasswordRecoveryActions } from '../../../store/auth/passwordRecovery/password-recovery.actions';
 import { MatIcon } from '@angular/material/icon';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-reset-password',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatInputModule,
@@ -24,6 +23,7 @@ import { MatIcon } from '@angular/material/icon';
     MatProgressSpinnerModule,
     RouterModule,
     MatIcon,
+    AsyncPipe
   ],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.scss',
