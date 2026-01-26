@@ -120,3 +120,15 @@ margin-bottom: 5%;
   height: 20px;
 }
 
+.trending-tags {
+  margin-top: 8px;
+  padding-top: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #000000 ;
+}
+
+.text-card.selected {
+  border: 2px solid #4f46e5;
+  background: #eef2ff;
+}

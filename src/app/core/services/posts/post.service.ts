@@ -46,9 +46,7 @@ export class PostService {
     return this.http.post<LikeResponse>(`${this.apiUrl}/like`, dto);
   }
 
-  fetchAiRewrite(data:string): Observable<any>{
-   return this.http.post(`${this.apiUrl}/utility/airewriter`, {text:data});
-  }
+  
 
   uploadImage(postId: number, file: File): Observable<any> {
     const formData = new FormData();

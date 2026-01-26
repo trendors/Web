@@ -14,5 +14,9 @@ export class UtilService {
 fetchAiRewrite(data:string): Observable<any>{
    return this.http.post(`${this.apiUrl}/airewriter`, {text:data});
   }
+
+  fetchTrends(woeid?:string): Observable<any>{
+   return this.http.get(`${this.apiUrl}/xtrendingwords?woeid=23424908`)
+  }
 }
    
