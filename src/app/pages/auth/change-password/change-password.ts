@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,11 +14,11 @@ import {
 } from '../../../store/auth/shared state/auth.selector';
 import { take } from 'rxjs';
 import { PasswordChangeActions } from '../../../store/auth/changePassword/change-password.actions';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-change-password',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatInputModule,
@@ -27,6 +26,7 @@ import { PasswordChangeActions } from '../../../store/auth/changePassword/change
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatIconModule,
+    AsyncPipe,
   ],
   templateUrl: './change-password.html',
   styleUrl: './change-password.scss',
