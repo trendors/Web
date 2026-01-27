@@ -7,7 +7,7 @@ import { ApiResponse, UpdateUserDto, User } from '../../models/users/user.model'
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/users`;
+  private apiUrl = `${environment.apiUrl}/user`;
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('Userservice Error:', error);
