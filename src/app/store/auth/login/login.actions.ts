@@ -1,5 +1,5 @@
-import { createActionGroup, props } from '@ngrx/store';
-import { LoginResponse } from '../../../core/models/users/user.model';
+import { createAction, createActionGroup, props } from '@ngrx/store';
+import { LoginResponse, User } from '../../../core/models/users/user.model';
 
 export const LoginActions = createActionGroup({
   source: 'Auth Login Flow',
@@ -11,3 +11,8 @@ export const LoginActions = createActionGroup({
     'Login Failure': props<{ error: string }>(),
   },
 });
+
+export const updateCurrentUser = createAction(
+  '[Auth] Update Current User',
+  props<{ user: User }>(),
+);
