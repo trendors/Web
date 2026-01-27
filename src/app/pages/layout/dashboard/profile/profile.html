@@ -53,12 +53,12 @@
             type="submit"
             [disabled]="profileForm.invalid || (isLoading$ | async)"
           >
-          @if(!(isLoading$ | async)) {
-            <span>Save Changes</span>
-          }
-          @if(isLoading$ | async) {
-            <span>Saving...</span>
-          }
+            @if (!(isLoading$ | async)) {
+              <span>Save Changes</span>
+            }
+            @if (isLoading$ | async) {
+              <span>Saving...</span>
+            }
           </button>
         </div>
       </form>
@@ -71,7 +71,10 @@
     </mat-card-header>
     <mat-card-content>
       <p>Once you delete your account, there is no going back. Please be certain.</p>
-      <button mat-stroked-button color="warn">Delete Account</button>
+      <button mat-stroked-button color="warn" (click)="onDelete()">Delete Account</button>
+      @if (userError$ | async) {
+        <p class="error">{{ userError$ | async }}</p>
+      }
     </mat-card-content>
   </mat-card>
 </div>
