@@ -52,6 +52,15 @@ export interface ChangePasswordDto {
   newPassword: string;
 }
 
+export interface UpdateUserDto {
+  user_name?: string;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  twitter_handle?: string;
+  instagram_handle?: string;
+  facebook_username?: string;
+}
 
 export type PasswordResetResponse = ApiResponse<null>;
 
