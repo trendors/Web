@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { AuthService } from '../../../core/services/users/auth.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
 import { PasswordRecoveryActions } from './password-recovery.actions';
 import { catchError, map, mergeMap, of } from 'rxjs';
 
@@ -26,18 +26,18 @@ export class PasswordRecoveryEffects {
             of(
               PasswordRecoveryActions.forgotPasswordFailure({
                 error: error.error?.message || 'Forgot password request failed',
-              })
-            )
-          )
-        )
-      )
-    )
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
 
   resetPassword$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PasswordRecoveryActions.resetPasswordRequest),
-      mergeMap(({ token, newPassword, }) =>
+      mergeMap(({ token, newPassword }) =>
         this.authService.resetPassword({ token, newPassword }).pipe(
           map((response) => {
             if (response.error) {
@@ -49,12 +49,12 @@ export class PasswordRecoveryEffects {
             of(
               PasswordRecoveryActions.resetPasswordFailure({
                 error: error.error?.message || 'Reset password request failed',
-              })
-            )
-          )
-        )
-      )
-    )
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
 
   resetSucessNavigate$ = createEffect(
@@ -63,8 +63,8 @@ export class PasswordRecoveryEffects {
         ofType(PasswordRecoveryActions.resetPasswordSuccess),
         map(() => {
           this.router.navigate(['/login']);
-        })
+        }),
       ),
-    { dispatch: false }
+    { dispatch: false },
   );
 }
