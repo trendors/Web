@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { AuthService } from '../../../core/services/users/auth.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
 import { Router } from '@angular/router';
 import { catchError, map, mergeMap, of, tap } from 'rxjs';
 import { RegisterActions } from './register.action';
@@ -24,21 +24,22 @@ export class RegisterEffects {
           }),
           catchError((error) =>
             of(
-              RegisterActions.registerFailure({ error: error.error?.message || 'Register failed' })
-            )
-          )
-        )
-      )
-    )
+              RegisterActions.registerFailure({ error: error.error?.message || 'Register failed' }),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
 
-  registerSuccess$ = createEffect(() =>
+  registerSuccess$ = createEffect(
+    () =>
       this.action$.pipe(
         ofType(RegisterActions.registerSuccess),
         tap(() => {
           this.router.navigate(['/login']);
-        })
+        }),
       ),
-    { dispatch: false }
+    { dispatch: false },
   );
 }
