@@ -16,6 +16,11 @@ export const PostActions = createActionGroup({
     'Find All Posts Success': props<{ list: Post[]; pagination: Pagination }>(),
     'Find All Posts Failure': props<{ error: string }>(),
 
+    'Find One Post': props<{ id: number}>(),
+    'Find One Post Success': props <{message:any}> (),
+    'Find One Post Failure': props <{message:any}> (),
+
+
     'Load More Posts': props<{ query: LoadMoreDto }>(),
     'Load More Posts Success': props<{ list: Post[]; pagination: Pagination }>(),
     'Load More Posts Failure': props<{ error: string }>(),
@@ -27,5 +32,6 @@ export const PostActions = createActionGroup({
     'Like Post': props<{ dto: LikePostDto }>(),
     'Like Post Success': props<{ message: string; data: LikePost }>(),
     'Like Post Failure': props<{ error: string; postId: number; userId: number }>(),
+
   },
 });

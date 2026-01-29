@@ -66,6 +66,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "b5267a42e435.ngrok-free.app"
+            ]
+          },
           "configurations": {
             "production": {
               "buildTarget": "trendors-web-frontend:build:production"

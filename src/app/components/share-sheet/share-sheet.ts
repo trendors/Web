@@ -63,7 +63,7 @@ export class ShareSheet {
 
   async shareToX(post: any) {
 
-  const top4trends = await firstValueFrom(
+    const top4trends = await firstValueFrom(
       this.trends$.pipe(
         map((data: any[]) =>
           data.slice(0, 4).map(item => item.name).join(', ')
@@ -71,16 +71,13 @@ export class ShareSheet {
       )
     );
 
-
-
     const baseUrl = 'https://twitter.com/intent/tweet';
     const params = new URLSearchParams({
-      text: `${this.selectedPost } \n ~ ${top4trends} \n https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_t.png`
+      text: `${post.text}\n\n~ ${top4trends}\n\n${post.images[0]}\n\nView more: https://b5267a42e435.ngrok-free.app/post/24`
     });
 
     const shareUrl = `${baseUrl}?${params.toString()}`;
-        window.open(shareUrl, '_blank', 'width=550,height=420');
-
+    window.open(shareUrl, '_blank', 'width=550,height=420');
   }
 
 }

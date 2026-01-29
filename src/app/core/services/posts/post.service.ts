@@ -11,6 +11,7 @@ import {
   FetchPostsResponse,
   SaveOneResponse,
   LikeResponse,
+  FetchPostResponse,
 } from '../../models/posts/post.model';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -27,6 +28,10 @@ export class PostService {
       relations: query.relations ?? ['user', 'likes', 'comments', 'shares'],
     };
     return this.http.post<FetchPostsResponse>(`${this.apiUrl}/findAll`, payload);
+  }
+
+  findOne(id:any):Observable<FetchPostResponse> {
+    return this.http.get<FetchPostResponse>(`${this.apiUrl}/${id}`)
   }
 
   loadMore(query: LoadMoreDto): Observable<FetchPostsResponse> {
