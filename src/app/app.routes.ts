@@ -9,14 +9,14 @@ export const routes: Routes = [
   },
   {
     path: 'home',
-    //  canActivate: [authGuard],
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/layout/home/home').then((m) => m.Home),
   },
 
   {
-  path: 'post/:id', 
-  loadComponent: () => import('./pages/layout/single-post/single-post').then((m) => m.SinglePost)
-},
+    path: 'post/:id',
+    loadComponent: () => import('./pages/layout/single-post/single-post').then((m) => m.SinglePost)
+  },
   {
     path: 'register',
     loadComponent: () => import('./pages/auth/register/register').then((m) => m.Register),

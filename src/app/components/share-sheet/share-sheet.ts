@@ -8,7 +8,7 @@ import { Actions } from '@ngrx/effects';
 import { UtilService } from '../../core/services/utility/utility.service';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { AsyncPipe } from '@angular/common';
-import { Post } from '../../core/models/posts/post.model';
+import { SeoService } from '../../core/services/utility/seoservice';
 
 
 
@@ -24,13 +24,14 @@ export class ShareSheet {
   private utilService = inject(UtilService);
 
   constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { post: any },
-    private bottomSheetRef: MatBottomSheetRef<ShareSheet>) { }
+    private bottomSheetRef: MatBottomSheetRef<ShareSheet>, private seoService: SeoService ) { }
 
   selectedPost!: string
   shareVersions$!: Observable<any[]>;
   trends$!: Observable<any[]>
 
   ngOnInit() {
+
     this.fetchAireWrite()
     this.fetchXtrends()
 
@@ -63,6 +64,7 @@ export class ShareSheet {
 
   async shareToX(post: any) {
 
+    
     const top4trends = await firstValueFrom(
       this.trends$.pipe(
         map((data: any[]) =>
@@ -80,4 +82,47 @@ export class ShareSheet {
     window.open(shareUrl, '_blank', 'width=550,height=420');
   }
 
+  shareToFacebook(post: any) {
+    const baseUrl = 'https://www.facebook.com/sharer/sharer.php';
+    const params = new URLSearchParams({
+      u: `https://b5267a42e435.ngrok-free.app/post/${post.id}`,
+      quote: post.text
+    });
+
+    const shareUrl = `${baseUrl}?${params.toString()}`;
+    window.open(shareUrl, '_blank', 'width=550,height=420');
+  }
+
+  shareToLinkedIn(post: any) {
+    const baseUrl = 'https://www.linkedin.com/sharing/share-offsite/';
+    const params = new URLSearchParams({
+      url: `https://b5267a42e435.ngrok-free.app/post/${post.id}`
+    });
+
+    const shareUrl = `${baseUrl}?${params.toString()}`;
+    window.open(shareUrl, '_blank', 'width=550,height=420');
+  }
+
+  shareToTelegram(post: any) {
+    const baseUrl = 'https://t.me/share/url';
+    const params = new URLSearchParams({
+      url: `https://b5267a42e435.ngrok-free.app/post/${post.id}`,
+      text: post.text
+    });
+
+    const shareUrl = `${baseUrl}?${params.toString()}`;
+    window.open(shareUrl, '_blank', 'width=550,height=420');
+  }
+
+shareToWhatsApp(post: any) {
+    const baseUrl = 'https://api.whatsapp.com/send';
+    const params = new URLSearchParams({
+      text: `${post.text}\n\nView more: https://b5267a42e435.ngrok-free.app/post/${post.id}`
+    });
+
+    const shareUrl = `${baseUrl}?${params.toString()}`;
+    window.open(shareUrl, '_blank', 'width=550,height=420');
+  }
+
+  
 }

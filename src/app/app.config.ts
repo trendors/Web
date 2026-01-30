@@ -14,6 +14,7 @@ import { ChangePasswordEffects } from './store/auth/changePassword/change-passwo
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { postsFeatureKey, postsReducer } from './store/posts/post/posts.reducer';
 import { PostsEffects } from './store/posts/post/posts.effects';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,6 +28,6 @@ export const appConfig: ApplicationConfig = {
       [postsFeatureKey]: postsReducer
     }),
     provideEffects([LoginEffects, RegisterEffects, PasswordRecoveryEffects, ChangePasswordEffects, PostsEffects]),
-    provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
+    provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }), provideClientHydration(withEventReplay()),
   ],
 };

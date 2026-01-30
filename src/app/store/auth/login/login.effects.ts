@@ -1,16 +1,19 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { AuthService } from '../../../core/services/users/auth.service';
 import { Actions, createEffect, ofType, ROOT_EFFECTS_INIT } from '@ngrx/effects';
 import { Router } from '@angular/router';
 import { catchError, filter, map, mergeMap, of, tap } from 'rxjs';
 import { LoginActions } from './login.actions';
 import { logoutUser } from '../logout/logout.action';
+import { isPlatformBrowser } from '@angular/common';
+
 
 @Injectable()
 export class LoginEffects {
   private actions$ = inject(Actions);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
 
   loginRequest$ = createEffect(() =>
     this.actions$.pipe(
@@ -75,7 +78,9 @@ export class LoginEffects {
     () =>
       this.actions$.pipe(
         ofType(ROOT_EFFECTS_INIT),
+        filter(() => isPlatformBrowser(this.platformId)),
         map(() => localStorage.getItem('token')),
+
         filter((token): token is string => token !== null),
         map((token) =>
           LoginActions.loginSuccess({
