@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000',
+  apiUrl: "https://trendors-main-service.onrender.com",
   baoToken: 'root-dev-token'
 };

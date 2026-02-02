@@ -21,7 +21,7 @@ export class AuthService {
   private http = inject(HttpClient);
   // private apiUrl = 'http://192.168.1.6:3000/user';
 
-  private apiUrl = `${environment.apiUrl}/user`
+  private apiUrl = `${environment.apiUrl}/user`;
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('AuthService Error:', error);
@@ -41,6 +41,7 @@ export class AuthService {
   }
 
   login(emailOrPhone: string, password: string): Observable<LoginResponse> {
+    console.log(this.apiUrl);
     const params = new HttpParams().set('emailOrPhone', emailOrPhone).set('password', password);
     return this.http
       .post<LoginResponse>(`${this.apiUrl}/login`, {}, { params })

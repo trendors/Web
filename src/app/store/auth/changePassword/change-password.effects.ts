@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { AuthService } from '../../../core/services/users/auth.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
 import { PasswordChangeActions } from './change-password.actions';
 import { catchError, map, mergeMap, of } from 'rxjs';
 
@@ -24,11 +24,11 @@ export class ChangePasswordEffects {
             of(
               PasswordChangeActions.changePasswordFailure({
                 error: error.error?.message || 'Change password request failed',
-              })
-            )
-          )
-        )
-      )
-    )
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
 }

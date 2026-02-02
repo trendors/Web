@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,11 +11,11 @@ import { Store } from '@ngrx/store';
 import { selectAuthError, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
 import { RegisterActions } from '../../../store/auth/register/register.action';
 import { RegisterDto } from '../../../core/models/users/user.model';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-register',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     MatCardModule,
@@ -25,6 +24,7 @@ import { RegisterDto } from '../../../core/models/users/user.model';
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatIconModule,
+    AsyncPipe
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss',

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -14,13 +14,13 @@ import { logoutUser } from '../../store/auth/logout/logout.action';
 @Component({
   selector: 'app-header',
   imports: [
-    CommonModule,
     RouterModule,
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
-    MatDividerModule
+    MatDividerModule,
+    AsyncPipe
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',

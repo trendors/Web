@@ -1,7 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import { User } from '../../../core/models/users/user.model';
 import { RegisterActions } from '../register/register.action';
-import { LoginActions } from '../login/login.actions';
+import { LoginActions, updateCurrentUser } from '../login/login.actions';
 import { logoutUser } from '../logout/logout.action';
 import { PasswordRecoveryActions } from '../passwordRecovery/password-recovery.actions';
 import { PasswordChangeActions } from '../changePassword/change-password.actions';
@@ -124,5 +124,7 @@ export const authReducer = createReducer(
     ...state,
     isLoading: false,
     error: error || 'Change password failed',
-  }))
+  })),
+
+  on(updateCurrentUser, (state, { user }) => ({ ...state, user })),
 );

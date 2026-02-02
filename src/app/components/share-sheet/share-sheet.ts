@@ -1,6 +1,5 @@
 import { Component, Inject, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
 import { PostService } from '../../core/services/posts/post.service';
 import { catchError, firstValueFrom, map, Observable } from 'rxjs';
