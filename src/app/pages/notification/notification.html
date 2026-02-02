@@ -1,0 +1,35 @@
+<div class="notifications-page">
+  <h2>Notifications</h2>
+
+  @if (loading$ | async) {
+    <div>Loading...</div>
+  }
+
+  @let notifs = (notifications$ | async) || [];
+  @let user = user$ | async;
+
+  <mat-nav-list>
+    @for (n of notifs; track n.id) {
+      <div>
+        <mat-list-item [class.unread]="!n.isRead">
+          <div matLine>{{ n.message }}</div>
+          <div matLine class="meta">{{ n.type }} • {{ n.createdAt | date: 'short' }}</div>
+
+          <div class="actions">
+            @if (!n.isRead && user?.id) {
+              <button mat-button color="primary" (click)="markRead(n.id, user!.id)">
+                Mark read
+              </button>
+            }
+          </div>
+        </mat-list-item>
+
+        <mat-divider></mat-divider>
+      </div>
+    }
+
+    @if (notifs.length === 0) {
+      <div>No notifications.</div>
+    }
+  </mat-nav-list>
+</div>
