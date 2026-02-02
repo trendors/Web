@@ -37,13 +37,6 @@ export const routes: Routes = [
       import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
   },
   {
-    path: 'notifications',
-    loadComponent: () =>
-      import('./pages/layout/dashboard/notifications/notifications').then(
-        (m) => m.NotificationsPage,
-      ),
-  },
-  {
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () =>
@@ -65,7 +58,7 @@ export const routes: Routes = [
       {
         path: 'notifications',
         loadComponent: () =>
-          import('../../pages/notification/notification').then((m) => m.NotificationsPage),
+          import('./pages/notification/notification').then((m) => m.NotificationsPage),
       },
     ],
   },
