@@ -3,10 +3,10 @@
     @if (user$ | async; as user) {
       <div class="user-info">
         <div class="avatar">
-          {{ user.first_name[0] }}
+          {{ user?.first_name?.charAt(0) || '' }}
         </div>
         <div class="details">
-          <p class="name">{{ user.first_name }} {{ user.last_name }}</p>
+          <p class="name">{{ user?.first_name }} {{ user?.last_name }}</p>
           <p class="role">Personal Account</p>
         </div>
       </div>
