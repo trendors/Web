@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guard/auth-guard';
+import path from 'path';
 
 export const routes: Routes = [
   {
@@ -11,12 +12,28 @@ export const routes: Routes = [
     path: 'home',
     // canActivate: [authGuard],
     loadComponent: () => import('./pages/layout/home/home').then((m) => m.Home),
+    children: [
+      { path: '', redirectTo: 'posts', pathMatch: 'full' },
+      { path: 'posts', loadComponent: () => import('./pages/layout/posts/posts').then((m) => m.Posts) },
+      {
+        path: 'post/:id',
+        loadComponent: () => import('./pages/layout/single-post/single-post').then((m) => m.SinglePost)
+      }, {
+        path: 'shares',
+        loadComponent: () => import('./pages/layout/shares/shares').then((m) => m.SharesDashboard)
+      }, {
+        path: 'create-campaign',
+        loadComponent: () =>
+          import('./pages/layout/create-campaign/create-campaign').then((m) => m.CreateCampaign),
+      },{
+         path: 'notifications',
+        loadComponent: () =>
+          import('./pages/layout/notification/notification').then((m) => m.NotificationsPage),    
+      }
+    ],
   },
 
-  {
-    path: 'post/:id',
-    loadComponent: () => import('./pages/layout/single-post/single-post').then((m) => m.SinglePost)
-  },
+
   {
     path: 'register',
     loadComponent: () => import('./pages/auth/register/register').then((m) => m.Register),
@@ -41,32 +58,36 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
   },
-  {
-    path: 'dashboard',
-    // canActivate: [authGuard],
-    loadComponent: () =>
-      import('./pages/layout/dashboard/dashboard-layout/dashboard-layout').then(
-        (m) => m.DashboardLayout,
-      ),
-    children: [
-      { path: '', redirectTo: 'profile', pathMatch: 'full' },
-      {
-        path: 'profile',
-        loadComponent: () =>
-          import('./pages/layout/dashboard/profile/profile').then((m) => m.Profile),
-      },
-      {
-        path: 'change-password',
-        loadComponent: () =>
-          import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
-      },
-      {
-        path: 'notifications',
-        loadComponent: () =>
-          import('./pages/notification/notification').then((m) => m.NotificationsPage),
-      },
-    ],
-  },
+  // {
+  //   path: 'dashboard',
+  //   loadComponent: () =>
+  //     import('./pages/layout/dashboard/dashboard-layout/dashboard-layout').then(
+  //       (m) => m.DashboardLayout,
+  //     ),
+  //   children: [
+  //     { path: '', redirectTo: 'main', pathMatch: 'full' },
+  //     {
+  //       path: 'main',
+  //       loadComponent: () =>
+  //         import('./pages/layout/dashboard/shares/shares').then((m) => m.MainDashboard),
+  //     },
+  //     {
+  //       path: 'profile',
+  //       loadComponent: () =>
+  //         import('./pages/layout/dashboard/profile/profile').then((m) => m.Profile),
+  //     },
+  //     {
+  //       path: 'change-password',
+  //       loadComponent: () =>
+  //         import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
+  //     },
+  //     {
+  //       path: 'notifications',
+  //       loadComponent: () =>
+  //         import('./pages/notification/notification').then((m) => m.NotificationsPage),
+  //     },
+  //   ],
+  // },
   {
     path: '**',
     redirectTo: 'login',

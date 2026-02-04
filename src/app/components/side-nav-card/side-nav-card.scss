@@ -1,0 +1,68 @@
+
+.side-nav-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 8px;
+  width: 220px;
+  
+  position: sticky;
+  top: 20px; 
+  
+  height: fit-content; 
+  
+  /* Alignment */
+  float: left;
+  margin-right: 20px;
+  
+  flex-shrink: 0; 
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: #444;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+/* Hover & Active States */
+.nav-item:hover {
+  background-color: #f5f5f5;
+  color: var(--primary, #007bff);
+}
+
+.nav-item.active {
+  background-color: #f0f7ff; /* Very light tint of your primary color */
+  color: var(--primary, #007bff);
+  font-weight: 600;
+}
+
+.nav-divider {
+  border: 0;
+  border-top: 1px solid #f0f0f0;
+  margin: 8px 12px;
+}
+
+/* Optional Notification Badge */
+.badge {
+  margin-left: auto;
+  background: #ff4d4f;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: bold;
+}

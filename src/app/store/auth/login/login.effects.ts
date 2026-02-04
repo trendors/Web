@@ -57,6 +57,7 @@ export class LoginEffects {
         ofType(LoginActions.loginSuccess),
         tap(() => {
           this.router.navigate(['/home']);
+          console.log('Login successful, navigating to /home');
         }),
       ),
     { dispatch: false },

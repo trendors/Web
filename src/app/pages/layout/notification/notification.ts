@@ -5,12 +5,10 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterModule } from '@angular/router';
-import { selectCurrentUser } from '../../store/auth/shared state/auth.selector';
-import { NotificationActions } from '../../store/notification/notification.action';
-import {
-  selectAllNotifications,
-  selectNotificationsLoading,
-} from '../../store/notification/notification.selector';
+import { selectCurrentUser } from '../../../store/auth/shared state/auth.selector';
+import { NotificationActions } from '../../../store/notification/notification.action';
+import { selectAllNotifications, selectNotificationsLoading } from '../../../store/notification/notification.selector';
+
 
 @Component({
   selector: 'app-notifications-page',

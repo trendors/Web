@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DashboardLayout } from './dashboard-layout';
+import { TopNavFilter } from './top-nav-filter';
 
-describe('DashboardLayout', () => {
-  let component: DashboardLayout;
-  let fixture: ComponentFixture<DashboardLayout>;
+describe('TopNavFilter', () => {
+  let component: TopNavFilter;
+  let fixture: ComponentFixture<TopNavFilter>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DashboardLayout]
+      imports: [TopNavFilter]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(DashboardLayout);
+    fixture = TestBed.createComponent(TopNavFilter);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

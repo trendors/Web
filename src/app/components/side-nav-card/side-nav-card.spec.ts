@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Home } from './home';
+import { SideNavCard } from './side-nav-card';
 
-describe('Home', () => {
-  let component: Home;
-  let fixture: ComponentFixture<Home>;
+describe('SideNavCard', () => {
+  let component: SideNavCard;
+  let fixture: ComponentFixture<SideNavCard>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Home]
+      imports: [SideNavCard]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Home);
+    fixture = TestBed.createComponent(SideNavCard);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

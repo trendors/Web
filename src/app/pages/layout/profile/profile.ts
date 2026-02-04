@@ -1,3 +1,4 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,15 +7,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Store } from '@ngrx/store';
 import { take } from 'rxjs';
-import {
-  selectCurrentUser,
-  selectIsLoading,
-} from '../../../../store/auth/shared state/auth.selector';
-import { AsyncPipe } from '@angular/common';
-import { UpdateUserDto, User } from '../../../../core/models/users/user.model';
-import { UserService } from '../../../../core/services/users/user.service';
-import { UserAction } from '../../../../store/user/user.action';
-import { selectUserError } from '../../../../store/user/user.selector';
+import { User, UpdateUserDto } from '../../../core/models/users/user.model';
+import { UserService } from '../../../core/services/users/user.service';
+import { selectCurrentUser, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
+import { UserAction } from '../../../store/user/user.action';
+import { selectUserError } from '../../../store/user/user.selector';
+
 
 @Component({
   selector: 'app-profile',

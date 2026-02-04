@@ -1,0 +1,21 @@
+<div class="filter-wrapper">
+  <button 
+    class="chip filter-paid" 
+    [class.active]="onlyPaid" 
+    (click)="togglePaid()">
+    <span class="icon">💰</span> Paid Posts
+  </button>
+
+  <div class="divider-v"></div>
+
+  <div class="chip-container">
+    @for (cat of categories; track cat) {
+      <button 
+        class="chip" 
+        [class.active]="selectedCats.has(cat)"
+        (click)="toggleCategory(cat)">
+        {{ cat }}
+      </button>
+    }
+  </div>
+</div>
