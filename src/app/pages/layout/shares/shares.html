@@ -1,0 +1,167 @@
+
+<div class="container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">My Shares</h1>
+    <p class="page-subtitle">Share campaigns and earn rewards</p>
+  </div>
+
+  <!-- Stats Summary -->
+  <div class="stats-summary">
+    <div class="stat-card">
+      <div class="stat-label">Total Earned</div>
+      <div class="stat-value gold">₦3,000</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Claims</div>
+      <div class="stat-value">2</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Shares</div>
+      <div class="stat-value">8</div>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <label class="filter-label">Filter Shares</label>
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-filter="all">All Shares</button>
+      <button class="filter-btn" data-filter="paid">Paid Campaigns</button>
+      <button class="filter-btn" data-filter="free">Free Shares</button>
+      <button class="filter-btn" data-filter="pending">Pending</button>
+      <button class="filter-btn" data-filter="claimed">Claimed</button>
+    </div>
+  </div>
+
+  <!-- Shares List -->
+  <div class="shares-list">
+    
+    <!-- Paid Share - Pending Claim -->
+    <div class="share-item paid" data-type="paid" data-status="pending">
+      <div class="share-header">
+        <div class="share-info">
+          <div class="share-title">
+            Premium Wireless Headphones
+            <span class="material-icons" style="font-size: 16px; color: #B8860B;">verified</span>
+          </div>
+          <div class="share-meta">Campaign ID: #CP-10234 • Posted 2 hours ago</div>
+        </div>
+        <div class="reward-badge">₦1,000</div>
+      </div>
+      
+      <div class="share-status">
+        <span class="status-badge pending">Pending Claim</span>
+        <span class="shares-count">45/100 shares completed</span>
+      </div>
+      
+      <div class="claim-section">
+        <input 
+          type="url" 
+          class="claim-input" 
+          placeholder="Paste your tweet URL here (e.g., https://twitter.com/user/status/123456789)"
+        />
+        <button class="claim-btn">Claim ₦1,000</button>
+      </div>
+    </div>
+
+    <!-- Paid Share - Already Claimed -->
+    <div class="share-item paid" data-type="paid" data-status="claimed">
+      <div class="share-header">
+        <div class="share-info">
+          <div class="share-title">
+            Luxury Sneakers Collection
+            <span class="material-icons" style="font-size: 16px; color: #B8860B;">verified</span>
+          </div>
+          <div class="share-meta">Campaign ID: #CP-10198 • Posted 1 day ago</div>
+        </div>
+        <div class="reward-badge">₦1,000</div>
+      </div>
+      
+      <div class="share-status">
+        <span class="status-badge claimed">Claimed</span>
+        <span class="shares-count">78/100 shares completed</span>
+      </div>
+      
+      <div class="claim-section">
+        <input 
+          type="url" 
+          class="claim-input" 
+          value="https://twitter.com/johndoe/status/1234567890"
+          disabled
+        />
+        <button class="claim-btn" disabled>Claimed</button>
+      </div>
+    </div>
+
+    <!-- Paid Share - Verified -->
+    <div class="share-item paid" data-type="paid" data-status="claimed">
+      <div class="share-header">
+        <div class="share-info">
+          <div class="share-title">
+            Smart Watch Series 5
+            <span class="material-icons" style="font-size: 16px; color: #B8860B;">verified</span>
+          </div>
+          <div class="share-meta">Campaign ID: #CP-10156 • Posted 3 days ago</div>
+        </div>
+        <div class="reward-badge">₦1,000</div>
+      </div>
+      
+      <div class="share-status">
+        <span class="status-badge verified">Verified & Paid</span>
+        <span class="shares-count">100/100 shares completed</span>
+      </div>
+      
+      <div class="claim-section">
+        <input 
+          type="url" 
+          class="claim-input" 
+          value="https://twitter.com/johndoe/status/9876543210"
+          disabled
+        />
+        <button class="claim-btn" disabled>Paid ₦1,000</button>
+      </div>
+    </div>
+
+    <!-- Free Share -->
+    <div class="share-item free" data-type="free" data-status="pending">
+      <div class="share-header">
+        <div class="share-info">
+          <div class="share-title">Local Restaurant Special</div>
+          <div class="share-meta">Post ID: #PS-20445 • Posted 5 hours ago</div>
+        </div>
+        <div class="reward-badge free">No Reward</div>
+      </div>
+      
+      <div class="share-status">
+        <span class="shares-count">12 shares • Free campaign</span>
+      </div>
+      
+      <button class="share-btn">
+        <span class="material-icons">share</span>
+        Share to Twitter
+      </button>
+    </div>
+
+    <!-- Free Share -->
+    <div class="share-item free" data-type="free" data-status="pending">
+      <div class="share-header">
+        <div class="share-info">
+          <div class="share-title">Community Event Announcement</div>
+          <div class="share-meta">Post ID: #PS-20412 • Posted 1 day ago</div>
+        </div>
+        <div class="reward-badge free">No Reward</div>
+      </div>
+      
+      <div class="share-status">
+        <span class="shares-count">34 shares • Free campaign</span>
+      </div>
+      
+      <button class="share-btn">
+        <span class="material-icons">share</span>
+        Share to Twitter
+      </button>
+    </div>
+
+  </div>
+</div>

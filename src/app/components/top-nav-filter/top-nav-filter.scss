@@ -1,0 +1,80 @@
+.filter-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 5px 6px;
+  gap: 5px;
+  width: 100%;
+  max-width: 560px; /* Matches the width of your .card from earlier */
+  margin: 0 auto;   /* Centers it if it's smaller than the parent */
+}
+
+.chip-container {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
+  padding-right: 20px;
+}
+
+.chip-container::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome/Safari */
+}
+
+.chip {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  height: 36px;
+  padding: 0 16px;
+  
+  /* Shape & Border */
+  border-radius: 100px; /* Perfect pill shape */
+  border: 1px solid #e2e2e2;
+  background: transparent;
+  
+  /* Typography */
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #666;
+  
+  /* Interaction */
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+/* Hover State: Just a slightly darker border/text */
+.chip:hover {
+  border-color: #000;
+  color: #000;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Active State: Solid black background with white text */
+.chip.active {
+  background: #000; /* Modern apps often use deep black for active states */
+  border-color: #000;
+  color: #fff;
+}
+
+/* Specific Style for 'Paid' toggle to make it look premium */
+.chip.filter-paid {
+  border-color: #ffd700; /* Subtle gold border */
+  color: #856404;
+}
+
+.chip.filter-paid.active {
+  background: #ffd700;
+  color: #000;
+  border-color: #ffd700;
+}
+
+.divider-v {
+  width: 1px;
+  height: 20px;
+  background: #eee;
+  flex-shrink: 0;
+}

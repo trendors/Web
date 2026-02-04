@@ -1,0 +1,28 @@
+<div class="notifications-container">
+  <div class="notifications-header">
+    <h2>Notifications</h2>
+    <button class="btn-text">Mark all as read</button>
+  </div>
+
+  <div class="notifications-list">
+    @for (note of notifications; track note.id) {
+      <div class="notification-item" [class.unread]="!note.read">
+        <div class="avatar-small" [style.background]="note.userColor">
+          {{ note.initials }}
+        </div>
+
+        <div class="notification-content">
+          <p class="notification-text">
+            <span class="user-name">{{ note.userName }}</span> 
+            {{ note.message }}
+          </p>
+          <span class="notification-time">{{ note.timestamp | date:'shortTime' }} • {{ note.date }}</span>
+        </div>
+
+        @if (!note.read) {
+          <div class="unread-dot"></div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,7 +1,0 @@
-<div class="notification-item" [class.unread]="!notification.isRead">
-  <div class="message">{{ notification.message }}</div>
-  <div class="meta">{{ notification.type }} • {{ notification.createdAt | date: 'short' }}</div>
-  @if (!notification.isRead) {
-    <button (click)="onMarkRead()">Mark read</button>
-  }
-</div>

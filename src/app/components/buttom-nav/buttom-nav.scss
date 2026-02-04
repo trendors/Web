@@ -1,0 +1,18 @@
+@media (max-width: 768px) {
+  .home-container {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+ .sidebar {
+    display: none;
+  }
+   .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-top: var(--border);
+    justify-content: space-around;
+    padding: 10px;
+  }
+}
