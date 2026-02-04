@@ -60,6 +60,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
       },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./pages/notification/notification').then((m) => m.NotificationsPage),
+      },
     ],
   },
   {

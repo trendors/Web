@@ -9,7 +9,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { Store } from '@ngrx/store';
 import { selectCurrentUser, selectIsLoggedIn } from '../../store/auth/shared state/auth.selector';
 import { logoutUser } from '../../store/auth/logout/logout.action';
-
+import { selectUnreadCount } from '../../store/notification/notification.selector';
 
 @Component({
   selector: 'app-header',
@@ -20,7 +20,7 @@ import { logoutUser } from '../../store/auth/logout/logout.action';
     MatIconModule,
     MatMenuModule,
     MatDividerModule,
-    AsyncPipe
+    AsyncPipe,
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',
@@ -30,6 +30,7 @@ export class Header {
 
   isLoggedIn$ = this.store.select(selectIsLoggedIn);
   currentUser$ = this.store.select(selectCurrentUser);
+  unreadCount$ = this.store.select(selectUnreadCount);
 
   onLogout() {
     this.store.dispatch(logoutUser());

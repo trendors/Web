@@ -14,13 +14,22 @@
       </ng-container>
     }
 
+    @let unread = (unreadCount$ | async) ?? 0;
+    <a mat-icon-button routerLink="/dashboard/notifications" class="notification-btn">
+      <mat-icon>notifications</mat-icon>
+      @if (unread > 0) {
+        <span class="badge">{{ unread }}</span>
+      }
+    </a>
+
     @if (isLoggedIn$ | async) {
+      @let user = currentUser$ | async;
       <ng-container>
         <a mat-button routerLink="/dashboard">Dashboard</a>
 
         <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
           <mat-icon>account_circle</mat-icon>
-          <span class="username">{{ (currentUser$ | async)?.first_name || 'User' }}</span>
+          <span class="username">{{ user?.first_name ?? 'User' }}</span>
           <mat-icon>arrow_drop_down</mat-icon>
         </button>
 

@@ -15,6 +15,11 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { postsFeatureKey, postsReducer } from './store/posts/post/posts.reducer';
 import { PostsEffects } from './store/posts/post/posts.effects';
 import { userFeatureKey, userReducer } from './store/user/user.reducer';
+import {
+  notificationsFeatureKey,
+  notificationsReducer,
+} from './store/notification/notification.reducer';
+import { NotificationEffects } from './store/notification/notification.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,6 +30,7 @@ export const appConfig: ApplicationConfig = {
       [authFeatureKey]: authReducer,
       [postsFeatureKey]: postsReducer,
       [userFeatureKey]: userReducer,
+      [notificationsFeatureKey]: notificationsReducer,
     }),
     provideEffects([
       LoginEffects,
@@ -32,6 +38,7 @@ export const appConfig: ApplicationConfig = {
       PasswordRecoveryEffects,
       ChangePasswordEffects,
       PostsEffects,
+      NotificationEffects,
     ]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],

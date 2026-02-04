@@ -1,0 +1,10 @@
+.notifications-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+mat-list-item.unread {
+  background: rgba(0, 0, 0, 0.03);
+}
+.actions {
+  margin-left: auto;
+}
