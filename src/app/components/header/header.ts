@@ -10,6 +10,7 @@ import { Store } from '@ngrx/store';
 import { selectCurrentUser, selectIsLoggedIn } from '../../store/auth/shared state/auth.selector';
 import { logoutUser } from '../../store/auth/logout/logout.action';
 import { selectUnreadCount } from '../../store/notification/notification.selector';
+import { MatBadgeModule } from '@angular/material/badge';
 
 @Component({
   selector: 'app-header',
@@ -21,6 +22,7 @@ import { selectUnreadCount } from '../../store/notification/notification.selecto
     MatMenuModule,
     MatDividerModule,
     AsyncPipe,
+    MatBadgeModule,
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',

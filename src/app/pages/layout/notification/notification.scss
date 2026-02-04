@@ -1,10 +1,46 @@
 .notifications-page {
-  max-width: 900px;
+  max-width: 720px;
   margin: 0 auto;
+  padding: 16px;
 }
-mat-list-item.unread {
-  background: rgba(0, 0, 0, 0.03);
+
+.notifications-list {
+  background: white;
+  border-radius: 12px;
 }
-.actions {
-  margin-left: auto;
+
+.notification-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  align-items: flex-start;
+  margin-bottom: 10px;
+
+  &.unread {
+    background-color: #f5f7ff;
+  }
+
+  .message {
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .meta {
+    font-size: 12px;
+    color: #666;
+  }
+
+  button {
+    margin-left: 12px;
+    height: 32px;
+  }
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: #888;
+}
+
+.loading {
+  padding: 16px;
 }
