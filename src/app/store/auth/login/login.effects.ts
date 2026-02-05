@@ -6,7 +6,8 @@ import { catchError, filter, map, mergeMap, of, tap } from 'rxjs';
 import { LoginActions } from './login.actions';
 import { logoutUser } from '../logout/logout.action';
 import { isPlatformBrowser } from '@angular/common';
-
+import { NotificationActions } from '../../notification/notification.action';
+import { Store } from '@ngrx/store';
 
 @Injectable()
 export class LoginEffects {
@@ -14,6 +15,7 @@ export class LoginEffects {
   private authService = inject(AuthService);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private store = inject(Store);
 
   loginRequest$ = createEffect(() =>
     this.actions$.pipe(
@@ -55,7 +57,12 @@ export class LoginEffects {
     () =>
       this.actions$.pipe(
         ofType(LoginActions.loginSuccess),
-        tap(() => {
+        tap(({ response }) => {
+          if (response.data?.user?.id) {
+            this.store.dispatch(
+              NotificationActions.loadNotifications({ userId: response.data.user.id }),
+            );
+          }
           this.router.navigate(['/home']);
           console.log('Login successful, navigating to /home');
         }),
@@ -69,30 +76,37 @@ export class LoginEffects {
         ofType(logoutUser),
         tap(() => {
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           this.router.navigate(['/login']);
         }),
       ),
     { dispatch: false },
   );
 
-  hydrateAuth$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(ROOT_EFFECTS_INIT),
-        filter(() => isPlatformBrowser(this.platformId)),
-        map(() => localStorage.getItem('token')),
+  hydrateAuth$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ROOT_EFFECTS_INIT),
+      filter(() => isPlatformBrowser(this.platformId)),
+      map(() => {
+        const token = localStorage.getItem('token');
+        const userRaw = localStorage.getItem('user');
 
-        filter((token): token is string => token !== null),
-        map((token) =>
-          LoginActions.loginSuccess({
-            response: {
-              data: { token, user: null },
-              error: false,
-              message: 'Hydrated from localStorage',
+        if (!token || !userRaw) {
+          return null;
+        }
+
+        return LoginActions.loginSuccess({
+          response: {
+            data: {
+              token,
+              user: JSON.parse(userRaw),
             },
-          }),
-        ),
-      ),
-    { dispatch: true },
+            error: false,
+            message: 'Hydrated from localStorage',
+          },
+        });
+      }),
+      filter(Boolean),
+    ),
   );
 }
