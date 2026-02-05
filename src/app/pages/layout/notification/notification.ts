@@ -7,8 +7,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { RouterModule } from '@angular/router';
 import { selectCurrentUser } from '../../../store/auth/shared state/auth.selector';
 import { NotificationActions } from '../../../store/notification/notification.action';
-import { selectAllNotifications, selectNotificationsLoading } from '../../../store/notification/notification.selector';
-
+import {
+  selectAllNotifications,
+  selectNotificationsLoading,
+} from '../../../store/notification/notification.selector';
 
 @Component({
   selector: 'app-notifications-page',
@@ -24,6 +26,9 @@ export class NotificationsPage implements OnInit {
   user$ = this.store.select(selectCurrentUser);
 
   ngOnInit() {
+    this.notifications$.subscribe((n) => {
+      console.log('STORE notifications:', n);
+    });
     this.user$.pipe(take(1)).subscribe((u) => {
       if (u && u.id) {
         this.store.dispatch(NotificationActions.loadNotifications({ userId: u.id }));
