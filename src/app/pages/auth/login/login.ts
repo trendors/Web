@@ -23,7 +23,7 @@ import { AsyncPipe } from '@angular/common';
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatIconModule,
-    AsyncPipe
+    AsyncPipe,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -48,7 +48,7 @@ export class Login {
         LoginActions.loginRequest({
           email: email!,
           password: password!,
-        })
+        }),
       );
     }
   }

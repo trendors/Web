@@ -8,7 +8,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve": "node dist/trendors-web-frontend/server/server.mjs"
+    "serve": "node dist/trendors-web-frontend/server/server.mjs",
+    "serve:ssr:trendors-web-frontend": "node dist/trendors-web-frontend/server/server.mjs"
   },
   "prettier": {
     "printWidth": 100,

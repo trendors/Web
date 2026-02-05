@@ -11,8 +11,6 @@ import {
   RegisterDto,
   RegisterResponse,
   ResetPasswordDto,
-  ApiResponse,
-  User,
 } from '../../models/users/user.model';
 import { environment } from '../../../../environments/environment';
 
