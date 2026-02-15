@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 import { provideStore } from '@ngrx/store';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideEffects } from '@ngrx/effects';
-import { authFeatureKey, authReducer } from './store/auth/shared state/auth.reducer';
+import { authFeatureKey, authReducer } from './store/auth/sharedState/auth.reducer';
 import { LoginEffects } from './store/auth/login/login.effects';
 import { RegisterEffects } from './store/auth/register/register.effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
@@ -20,6 +20,8 @@ import {
   notificationsReducer,
 } from './store/notification/notification.reducer';
 import { NotificationEffects } from './store/notification/notification.effects';
+import { sharesFeatureKey, sharesReducer } from './store/shares/shares.reducer';
+import { SharesEffects } from './store/shares/shares.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -31,6 +33,7 @@ export const appConfig: ApplicationConfig = {
       [postsFeatureKey]: postsReducer,
       [userFeatureKey]: userReducer,
       [notificationsFeatureKey]: notificationsReducer,
+      [sharesFeatureKey]: sharesReducer,
     }),
     provideEffects([
       LoginEffects,
@@ -39,6 +42,7 @@ export const appConfig: ApplicationConfig = {
       ChangePasswordEffects,
       PostsEffects,
       NotificationEffects,
+      SharesEffects,
     ]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],
