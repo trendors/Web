@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { take, map } from 'rxjs';
-import { selectIsLoggedIn } from '../../store/auth/shared state/auth.selector';
+import { selectIsLoggedIn } from '../../store/auth/sharedState/auth.selector';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
