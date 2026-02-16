@@ -1,5 +1,4 @@
-
-<div class="container">
+<!-- <div class="container">
   <!-- Header -->
   <div class="page-header">
     <h1 class="page-title">My Shares</h1>
@@ -10,15 +9,15 @@
   <div class="stats-summary">
     <div class="stat-card">
       <div class="stat-label">Total Earned</div>
-      <div class="stat-value gold">₦3,000</div>
+      <div class="stat-value gold">₦{{ (totals$ | async)?.totalEarned | number: '1.2-2' }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Pending Claims</div>
-      <div class="stat-value">2</div>
+      <div class="stat-value">{{ (totals$ | async)?.pendingCount }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Total Shares</div>
-      <div class="stat-value">8</div>
+      <div class="stat-value">{{ (totals$ | async)?.totalShares }}</div>
     </div>
   </div>
 
@@ -26,39 +25,68 @@
   <div class="filter-section">
     <label class="filter-label">Filter Shares</label>
     <div class="filter-buttons">
-      <button class="filter-btn active" data-filter="all">All Shares</button>
-      <button class="filter-btn" data-filter="paid">Paid Campaigns</button>
-      <button class="filter-btn" data-filter="free">Free Shares</button>
-      <button class="filter-btn" data-filter="pending">Pending</button>
-      <button class="filter-btn" data-filter="claimed">Claimed</button>
+      <button
+        class="filter-btn"
+        [class.active]="(filter$ | async) === 'all'"
+        (click)="setFilter('all')"
+      >
+        All Shares
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="(filter$ | async) === 'paid'"
+        (click)="setFilter('paid')"
+      >
+        Paid Campaigns
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="(filter$ | async) === 'free'"
+        (click)="setFilter('free')"
+      >
+        Free Shares
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="(filter$ | async) === 'pending'"
+        (click)="setFilter('pending')"
+      >
+        Pending
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="(filter$ | async) === 'claimed'"
+        (click)="setFilter('claimed')"
+      >
+        Claimed
+      </button>
     </div>
   </div>
 
   <!-- Shares List -->
   <div class="shares-list">
-    
     <!-- Paid Share - Pending Claim -->
     <div class="share-item paid" data-type="paid" data-status="pending">
       <div class="share-header">
         <div class="share-info">
           <div class="share-title">
             Premium Wireless Headphones
-            <span class="material-icons" style="font-size: 16px; color: #B8860B;">verified</span>
+            <span class="material-icons" style="font-size: 16px; color: #b8860b">verified</span>
           </div>
           <div class="share-meta">Campaign ID: #CP-10234 • Posted 2 hours ago</div>
         </div>
         <div class="reward-badge">₦1,000</div>
       </div>
-      
+
       <div class="share-status">
         <span class="status-badge pending">Pending Claim</span>
         <span class="shares-count">45/100 shares completed</span>
       </div>
-      
+
       <div class="claim-section">
-        <input 
-          type="url" 
-          class="claim-input" 
+        <input
+          type="url"
+          class="claim-input"
           placeholder="Paste your tweet URL here (e.g., https://twitter.com/user/status/123456789)"
         />
         <button class="claim-btn">Claim ₦1,000</button>
@@ -71,22 +99,22 @@
         <div class="share-info">
           <div class="share-title">
             Luxury Sneakers Collection
-            <span class="material-icons" style="font-size: 16px; color: #B8860B;">verified</span>
+            <span class="material-icons" style="font-size: 16px; color: #b8860b">verified</span>
           </div>
           <div class="share-meta">Campaign ID: #CP-10198 • Posted 1 day ago</div>
         </div>
         <div class="reward-badge">₦1,000</div>
       </div>
-      
+
       <div class="share-status">
         <span class="status-badge claimed">Claimed</span>
         <span class="shares-count">78/100 shares completed</span>
       </div>
-      
+
       <div class="claim-section">
-        <input 
-          type="url" 
-          class="claim-input" 
+        <input
+          type="url"
+          class="claim-input"
           value="https://twitter.com/johndoe/status/1234567890"
           disabled
         />
@@ -100,22 +128,22 @@
         <div class="share-info">
           <div class="share-title">
             Smart Watch Series 5
-            <span class="material-icons" style="font-size: 16px; color: #B8860B;">verified</span>
+            <span class="material-icons" style="font-size: 16px; color: #b8860b">verified</span>
           </div>
           <div class="share-meta">Campaign ID: #CP-10156 • Posted 3 days ago</div>
         </div>
         <div class="reward-badge">₦1,000</div>
       </div>
-      
+
       <div class="share-status">
         <span class="status-badge verified">Verified & Paid</span>
         <span class="shares-count">100/100 shares completed</span>
       </div>
-      
+
       <div class="claim-section">
-        <input 
-          type="url" 
-          class="claim-input" 
+        <input
+          type="url"
+          class="claim-input"
           value="https://twitter.com/johndoe/status/9876543210"
           disabled
         />
@@ -132,11 +160,11 @@
         </div>
         <div class="reward-badge free">No Reward</div>
       </div>
-      
+
       <div class="share-status">
         <span class="shares-count">12 shares • Free campaign</span>
       </div>
-      
+
       <button class="share-btn">
         <span class="material-icons">share</span>
         Share to Twitter
@@ -152,16 +180,165 @@
         </div>
         <div class="reward-badge free">No Reward</div>
       </div>
-      
+
       <div class="share-status">
         <span class="shares-count">34 shares • Free campaign</span>
       </div>
-      
+
       <button class="share-btn">
         <span class="material-icons">share</span>
         Share to Twitter
       </button>
     </div>
-
   </div>
+-->
+
+
+<div class="container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">My Shares</h1>
+    <p class="page-subtitle">Share campaigns and earn rewards</p>
+  </div>
+
+  <!-- Stats Summary -->
+  <div class="stats-summary">
+    <div class="stat-card">
+      <div class="stat-label">Total Earned</div>
+      <div class="stat-value gold">₦{{ (totals$ | async)?.totalEarned | number: '1.2-2' }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Claims</div>
+      <div class="stat-value">{{ (totals$ | async)?.pendingCount }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Shares</div>
+      <div class="stat-value">{{ (totals$ | async)?.totalShares }}</div>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <label class="filter-label">Filter Shares</label>
+    <div class="filter-buttons">
+      <button 
+        class="filter-btn" 
+        [class.active]="(filter$ | async) === 'all'"
+        (click)="setFilter('all')">
+        All Shares
+      </button>
+      <button 
+        class="filter-btn" 
+        [class.active]="(filter$ | async) === 'paid'"
+        (click)="setFilter('paid')">
+        Paid Campaigns
+      </button>
+      <button 
+        class="filter-btn" 
+        [class.active]="(filter$ | async) === 'free'"
+        (click)="setFilter('free')">
+        Free Shares
+      </button>
+      <button 
+        class="filter-btn" 
+        [class.active]="(filter$ | async) === 'pending'"
+        (click)="setFilter('pending')">
+        Pending
+      </button>
+      <button 
+        class="filter-btn" 
+        [class.active]="(filter$ | async) === 'claimed'"
+        (click)="setFilter('claimed')">
+        Claimed
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading$ | async) {
+    <div class="empty-state">
+      <p>Loading shares...</p>
+    </div>
+  }
+
+  <!-- Shares List -->
+  @if (!(loading$ | async)) {
+    @if ((shares$ | async)?.length) {
+      <div class="shares-list">
+        @for (share of shares$ | async; track share.id) {
+          <div class="share-item" [ngClass]="share.rewardAmount > 0 ? 'paid' : 'free'">
+            <div class="share-header">
+              <div class="share-info">
+                <div class="share-title">
+                  {{ share.postId ? 'Campaign #' + share.postId : 'Share #' + share.id }}
+                  @if (share.status === 'verified') {
+                    <span class="material-icons" style="font-size: 16px; color: #B8860B;">verified</span>
+                  }
+                </div>
+                <div class="share-meta">
+                  Post ID: #{{ share.postId ? share.postId : 'N/A' }} • 
+                  Posted {{ share.createdAt | timeAgo }}
+                </div>
+              </div>
+              <div class="reward-badge" [ngClass]="share.rewardAmount === 0 ? 'free' : ''">
+                @if (share.rewardAmount > 0) {
+                  ₦{{ share.rewardAmount | number: '1.2-2' }}
+                } @else {
+                  No Reward
+                }
+              </div>
+            </div>
+            
+            <div class="share-status">
+              <span class="status-badge" [ngClass]="share.status">
+                {{ share.status | titlecase }}
+              </span>
+              @if (share.rewardAmount > 0) {
+                <span class="shares-count">{{ share.paid ? 'Paid' : 'Pending payout' }}</span>
+              } @else {
+                <span class="shares-count">Free campaign</span>
+              }
+            </div>
+            
+            @if (share.rewardAmount > 0 && !share.paid) {
+              <div class="claim-section">
+                <input 
+                  type="url" 
+                  class="claim-input" 
+                  placeholder="Paste your tweet URL here"
+                  [value]="share.external_post_url || ''"
+                  disabled
+                />
+                <button class="claim-btn">Claim ₦{{ share.rewardAmount | number: '1.2-2' }}</button>
+              </div>
+            }
+            
+            @if (share.rewardAmount > 0 && share.paid) {
+              <div class="claim-section">
+                <input 
+                  type="url" 
+                  class="claim-input" 
+                  [value]="share.external_post_url || 'Claimed'"
+                  disabled
+                />
+                <button class="claim-btn" disabled>Paid ₦{{ share.rewardAmount | number: '1.2-2' }}</button>
+              </div>
+            }
+            
+            @if (share.rewardAmount === 0) {
+              <button class="share-btn">
+                <span class="material-icons">share</span>
+                Share to Twitter
+              </button>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <span class="material-icons">share</span>
+        <p>No shares found</p>
+      </div>
+    }
+  }
 </div>
