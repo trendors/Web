@@ -9,7 +9,7 @@ import { Store } from '@ngrx/store';
 import { take } from 'rxjs';
 import { User, UpdateUserDto } from '../../../core/models/users/user.model';
 import { UserService } from '../../../core/services/users/user.service';
-import { selectCurrentUser, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
+import { selectCurrentUser, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
 import { UserAction } from '../../../store/user/user.action';
 import { selectUserError } from '../../../store/user/user.selector';
 
