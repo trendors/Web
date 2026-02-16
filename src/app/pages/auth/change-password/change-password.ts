@@ -11,7 +11,7 @@ import {
   selectAuthError,
   selectCurrentUser,
   selectIsLoading,
-} from '../../../store/auth/shared state/auth.selector';
+} from '../../../store/auth/sharedState/auth.selector';
 import { take } from 'rxjs';
 import { PasswordChangeActions } from '../../../store/auth/changePassword/change-password.actions';
 import { AsyncPipe } from '@angular/common';
