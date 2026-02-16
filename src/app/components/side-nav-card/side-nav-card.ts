@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { take } from 'rxjs';
-import { selectCurrentUser } from '../../store/auth/shared state/auth.selector';
+import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 import { NotificationActions } from '../../store/notification/notification.action';
 import { selectUnreadCount } from '../../store/notification/notification.selector';
 import { AsyncPipe } from '@angular/common';
