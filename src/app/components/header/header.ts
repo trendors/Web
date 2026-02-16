@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { Store } from '@ngrx/store';
-import { selectCurrentUser, selectIsLoggedIn } from '../../store/auth/shared state/auth.selector';
+import { selectCurrentUser, selectIsLoggedIn } from '../../store/auth/sharedState/auth.selector';
 import { logoutUser } from '../../store/auth/logout/logout.action';
 import { selectUnreadCount } from '../../store/notification/notification.selector';
 import { MatBadgeModule } from '@angular/material/badge';
