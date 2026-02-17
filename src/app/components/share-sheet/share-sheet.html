@@ -1,41 +1,36 @@
 <div class="share-sheet-container">
   <div class="sheet-handle"></div>
- 
+
   <div class="version-list">
-  <p class="section-label">Select text style</p>
+    <p class="section-label">Select text style</p>
 
-@let trends = (trends$ | async);
+    @let trends = (trends$ | async);
 
-@for (version of (shareVersions$ | async); track $index) {
-  <div class="text-card"
-       
-       (click)="selectVersion(version.text)">
+    @for (version of (shareVersions$ | async); track $index) {
+    <div class="text-card"
+    [class.selected]="selectedPost === version.text"
+     (click)="selectVersion(version.text)">
 
-    <div class="card-content">
-      <p class="preview-text">{{ version.text }}</p>
+      <div class="card-content">
+        <p class="preview-text">{{ version.text }}</p>
 
-      <div class="trending-tags">
-        @for (trnd of trends?.slice(0,4); track $index) {
+        <div class="trending-tags">
+          @for (trnd of trends?.slice(0,4); track $index) {
           <small> {{ trnd.name }}</small>
-        }
+          }
+        </div>
       </div>
     </div>
+    } @empty {
+    <div class="loading-state">
+      <p>Choose...</p>
+    </div>
+    }
   </div>
-} @empty {
-  <div class="loading-state">
-    <p>Choose...</p>
-  </div>
-}
 
-  
-  
-
-
-
-</div>
-
-  <div class="share-row">
-    <div class="share-item" (click)="copyLink()">
+  @if(selectedPost){
+<div class="share-row">
+    <div class="share-item" (click)="copyLink(shareVersions$)">
       <div class="icon-circle link-bg">
         <mat-icon>link</mat-icon>
       </div>
@@ -49,7 +44,7 @@
       <span>WhatsApp</span>
     </div>
 
-    <div class="share-item" (click)="shareToX(shareVersions$)">
+    <div class="share-item" (click)="shareToX()">
       <div class="icon-circle twitter-bg">
         <mat-icon>owl</mat-icon>
       </div>
@@ -78,5 +73,8 @@
     </div>
   </div>
 
+  }
+
+  
   <button class="cancel-btn" (click)="close()">Cancel</button>
 </div>

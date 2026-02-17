@@ -8,7 +8,7 @@ export interface SharesState {
   list: Share[];
   filter: 'all' | 'paid' | 'free' | 'pending' | 'claimed';
   isLoading: boolean;
-  error: string | null;
+  error: boolean | null;
 }
 
 export const initialState: SharesState = {
@@ -19,9 +19,14 @@ export const initialState: SharesState = {
 };
 
 export const sharesReducer = createReducer(
-    initialState,
-    on(SharesActions.loadShares, (state) => ({ ...state, isLoading: true, error: null })),
-    on(SharesActions.loadSharesSuccess, (state, { list }) => ({ ...state, list, isLoading: false })),
-    on(SharesActions.loadSharesFailure, (state, { error }) => ({ ...state, isLoading: false, error })),
-    on(SharesActions.setFilter, (state, { filter }) => ({ ...state, filter })),
+  initialState,
+  on(SharesActions.loadShares, (state) => ({ ...state, isLoading: true, error: null })),
+  on(SharesActions.loadSharesSuccess, (state, { list }) => ({ ...state, list, isLoading: false })),
+  on(SharesActions.loadSharesFailure, (state, { error }) => ({ ...state, isLoading: false, error: true })),
+  on(SharesActions.setFilter, (state, { filter }) => ({ ...state, filter })),
+
+  on(SharesActions.createShares, (state) => ({ ...state, isLoading: true, })),
+  on(SharesActions.createSharesSuccess, (state) => ({ ...state, error: false })),
+  on(SharesActions.createSharesFailure, (state) => ({ ...state, error: true }))
+
 );

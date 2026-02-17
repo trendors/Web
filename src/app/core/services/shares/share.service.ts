@@ -16,4 +16,8 @@ export class ShareService {
   getBalance(userId: string | number): Observable<{ userId: string; balance: number }> {
     return this.http.get<{ userId: string; balance: number }>(`${this.apiUrl}/balance/${userId}`);
   }
+
+  createShare(data:Share) : Observable<{data:Share}>{
+    return this.http.post<{data:Share}>(`${this.apiUrl}/balance/`, data)
+  }
 }

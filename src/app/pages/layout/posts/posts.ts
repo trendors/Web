@@ -46,6 +46,7 @@ import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter"
     ButtomNav,
     TopNavFilter
 ],
+ standalone: true,
   templateUrl: './posts.html',
   styleUrl: './posts.scss',
 })

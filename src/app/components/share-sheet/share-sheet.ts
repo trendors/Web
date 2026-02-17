@@ -16,6 +16,7 @@ import { SeoService } from '../../core/services/utility/seoservice';
   imports: [
     MatListModule, MatIconModule, AsyncPipe
   ],
+  standalone:true,
   templateUrl: './share-sheet.html',
   styleUrl: './share-sheet.scss',
 })
@@ -25,7 +26,7 @@ export class ShareSheet {
   constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { post: any },
     private bottomSheetRef: MatBottomSheetRef<ShareSheet>, private seoService: SeoService ) { }
 
-  selectedPost!: string
+  selectedPost: string | null= null
   shareVersions$!: Observable<any[]>;
   trends$!: Observable<any[]>
 
@@ -55,30 +56,26 @@ export class ShareSheet {
     )
   }
 
-  copyLink() { }
+  copyLink(data:any) { }
 
   shareTo(url?: string) { }
 
   close() { }
 
-  async shareToX(post: any) {
-
-    
-    const top4trends = await firstValueFrom(
-      this.trends$.pipe(
-        map((data: any[]) =>
-          data.slice(0, 4).map(item => item.name).join(', ')
-        )
-      )
-    );
+  async shareToX() {
 
     const baseUrl = 'https://twitter.com/intent/tweet';
     const params = new URLSearchParams({
-      text: `${post.text}\n\n~ ${top4trends}\n\n${post.images[0]}\n\nView more: https://b5267a42e435.ngrok-free.app/post/24`
+      text: `${this.selectedPost}\nView more: https://b5267a42e435.ngrok-free.app/post/24`
     });
-
     const shareUrl = `${baseUrl}?${params.toString()}`;
-    window.open(shareUrl, '_blank', 'width=550,height=420');
+    const twitterwindow =  window.open(shareUrl, '_blank', 'width=550,height=420')
+    if (!twitterwindow || twitterwindow.closed || typeof twitterwindow.closed === 'undefined') {
+
+    } else {
+
+      console.log("we run it here", this.data)
+    }
   }
 
   shareToFacebook(post: any) {
