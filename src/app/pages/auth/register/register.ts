@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { selectAuthError, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
+import { selectAuthError, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
 import { RegisterActions } from '../../../store/auth/register/register.action';
 import { RegisterDto } from '../../../core/models/users/user.model';
 import { AsyncPipe } from '@angular/common';

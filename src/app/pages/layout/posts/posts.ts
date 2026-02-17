@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, CommonModule, SlicePipe, UpperCasePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { selectCurrentUser } from '../../../store/auth/shared state/auth.selector';
+import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { PostActions } from '../../../store/posts/post/posts.actions';
 import {
   selectAllPosts,

@@ -10,4 +10,5 @@ export interface Share {
   status: 'completed' | 'flagged' | 'reviewed' | 'rejected' | 'pending' | 'verified';
   paid: boolean;
   createdAt: string | Date;
+  external_post_url?: string;
 }

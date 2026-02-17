@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
-import { selectAuthError, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
+import { selectAuthError, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
 import { LoginActions } from '../../../store/auth/login/login.actions';
 import { AsyncPipe } from '@angular/common';
 

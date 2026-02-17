@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { selectAuthError, selectIsLoading } from '../../../store/auth/shared state/auth.selector';
+import { selectAuthError, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
 import { PasswordRecoveryActions } from '../../../store/auth/passwordRecovery/password-recovery.actions';
 import { MatIcon } from '@angular/material/icon';
 import { AsyncPipe } from '@angular/common';
