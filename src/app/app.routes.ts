@@ -29,7 +29,12 @@ export const routes: Routes = [
          path: 'notifications',
         loadComponent: () =>
           import('./pages/layout/notification/notification').then((m) => m.NotificationsPage),    
-      }
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./pages/layout/profile/profile').then((m) => m.Profile),
+      },
     ],
   },
 
