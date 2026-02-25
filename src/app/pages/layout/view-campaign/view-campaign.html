@@ -1,1 +1,85 @@
-<p>view-campaign works!</p>
+<div class="view-campaign-wrapper">
+  <header class="page-header">
+    <div class="header-content">
+      <div>
+        <h1 class="page-title">My Campaigns</h1>
+        <p class="page-subtitle">Manage and track your active product campaigns</p>
+      </div>
+      <button class="btn-primary" (click)="createNew()">
+        <span class="material-icons">add</span> New Campaign
+      </button>
+    </div>
+  </header>
+
+  <div class="content-container">
+    @if (isLoading$ | async) {
+      <div class="state-container">
+        <div class="loader"></div>
+        <p>Loading your campaigns...</p>
+      </div>
+    }
+
+    @if (error$ | async; as err) {
+      <div class="state-container error-state">
+        <span class="material-icons error-icon">error_outline</span>
+        <p>{{ err }}</p>
+        <button class="btn-secondary" (click)="ngOnInit()">Try Again</button>
+      </div>
+    }
+
+    @if ((isLoading$ | async) === false && (error$ | async) === null) {
+      @if ((campaigns$ | async)?.length === 0) {
+        <div class="state-container empty-state">
+          <span class="material-icons empty-icon">campaign</span>
+          <h3>No Campaigns Yet</h3>
+          <p>You haven't created any campaigns. Share your product to reach more people!</p>
+          <button class="btn-primary" (click)="createNew()">Create Your First Campaign</button>
+        </div>
+      }
+
+      @if ((campaigns$ | async)?.length ?? 0 > 0) {
+        <div class="campaign-grid">
+          @for (campaign of (campaigns$ | async) ?? []; track campaign.id) {
+            <article class="campaign-card">
+              <div class="card-image">
+                @if (campaign.files && campaign.files.length > 0) {
+                  <img [src]="campaign.files[0]" [alt]="campaign.name" />
+                } @else {
+                  <div class="image-placeholder">
+                    <span class="material-icons">image_not_supported</span>
+                  </div>
+                }
+                <span class="type-badge" [ngClass]="getBadgedClass(campaign.package)">
+                  {{ campaign.package | titlecase }}
+                </span>
+              </div>
+
+              <div class="card-content">
+                <h3 class="campaign-title">{{ campaign.name }}</h3>
+                <p class="campaign-desc">{{ campaign.description }}</p>
+
+                <div class="card-meta">
+                  <div class="meta-item">
+                    <span class="material-icons meta-icon">calendar_today</span>
+                    <span>{{ campaign.createdAt | date: 'mediumDate' }}</span>
+                  </div>
+                  @if (campaign.link) {
+                    <div class="meta-item">
+                      <span class="material-icons meta-icon">link</span>
+                      <a [href]="campaign.link" target="_blank" class="campaign-link">View Link</a>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="card-actions">
+                <button class="btn-text">View Details</button>
+                <button class="btn-icon"><span class="material-icons">more_vert</span></button>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
