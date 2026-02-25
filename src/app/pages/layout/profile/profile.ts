@@ -13,7 +13,6 @@ import { selectCurrentUser, selectIsLoading } from '../../../store/auth/sharedSt
 import { UserAction } from '../../../store/user/user.action';
 import { selectUserError } from '../../../store/user/user.selector';
 
-
 @Component({
   selector: 'app-profile',
   imports: [

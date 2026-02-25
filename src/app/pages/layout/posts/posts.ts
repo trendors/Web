@@ -25,7 +25,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TimeAgoPipe } from '../../../time-ago-pipe';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ShareSheet } from '../../../components/share-sheet/share-sheet';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ButtomNav } from "../../../components/buttom-nav/buttom-nav";
 import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter";
 
@@ -38,13 +38,9 @@ import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter"
     MatInputModule,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
-    TimeAgoPipe,
-    RouterLink,
-    UpperCasePipe,
     AsyncPipe,
     SlicePipe,
-    ButtomNav,
-    TopNavFilter
+    TopNavFilter,
 ],
   templateUrl: './posts.html',
   styleUrl: './posts.scss',
@@ -52,6 +48,8 @@ import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter"
 export class Posts implements OnInit {
   private store = inject(Store);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
+  
   constructor(private bottomSheet: MatBottomSheet) {}
 
   posts$ = this.store.select(selectAllPosts);
@@ -173,5 +171,9 @@ export class Posts implements OnInit {
   removeSelectedImage() {
     this.selectedFile = null;
     this.imagePreview = null;
+  }
+
+  routeTo(path: string) {
+    this.router.navigate([path]); 
   }
 }
