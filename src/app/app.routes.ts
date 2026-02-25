@@ -35,6 +35,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/layout/profile/profile').then((m) => m.Profile),
       },
+      {
+        path: 'view-campaign',
+        loadComponent: () =>
+          import('./pages/layout/view-campaign/view-campaign').then((m) => m.ViewCampaign),
+      }
     ],
   },
 
@@ -63,36 +68,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
   },
-  // {
-  //   path: 'dashboard',
-  //   loadComponent: () =>
-  //     import('./pages/layout/dashboard/dashboard-layout/dashboard-layout').then(
-  //       (m) => m.DashboardLayout,
-  //     ),
-  //   children: [
-  //     { path: '', redirectTo: 'main', pathMatch: 'full' },
-  //     {
-  //       path: 'main',
-  //       loadComponent: () =>
-  //         import('./pages/layout/dashboard/shares/shares').then((m) => m.MainDashboard),
-  //     },
-  //     {
-  //       path: 'profile',
-  //       loadComponent: () =>
-  //         import('./pages/layout/dashboard/profile/profile').then((m) => m.Profile),
-  //     },
-  //     {
-  //       path: 'change-password',
-  //       loadComponent: () =>
-  //         import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
-  //     },
-  //     {
-  //       path: 'notifications',
-  //       loadComponent: () =>
-  //         import('./pages/notification/notification').then((m) => m.NotificationsPage),
-  //     },
-  //   ],
-  // },
   {
     path: '**',
     redirectTo: 'login',
