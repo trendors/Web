@@ -1,5 +1,5 @@
 import { createActionGroup, props } from "@ngrx/store";
-import { Share } from "../../core/models/shares/shares.model";
+import { CreateShare, Share } from "../../core/models/shares/shares.model";
 
 export const SharesActions = createActionGroup({
   source: 'Shares Action Flow',
@@ -9,9 +9,13 @@ export const SharesActions = createActionGroup({
     'Load Shares Failure': props<{ error: string }>(),
     'Set Filter': props<{ filter: 'all' | 'paid' | 'free' | 'pending' | 'claimed' }>(),
 
-    'create Shares' : props<{dto: Share}>(),
+    'create Shares' : props<{data: CreateShare}>(),
     'create Shares Success' : props<{error: boolean}> (),
-    'create Shares Failure' : props<{error: boolean, message: string}> ()
+    'create Shares Failure' : props<{error: boolean, message: string}> (),
+
+    'claim Share' : props<{shareId: number}>(),
+    'claim Share Success' : props<{error: boolean}> (),
+    'claim Share Failure' : props<{error: boolean, message: string}> ()
 
   },
 });

@@ -14,7 +14,7 @@
 
     <div class="posts-list">
       @for (post of posts$ | async; track post.id) {
-      <article class="card post-card">
+      <article class="card post-card" (click)="routeToPost(post.id)">
         <div class="post-header">
           <div class="post-author">
             @if (post.userName) {
@@ -25,10 +25,8 @@
             </div>
           </div>
         </div>
-
         <div class="post-content">
           <p>{{ post.text }}</p>
-
           @if (post.images?.length) {
           <div class="image-gallery" [class.multi]="post.images!.length > 1">
             @for (img of post.images | slice:0:2; track img; let i = $index) {
@@ -42,12 +40,11 @@
           </div>
           }
         </div>
-
         <div class="post-actions">
           <button class="action-btn"><mat-icon>favorite_border</mat-icon> {{ post.likes?.length }}</button>
           <button class="action-btn"><mat-icon>chat_bubble_outline</mat-icon> {{ post.comments?.length }}</button>
           <div class="spacer"></div>
-          <button class="action-btn" (click)="openShareMenu(post)"><mat-icon>share</mat-icon></button>
+          <button class="action-btn" (click)="$event.stopPropagation(); openShareMenu(post)"><mat-icon>share</mat-icon></button>
         </div>
       </article>
       }

@@ -1,3 +1,10 @@
+export enum SocialMedia {
+  X = 'x',
+  WHATSAPP = 'whatsapp',
+  FACEBOOK = 'facebook'
+}
+
+
 export interface Share {
   id: number;
   postId?: number;
@@ -11,4 +18,16 @@ export interface Share {
   paid: boolean;
   createdAt: string | Date;
   external_post_url?: string;
+  social_media?: SocialMedia
+}
+
+export interface CreateShare {
+  postId?: number;
+  sharers_trendorsId?: string;
+  sharers_userId?: string;
+  deviceId?: string;
+  ipAddress?: string;
+  external_post_url?: string;
+  social_media?: SocialMedia
+
 }

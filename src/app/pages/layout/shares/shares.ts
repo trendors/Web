@@ -17,8 +17,8 @@ import { TimeAgoPipe } from "../../../time-ago-pipe";
   selector: 'app-main',
   imports: [
     AsyncPipe,
-    DecimalPipe, 
-    TitleCasePipe, 
+    DecimalPipe,
+    TitleCasePipe,
     TimeAgoPipe,
     NgClass
   ],
@@ -35,11 +35,14 @@ export class SharesDashboard {
 
   ngOnInit() {
     this.shares$ = this.store.select(selectFilteredShares);
-
     this.store.select(selectCurrentUser).subscribe((user) => {
+      console.log(user, "users")
       if (user?.id) {
-        this.store.dispatch(SharesActions.loadShares({ userId: user.id }));
+        console.log(user, "select user")
+
+        this.store.dispatch(SharesActions.loadShares({ userId: user.id || 7 }));
       }
+      this.store.dispatch(SharesActions.loadShares({ userId: 7 }));
     });
   }
 

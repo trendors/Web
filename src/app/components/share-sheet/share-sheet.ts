@@ -1,13 +1,15 @@
 import { Component, Inject, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { PostService } from '../../core/services/posts/post.service';
-import { catchError, firstValueFrom, map, Observable } from 'rxjs';
-import { Actions } from '@ngrx/effects';
+import { map, Observable } from 'rxjs';
 import { UtilService } from '../../core/services/utility/utility.service';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { AsyncPipe } from '@angular/common';
 import { SeoService } from '../../core/services/utility/seoservice';
+import { Store } from '@ngrx/store';
+import { SharesActions } from '../../store/shares/shares.action';
+import { CreateShare, SocialMedia } from '../../core/models/shares/shares.model';
+import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 
 
 
@@ -16,7 +18,7 @@ import { SeoService } from '../../core/services/utility/seoservice';
   imports: [
     MatListModule, MatIconModule, AsyncPipe
   ],
-  standalone:true,
+  standalone: true,
   templateUrl: './share-sheet.html',
   styleUrl: './share-sheet.scss',
 })
@@ -24,9 +26,9 @@ export class ShareSheet {
   private utilService = inject(UtilService);
 
   constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { post: any },
-    private bottomSheetRef: MatBottomSheetRef<ShareSheet>, private seoService: SeoService ) { }
+    private bottomSheetRef: MatBottomSheetRef<ShareSheet>, private seoService: SeoService, private store: Store) { }
 
-  selectedPost: string | null= null
+  selectedPost: string | null = null
   shareVersions$!: Observable<any[]>;
   trends$!: Observable<any[]>
 
@@ -35,6 +37,12 @@ export class ShareSheet {
     this.fetchAireWrite()
     this.fetchXtrends()
 
+  }
+
+  getCurrentUser(){
+        this.store.select(selectCurrentUser).subscribe((user) => {
+          console.log(user)
+        })
   }
 
   selectVersion(post: string) {
@@ -56,25 +64,55 @@ export class ShareSheet {
     )
   }
 
-  copyLink(data:any) { }
+  copyLink(data: any) { }
 
   shareTo(url?: string) { }
+
+ async getIPAddress() {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    console.log("User IP:", data.ip);
+    return data.ip as string;
+  } catch (error) {
+    console.error("Error fetching IP:", error);
+    return ""
+  }
+}
+ getOrCreateDeviceId() {
+  let deviceId = localStorage.getItem('device_id');
+  if (!deviceId) {
+    deviceId = crypto.randomUUID(); 
+    localStorage.setItem('device_id', deviceId);
+  }
+  return deviceId;
+}
 
   close() { }
 
   async shareToX() {
-
+    let trendText = this.trends$.pipe(map(trends => trends.slice(0, 4).map((t: any) => `${t.name}`).join(' ')));
     const baseUrl = 'https://twitter.com/intent/tweet';
     const params = new URLSearchParams({
-      text: `${this.selectedPost}\nView more: https://b5267a42e435.ngrok-free.app/post/24`
+      text: `${this.selectedPost}\n \nView more: https://b5267a42e435.ngrok-free.app/post/24 \n${await trendText.toPromise()}`
     });
     const shareUrl = `${baseUrl}?${params.toString()}`;
-    const twitterwindow =  window.open(shareUrl, '_blank', 'width=550,height=420')
+    const twitterwindow = window.open(shareUrl, '_blank', 'width=550,height=420')
     if (!twitterwindow || twitterwindow.closed || typeof twitterwindow.closed === 'undefined') {
 
     } else {
-
       console.log("we run it here", this.data)
+
+      let share: CreateShare = {
+        postId: this.data.post.id,
+        sharers_trendorsId: "7",
+        sharers_userId: "7",
+        deviceId: this.getOrCreateDeviceId(),
+        ipAddress: await this.getIPAddress(),
+        external_post_url: "string",
+        social_media: SocialMedia.X
+      }
+      this.store.dispatch(SharesActions.createShares({data: share}))
     }
   }
 
@@ -110,7 +148,7 @@ export class ShareSheet {
     window.open(shareUrl, '_blank', 'width=550,height=420');
   }
 
-shareToWhatsApp(post: any) {
+  shareToWhatsApp(post: any) {
     const baseUrl = 'https://api.whatsapp.com/send';
     const params = new URLSearchParams({
       text: `${post.text}\n\nView more: https://b5267a42e435.ngrok-free.app/post/${post.id}`
@@ -120,5 +158,5 @@ shareToWhatsApp(post: any) {
     window.open(shareUrl, '_blank', 'width=550,height=420');
   }
 
-  
+
 }

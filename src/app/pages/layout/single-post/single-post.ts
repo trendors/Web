@@ -73,9 +73,6 @@ export class SinglePost {
     this.router.navigate(['/feed']);
   }
 
-  routeToPost(postId: number) {
-    this.router.navigate(['/post', postId]);
-  } 
 
   async openShareMenu(post: any) {
     // Re-using your logic for sharing to X

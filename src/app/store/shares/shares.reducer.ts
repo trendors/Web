@@ -27,6 +27,10 @@ export const sharesReducer = createReducer(
 
   on(SharesActions.createShares, (state) => ({ ...state, isLoading: true, })),
   on(SharesActions.createSharesSuccess, (state) => ({ ...state, error: false })),
-  on(SharesActions.createSharesFailure, (state) => ({ ...state, error: true }))
+  on(SharesActions.createSharesFailure, (state) => ({ ...state, error: true })),
+
+  on(SharesActions.claimShare, (state) => ({ ...state, isLoading: true, })),
+  on(SharesActions.claimShareSuccess, (state) => ({ ...state, error: false })),
+  on(SharesActions.claimShareFailure, (state) => ({ ...state, error: true }))
 
 );

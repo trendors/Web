@@ -1,84 +1,70 @@
+<div class="home-container">
 
 
-@if (post$ | async; as post)  {
-<div class="post-detail-wrapper">
-  
-  <div class="content-grid" >
-    <!-- Left Column: Visuals & Content -->
-    <section class="visuals-section">
-      <div class="gallery">
-
-        @for (item of post.images; track $index) {
-          <!-- <img src="{{item}}" class="gallery-image" alt="Product Image {{ $index + 1 }}" /> -->
-          <img [src]="item" class="gallery-image" alt="Product Image {{ $index + 1 }}" />
-        }
-       
-      </div>
-      
-      <div class="body-content">
-        <h1 class="post-text">{{post.text}}</h1>
-        <!-- <div class="tags">
-          <span class="tag">#Trending</span>
-          <span class="tag">#Incentive</span>
-          <span class="tag">#Audio</span>
-        </div> -->
-      </div>
-    </section>
-
-    <!-- Right Column: Interaction Sidebar -->
-    <aside class="interaction-sidebar">
-      <div class="sticky-content">
-        <!-- Author Card -->
-        <div class="author-card">
-          <div class="avatar">JD</div>
-          <div class="info">
-            <h4>John Doe</h4>
-            <span>2 hours ago</span>
-          </div>
-        </div>
-
-        <hr />
-
-        <!-- Campaign Progress -->
-        <div class="sponsored-box">
-          <div class="label">Campaign Progress</div>
-          <div class="bar-bg"></div>
-          <small>65 / 100 Shared</small>
-        </div>
-
-        <!-- Comments Section -->
-        <div class="comments-area">
-          <h3>Comments (3)</h3>
-          <div class="comment-list">
-            <div class="comment-item">
-              <strong>Alice:</strong> These look amazing! Where can I get them?
-            </div>
-            <div class="comment-item">
-              <strong>Bob:</strong> Just shared this with my followers. Great quality!
-            </div>
-            <div class="comment-item">
-              <strong>Carol:</strong> Love the design. Already earned ₦500 from sharing!
-            </div>
-          </div>
-          
-          <div class="comment-input-box">
-            <input type="text" placeholder="Add a comment..." />
-            <button>
-              <span class="material-icons">send</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Primary CTA -->
-        <div class="footer-actions">
-          <button class="share-btn">
-            <span class="material-icons">share</span>
-            Share & Earn
-          </button>
+  <div class="card">
+    <div class="post-header">
+      <div class="post-author">
+        <div class="avatar-small">JD</div>
+        <div class="user-info">
+          <span class="name">John Doe</span>
+          <span class="sub-text">2 hours ago</span>
         </div>
       </div>
-    </aside>
+    </div>
+
+    <div class="post-content">
+      <p>Check out this amazing flyer for our upcoming hospital launch! 🏥 #Healthcare #Innovation</p>
+
+      <div class="image-gallery">
+        <div class="img-wrapper">
+          <img src="https://via.placeholder.com/600x400" alt="Post Flyer">
+        </div>
+      </div>
+    </div>
+
+    <div class="post-actions">
+      <button class="action-btn">
+        <span>❤️</span> 12 Likes
+      </button>
+      <button class="action-btn">
+        <span>💬</span> 4 Comments
+      </button>
+      <div class="spacer"></div>
+      <button class="action-btn">
+        <span>🔗</span> Share
+      </button>
+    </div>
   </div>
-</div>
 
-}
+   <aside class="sidebar right">
+    <aside class="mini-dashboard">
+      <div class="user-header">
+        <div class="avatar-small">JD</div>
+        <div class="user-info">
+          <span class="name">Jane Doe</span>
+          <span class="label">Pro Member</span>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-value">124</span>
+          <span class="stat-label">Shares</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">1.2k</span>
+          <span class="stat-label">Viewers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">1.2k</span>
+          <span class="stat-label">Viewers</span>
+        </div>
+      </div>
+
+      <button class="btn-profile">View Profile</button>
+    </aside>
+  </aside>
+
+</div>

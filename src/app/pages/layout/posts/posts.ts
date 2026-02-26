@@ -25,9 +25,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TimeAgoPipe } from '../../../time-ago-pipe';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ShareSheet } from '../../../components/share-sheet/share-sheet';
-import { RouterLink } from '@angular/router';
+import { Route, RouterLink } from '@angular/router';
 import { ButtomNav } from "../../../components/buttom-nav/buttom-nav";
 import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter";
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -53,7 +54,7 @@ import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter"
 export class Posts implements OnInit {
   private store = inject(Store);
   private fb = inject(FormBuilder);
-  constructor(private bottomSheet: MatBottomSheet) {}
+  constructor(private bottomSheet: MatBottomSheet, private router: Router) {}
 
   posts$ = this.store.select(selectAllPosts);
   loading$ = this.store.select(selectIsLoadingPosts);
@@ -175,4 +176,9 @@ export class Posts implements OnInit {
     this.selectedFile = null;
     this.imagePreview = null;
   }
+
+ 
+  routeToPost(postId: number) {
+    this.router.navigate([`/home/post/${postId}`]);
+  } 
 }

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
-import { Share } from '../../models/shares/shares.model';
+import { CreateShare, Share } from '../../models/shares/shares.model';
 
 @Injectable({ providedIn: 'root' })
 export class ShareService {
@@ -17,7 +17,7 @@ export class ShareService {
     return this.http.get<{ userId: string; balance: number }>(`${this.apiUrl}/balance/${userId}`);
   }
 
-  createShare(data:Share) : Observable<{data:Share}>{
-    return this.http.post<{data:Share}>(`${this.apiUrl}/balance/`, data)
+  createShare(data: CreateShare): Observable<{ data: Share }> {
+    return this.http.post<{ data: Share }>(`${this.apiUrl}/`, data)
   }
 }

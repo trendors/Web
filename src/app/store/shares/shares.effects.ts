@@ -26,12 +26,10 @@ export class SharesEffects {
     this.actions$.pipe(
       ofType(SharesActions.createShares),
 
-      mergeMap(({ dto }) =>
-        this.sharesService.createShare(dto).pipe(
+      mergeMap(({ data }) =>
+        this.sharesService.createShare(data).pipe(
           map((share) => SharesActions.createSharesSuccess({ error: false })),
-
           catchError((err) => of(SharesActions.createSharesFailure({ error: true, message: err })))
-
         ),
 
       )
