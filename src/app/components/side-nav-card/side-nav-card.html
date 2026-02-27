@@ -4,10 +4,16 @@
       <span class="icon">🏠</span>
       <span class="nav-label">Home</span>
     </li>
+    <hr class="nav-divider" />
     <li class="nav-item" (click)="routeTo('home/create-campaign')">
       <span class="icon">➕</span>
       <span class="nav-label">Create Campaign</span>
     </li>
+    <li class="nav-item" (click)="routeTo('home/view-campaign')">
+      <span class="icon">🔍</span>
+      <span class="nav-label">veiw Campaign</span>
+    </li>
+    <hr class="nav-divider" />
     <li class="nav-item" (click)="routeTo('home/notifications')">
       <span class="icon">🔔</span>
       <span class="nav-label">Notifications</span>
@@ -20,12 +26,16 @@
       <span class="nav-label">Messages</span>
     </li>
     <hr class="nav-divider" />
+    <li class="nav-item" (click)="routeTo('home/profile')">
+      <span class="icon">👤</span>
+      <span class="nav-label">Profile</span>
+    </li>
     <li class="nav-item">
       <span class="icon">⚙️</span>
       <span class="nav-label">Settings</span>
     </li>
     <li class="nav-item" (click)="routeTo('home/shares')">
-      <span class="icon">ME</span>
+      <span class="icon">📊</span>
       <span class="nav-label">My Share</span>
     </li>
   </ul>

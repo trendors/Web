@@ -1,7 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Store } from '@ngrx/store';
+import { CampaignActions } from '../../../store/campaign/campaign.action';
+import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 
 @Component({
   selector: 'app-create-campaign',
@@ -11,7 +14,9 @@ import { FormsModule } from '@angular/forms';
 })
 export class CreateCampaign {
 
-  // Signals
+  private store = inject(Store);
+  user$ = this.store.select(selectCurrentUser);
+
   selectedType = signal<'paid' | 'free' | null>(null);
   campaignTitle = signal('');
   campaignDescription = signal('');
@@ -20,8 +25,22 @@ export class CreateCampaign {
   selectedImages = signal<any[]>([]);
   isSubmitting = signal(false);
   isDragging = signal(false);
+  
 
   constructor(private http: HttpClient) {}
+
+  ngOnInit() {
+   this.user$.subscribe(user => {
+     if (!user) {
+      //  alert('You must be logged in to create a campaign');
+       window.history.back();
+    }
+
+    console.log('Current User:', user);
+  
+  }
+  );
+  }
 
   // Computed values
   get titleCharCount() {
@@ -148,22 +167,15 @@ export class CreateCampaign {
     }
 
     this.selectedImages().forEach((img) => {
-      formData.append('images', img.file);
+      formData.append('files', img.file);
     });
 
     try {
-      const response = await this.http.post('/api/campaigns', formData).toPromise();
-      
-      alert(`✅ Campaign created successfully!${
-        this.selectedType() === 'paid' 
-          ? ` Total: ₦${this.totalBudget.toLocaleString()}` 
-          : ''
-      }`);
-      
-      // Navigate to campaigns list
-      // this.router.navigate(['/campaigns']);
+     
+      this.store.dispatch(CampaignActions.createCampaign({ dto: formData, files: this.selectedImages().map(img => img.file) }));
       
     } catch (error: any) {
+      console.log(error)
       alert(`❌ Error: ${error.message || 'Failed to create campaign'}`);
     } finally {
       this.isSubmitting.set(false);

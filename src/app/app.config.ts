@@ -22,6 +22,8 @@ import {
 import { NotificationEffects } from './store/notification/notification.effects';
 import { sharesFeatureKey, sharesReducer } from './store/shares/shares.reducer';
 import { SharesEffects } from './store/shares/shares.effects';
+import { campaignFeatureKey, campaignReducer } from './store/campaign/campaign.reducer';
+import { CampaignEffects } from './store/campaign/campaign.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -34,6 +36,7 @@ export const appConfig: ApplicationConfig = {
       [userFeatureKey]: userReducer,
       [notificationsFeatureKey]: notificationsReducer,
       [sharesFeatureKey]: sharesReducer,
+      [campaignFeatureKey]: campaignReducer,
     }),
     provideEffects([
       LoginEffects,
@@ -43,6 +46,7 @@ export const appConfig: ApplicationConfig = {
       PostsEffects,
       NotificationEffects,
       SharesEffects,
+      CampaignEffects,
     ]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],

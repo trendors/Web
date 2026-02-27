@@ -25,10 +25,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TimeAgoPipe } from '../../../time-ago-pipe';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ShareSheet } from '../../../components/share-sheet/share-sheet';
-import { Route, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ButtomNav } from "../../../components/buttom-nav/buttom-nav";
 import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter";
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -39,13 +38,9 @@ import { Router } from '@angular/router';
     MatInputModule,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
-    TimeAgoPipe,
-    RouterLink,
-    UpperCasePipe,
     AsyncPipe,
     SlicePipe,
-    ButtomNav,
-    TopNavFilter
+    TopNavFilter,
 ],
  standalone: true,
   templateUrl: './posts.html',
@@ -54,7 +49,9 @@ import { Router } from '@angular/router';
 export class Posts implements OnInit {
   private store = inject(Store);
   private fb = inject(FormBuilder);
-  constructor(private bottomSheet: MatBottomSheet, private router: Router) {}
+  private router = inject(Router);
+  
+  constructor(private bottomSheet: MatBottomSheet) {}
 
   posts$ = this.store.select(selectAllPosts);
   loading$ = this.store.select(selectIsLoadingPosts);
@@ -177,8 +174,7 @@ export class Posts implements OnInit {
     this.imagePreview = null;
   }
 
- 
-  routeToPost(postId: number) {
-    this.router.navigate([`/home/post/${postId}`]);
-  } 
+  routeTo(path: string) {
+    this.router.navigate([path]); 
+  }
 }

@@ -20,7 +20,7 @@ import { environment } from '../../../../environments/environment';
 export class PostService {
   private http = inject(HttpClient);
   // private apiUrl = 'http://localhost:3000/posts';
-   private apiUrl = `${environment.apiUrl}/posts`
+  private apiUrl = `${environment.apiUrl}/posts`;
 
   findAll(query: FetchPostDto): Observable<FetchPostsResponse> {
     const payload = {
@@ -30,8 +30,8 @@ export class PostService {
     return this.http.post<FetchPostsResponse>(`${this.apiUrl}/findAll`, payload);
   }
 
-  findOne(id:any):Observable<FetchPostResponse> {
-    return this.http.get<FetchPostResponse>(`${this.apiUrl}/${id}`)
+  findOne(id: any): Observable<FetchPostResponse> {
+    return this.http.get<FetchPostResponse>(`${this.apiUrl}/${id}`);
   }
 
   loadMore(query: LoadMoreDto): Observable<FetchPostsResponse> {
@@ -47,15 +47,13 @@ export class PostService {
   }
 
   likePost(dto: LikePostDto): Observable<LikeResponse> {
-    console.log("is this called")
+    console.log('is this called');
     return this.http.post<LikeResponse>(`${this.apiUrl}/like`, dto);
   }
-
-  
 
   uploadImage(postId: number, file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.patch(`${this.apiUrl}/${postId}/upload/posts`, formData);
+    return this.http.patch(`${this.apiUrl}/${postId}/upload`, formData);
   }
 }
