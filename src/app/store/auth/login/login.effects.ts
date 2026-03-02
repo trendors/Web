@@ -41,12 +41,12 @@ export class LoginEffects {
       this.actions$.pipe(
         ofType(LoginActions.loginSuccess),
         tap(({ response }) => {
-          console.log(response);
-          if (response.data?.token) {
-            localStorage.setItem('token', response.data?.token);
+          console.log(response, "response from login success effect");
+          if (response?.token) {
+            localStorage.setItem('token', response?.token);
           }
-          if (response.data?.user) {
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+          if (response?.user) {
+            localStorage.setItem('user', JSON.stringify(response.user));
           }
         }),
       ),
@@ -58,9 +58,9 @@ export class LoginEffects {
       this.actions$.pipe(
         ofType(LoginActions.loginSuccess),
         tap(({ response }) => {
-          if (response.data?.user?.id) {
+          if (response?.user?.id) {
             this.store.dispatch(
-              NotificationActions.loadNotifications({ userId: response.data.user.id }),
+              NotificationActions.loadNotifications({ userId: response.user.id }),
             );
           }
           this.router.navigate(['/home']);
@@ -97,12 +97,10 @@ export class LoginEffects {
 
         return LoginActions.loginSuccess({
           response: {
-            data: {
               token,
               user: JSON.parse(userRaw),
-            },
-            error: false,
-            message: 'Hydrated from localStorage',
+              error: false,
+              message: 'Hydrated from localStorage',
           },
         });
       }),

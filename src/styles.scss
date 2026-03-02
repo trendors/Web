@@ -1,5 +1,38 @@
 
 @use '@angular/material' as mat;
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #f7f7f9;
+  --white: #ffffff;
+  --border: #e4e4ec;
+  --border-hover: #c4c4d8;
+  --accent: #ff6b35;
+  --accent-soft: rgba(255, 107, 53, 0.07);
+  --purple: #7c5cbf;
+  --purple-soft: rgba(124, 92, 191, 0.07);
+  --text: #141420;
+  --text2: #4a4a6a;
+  --muted: #9898b8;
+  --success: #16a34a;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+  line-height: 1.6;
+}
 
 html {
   @include mat.theme((
@@ -11,6 +44,8 @@ html {
     density: 0,
   ));
 }
+
+
 
 body {
 

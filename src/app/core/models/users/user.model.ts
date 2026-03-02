@@ -18,12 +18,15 @@ export interface ApiResponse<T = null> {
   message: string;
   error: boolean;
   data?: T;
+  token?: string;
 }
 
-export type LoginResponse = ApiResponse<{
+export type LoginResponse = {
   token: string;
   user: User | null;
-}>;
+  message: string;
+  error: boolean;
+};
 
 export type RegisterResponse = ApiResponse<{
   user: User;

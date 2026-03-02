@@ -27,6 +27,9 @@ import { selectUserError } from '../../../store/user/user.selector';
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit {
+  ngOnInit(): void {
+    throw new Error('Method not implemented.');
+  }
   private fb = inject(FormBuilder);
   private store = inject(Store);
   private userService = inject(UserService);
@@ -46,7 +49,7 @@ export class Profile implements OnInit {
     facebook_username: [''],
   });
 
-  ngOnInit() {
+  ççç() {
     this.user$.pipe(take(1)).subscribe((user) => {
       this.currentUser = user;
       if (user) {
