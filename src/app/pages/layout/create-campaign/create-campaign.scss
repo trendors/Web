@@ -497,6 +497,55 @@
   min-height: calc(100vh - 58px);
 }
 
+
+.top-bar {
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 24px;
+  margin-bottom: 3%;
+}
+
+.top-steps {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.step-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.step-btn.active {
+  color: #111;
+  font-weight: 600;
+}
+
+.step-btn.done {
+  color: #22c55e;
+}
+
+.prog-bar {
+  height: 3px;
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+
+.prog-fill {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
 // ── SIDEBAR ──────────────────────────────────────────────────────────────────
 .sidebar {
   width: 230px;
@@ -627,7 +676,7 @@
 // ── MAIN ─────────────────────────────────────────────────────────────────────
 .main {
   flex: 1;
-  padding: 40px 48px 120px;
+  // padding: 20px 48px 120px;
   max-width: 700px;
 }
 
@@ -657,7 +706,7 @@
 }
 
 h2 {
-  font-family: 'Syne', sans-serif;
+  // font-family: 'Syne', sans-serif;
   font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.02em;

@@ -326,18 +326,18 @@
 
 
 <!-- TOP NAV -->
-<nav class="topnav">
+<!-- <nav class="topnav">
   <div class="nav-logo">camp<span>.</span>io</div>
   <div class="nav-right">
     <span class="nav-saved">● Auto-saved</span>
     <button class="nav-exit">Exit</button>
   </div>
-</nav>
+</nav> -->
 
 <div class="layout">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <!-- <aside class="sidebar">
     <div class="sidebar-label">Steps</div>
     <div class="step-list">
       <button
@@ -366,17 +366,35 @@
         <div class="prog-fill" [style.width.%]="progressPct"></div>
       </div>
     </div>
-  </aside>
+  </aside> -->
+
+
+
 
   <!-- MAIN -->
   <main class="main">
+
+
+    <div class="top-bar">
+      <div class="top-steps">
+        <button *ngFor="let step of steps; let i = index" class="step-btn" [class.active]="i === currentStep"
+          [class.done]="i < currentStep" (click)="goTo(i)">
+          <span class="step-num">{{ i < currentStep ? '✓' : i + 1 }}</span>
+              <span class="step-name">{{ step.label }}</span>
+        </button>
+      </div>
+
+      <div class="prog-bar">
+        <div class="prog-fill" [style.width.%]="progressPct"></div>
+      </div>
+    </div>
 
     <!-- ── PAGE 1: BASICS ── -->
     <div class="page-content" *ngIf="currentStep === 0">
       <div class="page-header">
         <div class="page-tag">Step 1 of 4</div>
-        <h2>Campaign Basics</h2>
-        <p class="page-desc">Start with the core details — name, description, link, and when it runs.</p>
+        <h2>Campaign Details</h2>
+        <!-- <p class="page-desc">Start with the core details — name, description, link, and when it runs.</p> -->
       </div>
 
       <div class="section">
@@ -384,27 +402,21 @@
         <div class="card">
           <div class="field">
             <label>Campaign Name <span class="req">*</span></label>
-            <input
-              type="text"
-              [(ngModel)]="campaignName"
-              placeholder="e.g. Summer Sale 2024"
-              maxlength="80"
-            >
-            <div class="char-count">{{ campaignName.length }}/80</div>
+            <input type="text" [(ngModel)]="campaignTitle" placeholder="e.g. Summer Sale 2024" maxlength="80">
+            <div class="char-count">{{ campaignTitle.length }}/80</div>
           </div>
           <div class="field" style="margin-bottom:0">
-            <label>Description <span class="hint">What's this campaign about?</span></label>
-            <textarea
-              [(ngModel)]="description"
-              placeholder="Tell sharers what they're promoting and why it matters..."
-              maxlength="300"
-            ></textarea>
-            <div class="char-count">{{ description.length }}/300</div>
+            <label>Description <span class="req">*</span> <span class="hint">What's this campaign about?</span></label>
+            <textarea [(ngModel)]="campaignDescription"
+              placeholder="Tell sharers what they're promoting and why it matters..." maxlength="300"></textarea>
+            <label> <span class="hint">This can be rewritten</span></label>
+
+            <div class="char-count">{{ campaignDescription.length }}/300</div>
           </div>
         </div>
       </div>
 
-      <div class="section">
+      <!-- <div class="section">
         <div class="section-title">Details</div>
         <div class="card">
           <div class="field">
@@ -426,6 +438,36 @@
             </div>
           </div>
         </div>
+      </div> -->
+      <div class="section">
+        <div class="section-title">Post Generation</div>
+        <div class="card">
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-name">Auto-generate captions for sharers</div>
+              <div class="toggle-desc">We write the copy so sharers can post immediately</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="auto_generate_captions">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+
+          <div class="field" style="margin-top:12px;margin-bottom:0">
+            <label>Trending Hashtags <span class="hint">Up to 4</span></label>
+            <div class="topics-wrap">
+              <div class="topic-tag" *ngFor="let t of hash_tags(); let i = index">
+                {{ t }}
+                <button (click)="removeTopic(i)">✕</button>
+              </div>
+            </div>
+            <div class="topic-row">
+              <input type="text" [(ngModel)]="topicInput" placeholder="#SummerSale"
+                (keydown)="onTopicKeydown($event)" />
+              <button class="btn-add" (click)="addTopic()">+ Add</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="section">
@@ -434,15 +476,16 @@
           <div class="grid-2">
             <div class="field" style="margin-bottom:0">
               <label>Start Date <span class="req">*</span></label>
-              <input type="date" [(ngModel)]="startDate">
+              <input type="date" [(ngModel)]="start_date">
             </div>
             <div class="field" style="margin-bottom:0">
               <label>End Date <span class="req">*</span></label>
-              <input type="date" [(ngModel)]="endDate">
+              <input type="date" [(ngModel)]="end_date">
             </div>
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- ── PAGE 2: CONTENT ── -->
@@ -456,22 +499,10 @@
       <div class="section">
         <div class="section-title">Campaign Media</div>
         <div class="card">
-          <div
-            class="upload-zone"
-            [class.dragover]="isDragging"
-            (dragover)="onDragOver($event)"
-            (dragleave)="onDragLeave()"
-            (drop)="onDrop($event)"
-            (click)="fileInput.click()"
-          >
-            <input
-              #fileInput
-              type="file"
-              multiple
-              accept="image/*,video/*,.pdf"
-              style="display:none"
-              (change)="onFilesSelected($event)"
-            >
+          <div class="upload-zone" [class.dragover]="isDragging" (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave()" (drop)="onDrop($event)" (click)="fileInput.click()">
+            <input #fileInput type="file" multiple accept="image/*,video/*,.pdf" style="display:none"
+              (change)="onFilesSelected($event)">
             <div class="upload-icon">📂</div>
             <div class="upload-title">Drop files or click to browse</div>
             <div class="upload-sub">
@@ -479,8 +510,8 @@
             </div>
           </div>
 
-          <div class="file-list" *ngIf="files.length > 0">
-            <div class="file-item" *ngFor="let f of files; let i = index">
+          <div class="file-list" *ngIf="selectedImages().length > 0">
+            <div class="file-item" *ngFor="let f of selectedImages(); let i = index">
               <div class="file-thumb">
                 <img *ngIf="f.preview" [src]="f.preview" [alt]="f.file.name">
                 <span *ngIf="!f.preview">{{ f.icon }}</span>
@@ -500,11 +531,7 @@
         <div class="card">
           <div class="platform-grid">
             <div class="platform-item" *ngFor="let p of platforms">
-              <input
-                type="checkbox"
-                [id]="'p-' + p.id"
-                [(ngModel)]="p.selected"
-              >
+              <input type="checkbox" [id]="'p-' + p.id" [(ngModel)]="p.selected">
               <label class="platform-label" [for]="'p-' + p.id">
                 <span class="platform-emoji">{{ p.emoji }}</span>
                 <span class="platform-name">{{ p.name }}</span>
@@ -514,40 +541,7 @@
         </div>
       </div>
 
-      <div class="section">
-        <div class="section-title">Post Generation</div>
-        <div class="card">
-          <div class="toggle-row">
-            <div class="toggle-info">
-              <div class="toggle-name">Auto-generate captions for sharers</div>
-              <div class="toggle-desc">We write the copy so sharers can post immediately</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" [(ngModel)]="autoGenerate">
-              <span class="toggle-track"></span>
-            </label>
-          </div>
 
-          <div class="field" style="margin-top:12px;margin-bottom:0">
-            <label>Trending Hashtags <span class="hint">Up to 4</span></label>
-            <div class="topics-wrap">
-              <div class="topic-tag" *ngFor="let t of topics; let i = index">
-                {{ t }}
-                <button (click)="removeTopic(i)">✕</button>
-              </div>
-            </div>
-            <div class="topic-row">
-              <input
-                type="text"
-                [(ngModel)]="topicInput"
-                placeholder="#SummerSale"
-                (keydown)="onTopicKeydown($event)"
-              >
-              <button class="btn-add" (click)="addTopic()">+ Add</button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- ── PAGE 3: PLAN & ACCESS ── -->
@@ -558,17 +552,11 @@
         <p class="page-desc">Choose your subscription, set who can share, and review payout rates.</p>
       </div>
 
-      <div class="section">
+      <!-- <div class="section">
         <div class="section-title">Subscription Plan</div>
         <div class="plans-grid">
           <div class="plan-item" *ngFor="let plan of plans">
-            <input
-              type="radio"
-              [id]="'pl-' + plan.value"
-              name="plan"
-              [value]="plan.value"
-              [(ngModel)]="selectedPlan"
-            >
+            <input type="radio" [id]="'pl-' + plan.value" name="plan" [value]="plan.value" [(ngModel)]="selectedPlan">
             <label class="plan-label" [for]="'pl-' + plan.value">
               <div class="plan-name">{{ plan.name }}</div>
               <div class="plan-price">
@@ -581,20 +569,14 @@
             </label>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <div class="section">
         <div class="section-title">Who Can Join</div>
         <div class="card">
           <div class="access-grid">
             <div class="access-item" *ngFor="let ac of accessTypes">
-              <input
-                type="radio"
-                [id]="'ac-' + ac.value"
-                name="access"
-                [value]="ac.value"
-                [(ngModel)]="selectedAccess"
-              >
+              <input type="radio" [id]="'ac-' + ac.value" name="access" [value]="ac.value" [(ngModel)]="selectedAccess">
               <label class="access-label" [for]="'ac-' + ac.value">
                 <div class="access-icon">{{ ac.icon }}</div>
                 <div class="access-title">{{ ac.title }}</div>
@@ -623,7 +605,7 @@
           <span class="tier-info-label">— info only</span>
         </div>
         <div class="tier-grid">
-          <div class="tier-row" *ngFor="let tier of tiers">
+          <div class="tier-row" *ngFor="let tier of tiers" (click)="selectTier()">
             <div class="tier-dot" [style.background]="tier.color"></div>
             <div class="tier-main">
               <div class="tier-name">{{ tier.name }}</div>
@@ -634,6 +616,8 @@
         </div>
       </div>
     </div>
+
+
 
     <!-- ── PAGE 4: REVIEW ── -->
     <div class="page-content" *ngIf="currentStep === 3">
@@ -683,11 +667,11 @@
           </div>
           <div class="rv-row">
             <div class="rv-key">Start Date</div>
-            <div class="rv-val" [class.empty]="!startDate">{{ formatDate(startDate) }}</div>
+            <div class="rv-val" [class.empty]="!start_date()">{{ formatDate(start_date()) }}</div>
           </div>
           <div class="rv-row">
             <div class="rv-key">End Date</div>
-            <div class="rv-val" [class.empty]="!endDate">{{ formatDate(endDate) }}</div>
+            <div class="rv-val" [class.empty]="!end_date()">{{ formatDate(end_date()) }}</div>
           </div>
         </div>
       </div>
@@ -711,10 +695,10 @@
           <div class="rv-row">
             <div class="rv-key">Hashtags</div>
             <div class="rv-val">
-              <div class="rv-tags" *ngIf="topics.length > 0">
-                <span class="rv-tag" *ngFor="let t of topics">{{ t }}</span>
+              <div class="rv-tags" *ngIf="hash_tags().length > 0">
+                <span class="rv-tag" *ngFor="let t of hash_tags()">{{ t }}</span>
               </div>
-              <span class="empty" *ngIf="topics.length === 0">None added</span>
+              <span class="empty" *ngIf="hash_tags().length === 0">None added</span>
             </div>
           </div>
           <div class="rv-row">
@@ -724,7 +708,8 @@
           <div class="rv-row">
             <div class="rv-key">Files</div>
             <div class="rv-val" [class.empty]="files.length === 0">
-              {{ files.length > 0 ? files.length + ' file' + (files.length > 1 ? 's' : '') + ' uploaded' : 'No files uploaded' }}
+              {{ files.length > 0 ? files.length + ' file' + (files.length > 1 ? 's' : '') + ' uploaded' : 'No files
+              uploaded' }}
             </div>
           </div>
         </div>
@@ -759,30 +744,29 @@
       <!-- Note & Launch -->
       <div class="rv-note">
         <span class="rv-note-icon">ℹ️</span>
-        <span>By launching, you agree to our terms. Your campaign will be reviewed within a few minutes before going live. You can pause or edit it at any time from your dashboard.</span>
+        <span>By launching, you agree to our terms. Your campaign will be reviewed within a few minutes before going
+          live. You can pause or edit it at any time from your dashboard.</span>
       </div>
 
-      <button class="btn-launch" (click)="onLaunch()">🚀 Launch Campaign</button>
+      <button class="btn-launch" (click)="createCampaign()">
+        {{ isSubmitting() ? 'Creating...' : 'Create Campaign' }}</button>
+      <!-- <button 
+        class="btn-primary" 
+        (click)="createCampaign()">
+        {{ isSubmitting() ? 'Creating...' : 'Create Campaign' }}
+      </button> -->
     </div>
-
   </main>
 </div>
 
-<!-- BOTTOM NAV -->
+<!-- BOTTOM NAV
 <div class="bottom-nav">
-  <button
-    class="btn-back"
-    [style.visibility]="currentStep === 0 ? 'hidden' : 'visible'"
-    (click)="prev()"
-  >← Back</button>
+  <button class="btn-back" [style.visibility]="currentStep === 0 ? 'hidden' : 'visible'" (click)="prev()">←
+    Back</button>
 
   <div class="step-ind">
     Step <strong>{{ currentStep + 1 }}</strong> of <strong>{{ totalSteps }}</strong>
   </div>
 
-  <button
-    class="btn-next"
-    *ngIf="currentStep < totalSteps - 1"
-    (click)="next()"
-  >{{ nextLabel }}</button>
-</div>
+  <button class="btn-next" *ngIf="currentStep < totalSteps - 1" (click)="next()">{{ nextLabel }}</button>
+</div> -->

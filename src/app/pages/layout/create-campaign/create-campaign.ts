@@ -1,11 +1,11 @@
-// import { CommonModule } from '@angular/common';
-// import { HttpClient } from '@angular/common/http';
-// import { Component, inject, signal } from '@angular/core';
-// import { FormsModule } from '@angular/forms';
-// import { Store } from '@ngrx/store';
-// import { CampaignActions } from '../../../store/campaign/campaign.action';
-// import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
-// import { take } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Store } from '@ngrx/store';
+import { CampaignActions } from '../../../store/campaign/campaign.action';
+import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
+import { take } from 'rxjs';
 
 // @Component({
 //   selector: 'app-create-campaign',
@@ -332,9 +332,6 @@
 // }
 
 
-import { Component, ViewEncapsulation } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 
 interface CampaignFile {
   file: File;
@@ -375,12 +372,39 @@ export class CreateCampaign {
   // ── STEP STATE ─────────────────────────────────────────────────────────────
   currentStep = 0;
   totalSteps = 4;
+  selectedTier = ""
+  private store = inject(Store);
+  user$ = this.store.select(selectCurrentUser);
+
+  selectedType = signal<'paid' | 'free' | null>(null);
+  campaignTitle = signal('');
+  campaignDescription = signal('');
+  campaignCategory = signal('');
+  shareCount = signal(0);
+  selectedImages = signal<any[]>([]);
+  isSubmitting = signal(false);
+  isDragging = signal(false);
+  auto_generate_captions = signal(false);
+  // hash_tags = signal('');
+  start_date = signal('');
+  end_date = signal('');
+  isFormValid: any;
+  totalBudget: any;
+
+  ngOnInit() {
+    this.user$.subscribe(user => {
+      // if (!user) {
+      //   window.history.back();
+      // }
+    }
+    );
+  }
 
   steps: Step[] = [
-    { label: 'Basics',      sub: 'Name, dates, link' },
-    { label: 'Content',     sub: 'Media & platforms' },
+    { label: 'Basics', sub: 'Name, dates, link' },
+    { label: 'Content', sub: 'Media & platforms' },
     { label: 'Plan & Access', sub: 'Subscription & sharers' },
-    { label: 'Review',      sub: 'Confirm & launch' },
+    { label: 'Review', sub: 'Confirm & launch' },
   ];
 
   get progressPct(): number {
@@ -406,14 +430,13 @@ export class CreateCampaign {
 
   // ── FORM: BASICS ───────────────────────────────────────────────────────────
   campaignName = '';
-  description  = '';
-  link         = '';
-  language     = 'English';
-  mediaType    = 'Image';
-  startDate    = '';
-  endDate      = '';
+  description = '';
+  link = '';
+  language = 'English';
+  mediaType = 'Image';
 
-  languages  = ['English', 'Nigerian Pidgin', 'Yoruba', 'Igbo', 'Hausa'];
+
+  languages = ['English', 'Nigerian Pidgin', 'Yoruba', 'Igbo', 'Hausa'];
   mediaTypes = ['Image', 'Video', 'Text Only'];
 
   formatDate(d: string): string {
@@ -425,13 +448,12 @@ export class CreateCampaign {
 
   // ── FORM: CONTENT ──────────────────────────────────────────────────────────
   files: CampaignFile[] = [];
-  isDragging = false;
 
   platforms = [
-    { id: 'tw', emoji: '𝕏',  name: 'Twitter',   selected: false },
+    { id: 'tw', emoji: '𝕏', name: 'Twitter', selected: false },
     { id: 'ig', emoji: '📸', name: 'Instagram', selected: false },
-    { id: 'tt', emoji: '🎵', name: 'TikTok',    selected: false },
-    { id: 'fb', emoji: '👥', name: 'Facebook',  selected: false },
+    { id: 'tt', emoji: '🎵', name: 'TikTok', selected: false },
+    { id: 'fb', emoji: '👥', name: 'Facebook', selected: false },
   ];
 
   get selectedPlatforms(): string[] {
@@ -439,19 +461,25 @@ export class CreateCampaign {
   }
 
   autoGenerate = true;
-  topics: string[] = [];
+
+
   topicInput = '';
 
+  hash_tags = signal<string[]>([]);
+
   addTopic(): void {
-    let v = this.topicInput.trim();
-    if (!v || this.topics.length >= 4) { this.topicInput = ''; return; }
-    if (!v.startsWith('#')) v = '#' + v;
-    if (!this.topics.includes(v)) this.topics.push(v);
+    const v = this.topicInput.trim();
+    if (!v || this.hash_tags().length >= 4) return;
+
+    const formatted = v.startsWith('#') ? v : '#' + v;
+    if (!this.hash_tags().includes(formatted)) {
+      this.hash_tags.update(topics => [...topics, formatted]);
+    }
     this.topicInput = '';
   }
 
   removeTopic(i: number): void {
-    this.topics.splice(i, 1);
+    this.hash_tags.update(topics => topics.filter((_, index) => index !== i));
   }
 
   onTopicKeydown(event: KeyboardEvent): void {
@@ -469,23 +497,24 @@ export class CreateCampaign {
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();
-    this.isDragging = true;
+    // this.isDragging = true;
   }
 
   onDragLeave(): void {
-    this.isDragging = false;
+    // this.isDragging = false;
   }
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
-    this.isDragging = false;
     if (event.dataTransfer?.files) this.addFiles(event.dataTransfer.files);
   }
 
   private addFiles(fileList: FileList): void {
     const incoming = Array.from(fileList);
-    const combined = [...this.files.map(f => f.file), ...incoming].slice(0, 10);
-    this.files = combined.map(f => this.buildCampaignFile(f));
+    const currentFiles = this.selectedImages().map(f => f.file);
+    const combined = [...currentFiles, ...incoming].slice(0, 10);
+    const mappedFiles = combined.map(f => this.buildCampaignFile(f))
+    this.selectedImages.set(mappedFiles);
   }
 
   private buildCampaignFile(f: File): CampaignFile {
@@ -499,7 +528,7 @@ export class CreateCampaign {
   }
 
   removeFile(i: number): void {
-    this.files.splice(i, 1);
+    this.selectedImages().splice(i, 1);
   }
 
   private fmtSize(b: number): string {
@@ -543,8 +572,8 @@ export class CreateCampaign {
   }
 
   accessTypes = [
-    { value: 'Open',        icon: '🌍', title: 'Open',        desc: 'Anyone can join and share' },
-    { value: 'Invite Only', icon: '📩', title: 'Invite Only', desc: 'You handpick who participates' },
+    { value: 'Open', icon: '🌍', title: 'Open', desc: 'Anyone can join and share' },
+    { value: 'Invite Only', icon: '📩', title: 'Invite Only', desc: 'invites media influencers' },
     { value: 'Application', icon: '📋', title: 'Application', desc: 'Sharers apply, you approve' },
   ];
 
@@ -552,32 +581,75 @@ export class CreateCampaign {
   autoAssignTier = true;
 
   tiers: Tier[] = [
-    { name: 'Nano',  range: '0 – 9,999 followers',         amount: '₦500',    color: '#0ea5e9' },
-    { name: 'Micro', range: '10,000 – 49,999 followers',   amount: '₦2,000',  color: '#8b5cf6' },
-    { name: 'Macro', range: '50,000 – 499,999 followers',  amount: '₦10,000', color: '#f59e0b' },
-    { name: 'Mega',  range: '500,000+ followers',          amount: '₦50,000', color: '#ef4444' },
+    { name: 'Nano', range: '0 – 9,999 followers', amount: '₦500', color: '#0ea5e9' },
+    { name: 'Micro', range: '10,000 – 49,999 followers', amount: '₦2,000', color: '#8b5cf6' },
+    { name: 'Macro', range: '50,000 – 499,999 followers', amount: '₦10,000', color: '#f59e0b' },
+    { name: 'Mega', range: '500,000+ followers', amount: '₦50,000', color: '#ef4444' },
   ];
 
+  selectTier(): void {
+    alert('Tier selection coming soon!');
+  }
   // ── LAUNCH ─────────────────────────────────────────────────────────────────
-  onLaunch(): void {
-    const payload = {
-      name:           this.campaignName,
-      description:    this.description,
-      link:           this.link,
-      language:       this.language,
-      mediaType:      this.mediaType,
-      startDate:      this.startDate,
-      endDate:        this.endDate,
-      platforms:      this.selectedPlatforms,
-      topics:         this.topics,
-      autoGenerate:   this.autoGenerate,
-      files:          this.files.map(f => f.file.name),
-      plan:           this.selectedPlan,
-      access:         this.selectedAccess,
-      autoAssignTier: this.autoAssignTier,
-    };
-    console.log('Campaign payload:', payload);
-    // TODO: call your API service here
-    alert('Campaign launched! Check console for payload.');
+  // onLaunch(): void {
+  //   const payload = {
+  //     name: this.campaignName,
+  //     description: this.description,
+  //     link: this.link,
+  //     language: this.language,
+  //     mediaType: this.mediaType,
+  //     startDate: this.startDate,
+  //     endDate: this.endDate,
+  //     platforms: this.selectedPlatforms,
+  //     topics: this.topics,
+  //     autoGenerate: this.autoGenerate,
+  //     files: this.files.map(f => f.file.name),
+  //     plan: this.selectedPlan,
+  //     access: this.selectedAccess,
+  //     autoAssignTier: this.autoAssignTier,
+  //   };
+  //   console.log('Campaign payload:', payload);
+  //   // TODO: call your API service here
+  //   alert('Campaign launched! Check console for payload.');
+  // }
+
+  // Form Submission
+  async createCampaign() {
+    // if (!this.isFormValid) return;
+
+    // this.isSubmitting.set(true);
+
+    const formData = new FormData();
+    formData.append('title', this.campaignTitle());
+    formData.append('description', this.campaignDescription());
+    formData.append('category', this.campaignCategory());
+    formData.append('type', this.selectedType()!);
+    formData.append('creator_id', (await this.user$.pipe(take(1)).toPromise())?.id.toString() || '');
+    formData.append('auto_generate_captions', this.auto_generate_captions().toString());
+    formData.append('hash_tags', JSON.stringify(this.hash_tags()));
+    formData.append('name', `${(await this.user$.pipe(take(1)).toPromise())?.first_name || 'default_id'}` + `_${(await this.user$.pipe(take(1)).toPromise())?.last_name || 'default_id'}`);
+
+
+    if (this.selectedType() === 'paid') {
+      formData.append('shareCount', this.shareCount().toString());
+      formData.append('totalBudget', this.totalBudget.toString());
+    }
+
+    this.selectedImages().forEach((img) => {
+      formData.append('files', img.file);
+    });
+
+    try {
+
+      console.log('FormData entries:', Object.fromEntries(formData.entries()));
+
+      // this.store.dispatch(CampaignActions.createCampaign({ dto: formData, files: this.selectedImages().map(img => img.file) }));
+
+    } catch (error: any) {
+      console.log(error)
+      alert(`❌ Error: ${error.message || 'Failed to create campaign'}`);
+    } finally {
+      this.isSubmitting.set(false);
+    }
   }
 }
