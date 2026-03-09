@@ -1,377 +1,4 @@
-<!-- <div class="create-campaign-wrapper">
-  <header class="page-header">
-    <h1 class="page-title">Create Campaign</h1>
-    <p class="page-subtitle">Share your product or post and reach more people</p>
-  </header>
-
-  <div class="form-container">
-    <section class="form-section">
-      <label class="section-label">Select Campaign Type</label>
-      <div class="campaign-types">
-        <button type="button" 
-          class="type-card" 
-          [class.selected]="selectedType() === 'paid'"
-          (click)="selectCampaignType('paid')">
-          <span class="material-icons type-icon">payments</span>
-          <span class="type-title">Paid Campaign</span>
-          <span class="type-description">Pay influencers to share your product. Get guaranteed reach.</span>
-          <span class="type-badge paid">₦1,000 per share</span>
-        </button>
-
-        <button type="button" 
-          class="type-card" 
-          [class.selected]="selectedType() === 'free'"
-          (click)="selectCampaignType('free')">
-          <span class="material-icons type-icon">campaign</span>
-          <span class="type-title">Free Post</span>
-          <span class="type-description">Share your content organically. No incentives.</span>
-          <span class="type-badge free">Free</span>
-        </button>
-      </div>
-    </section>
-
-    <section class="form-section">
-      <label class="section-label">Campaign Details</label>
-
-      <div class="form-group">
-        <label class="form-label" for="campaignTitle">
-          Campaign Title <span class="required">*</span>
-        </label>
-        <input 
-          id="campaignTitle"
-          type="text" 
-          class="form-input" 
-          [(ngModel)]="campaignTitle"
-          placeholder="e.g., Premium Wireless Headphones"
-          maxlength="100"
-        />
-        <div class="form-footer">
-          <span class="form-hint">Choose a clear, compelling title</span>
-          <span class="char-counter" [class.warning]="titleCharCount > 80">{{ titleCharCount }}/100</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="description">
-          Description <span class="required">*</span>
-        </label>
-        <textarea 
-          id="description"
-          class="form-textarea" 
-          [(ngModel)]="campaignDescription"
-          placeholder="Describe your product..."
-          maxlength="500"
-        ></textarea>
-        <div class="form-footer">
-          <span class="form-hint">What makes it special?</span>
-          <span class="char-counter" [class.warning]="descCharCount > 450">{{ descCharCount }}/500</span>
-        </div>
-      </div>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">Category</label>
-          <select class="form-select" [(ngModel)]="campaignCategory">
-            <option value="">Select category</option>
-            <option value="fashion">Fashion</option>
-            <option value="electronics">Electronics</option>
-            <option value="beauty">Beauty</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Product Images <span class="required">*</span></label>
-          <div 
-            class="image-upload-area"
-            [class.drag-over]="isDragging()"
-            (click)="triggerFileInput()"
-            (dragover)="onDragOver($event)"
-            (dragleave)="onDragLeave($event)"
-            (drop)="onDrop($event)">
-            <span class="material-icons upload-icon">add_photo_alternate</span>
-            <span class="upload-text">Upload Images</span>
-          </div>
-          <input type="file" id="imageInput" accept="image/*" multiple (change)="onFileSelected($event)" style="display: none;" />
-        </div>
-      </div>
-
-      @if (selectedImages().length > 0) {
-        <div class="image-preview-grid">
-          @for (img of selectedImages(); track img.url; let i = $index) {
-            <div class="image-preview-item">
-              <img [src]="img.url" class="preview-image" />
-              <button class="remove-image-btn" (click)="removeImage(i)">
-                <span class="material-icons">close</span>
-              </button>
-            </div>
-          }
-        </div>
-      }
-    </section>
-
-    @if (selectedType() === 'paid') {
-      <section class="form-section budget-section">
-        <label class="section-label">Campaign Budget</label>
-        <div class="budget-grid">
-          <div class="form-group">
-            <label class="form-label">Number of Shares</label>
-            <input type="number" class="form-input" [(ngModel)]="shareCount" min="10" />
-          </div>
-          <div class="budget-display">
-            <div class="budget-label">Total Budget</div>
-            <div class="budget-value">₦3</div>
-          </div>
-        </div>
-      </section>
-    }
-
-    <footer class="action-buttons">
-      <button class="btn-secondary" (click)="cancel()">Cancel</button>
-      <button 
-        class="btn-primary" 
-        [disabled]="!isFormValid || isSubmitting()"
-        (click)="createCampaign()">
-        {{ isSubmitting() ? 'Creating...' : 'Create Campaign' }}
-      </button>
-    </footer>
-  </div>
-</div> -->
-
-<!-- campaign-setup.component.html -->
-
-
-<!-- v1 endes here -->
-
-
-
-
-
-<!-- 
-
-
-<div class="social-card">
-  <div class="vibe-header">
-    <h2><i class="fas fa-smile"
-        style="background: linear-gradient(145deg, #304a6e, #17212f); -webkit-background-clip:text; -webkit-text-fill-color:transparent;"></i>
-      connect · modern</h2>
-    <div class="chip"><i class="far fa-bell"></i> demo · social ui</div>
-  </div>
-
-  <div class="row">
-    <label> Campaign Title</label>
-    <input type="text" placeholder="Enter campaign title" value="">
-  </div>
-
-
-    <div class="row">
-      <label> Campaign Write-up</label>
-      <textarea placeholder="Describe your campaign in detail"></textarea>
-    </div>
-
-
-            <div class="multiselect-sectio">
-                <div class="multiselect-title">
-                     <span>Select Platforms</span>
-                </div>
-
-                <div class="card-multi-group" id="multiCardGroup">
-                    <div class="multi-card">
-                        <input type="checkbox" id="interest-design" value="Design" class="interest-check">
-                        <label for="interest-design"><i class="fab fa-instagram"></i> Instagram</label>
-                    </div>
-                    <div class="multi-card">
-                        <input type="checkbox" id="interest-code" value="Coding" class="interest-check">
-                        <label for="interest-code"><i class="fab fa-twitter"></i> X</label>
-                    </div>
-                    <div class="multi-card">
-                        <input type="checkbox" id="interest-music" value="Music" class="interest-check">
-                        <label for="interest-music"><i class="fab fa-facebook"></i> Facebook</label>
-                    </div>
-                    <div class="multi-card">
-                        <input type="checkbox" id="interest-photo" value="Photo" class="interest-check">
-                        <label for="interest-photo"><i class="fab fa-tiktok"></i> Tiktok</label>
-                    </div>
-                    <div class="multi-card">
-                        <input type="checkbox" id="interest-games" value="Gaming" class="interest-check">
-                        <label for="interest-games"><i class="fab fa-whatsapp"></i> Whatsapp</label>
-                    </div>
-  
-                </div>
-
-                <div class="selected-summary" id="selectedSummaryBox">
-                    <span class="summary-label"><i class="far fa-check-circle"></i> selected</span>
-                    <span class="summary-text" id="selectedDisplay"><i class="far fa-minus"></i> none</span>
-                </div>
-             
-            </div>
-
-<hr>
-  <div class="form-grid">
-    <div class="row-duo">
-      <div class="field-group">
-        <label><i class="far fa-user" style="margin-right:4px;"></i> first name</label>
-        <input type="text" placeholder="alex" value="jordan">
-      </div>
-      <div class="field-group">
-        <label><i class="far fa-user-circle"></i> last name</label>
-        <input type="text" placeholder="carter" value="morgan">
-      </div>
-    </div>
-
-
-    <div class="section-tag">
-      <i class="fas fa-crown"></i><span>membership</span>
-    </div>
-    <div class="card-group">
-      <div class="radio-card">
-        <input type="radio" name="plan" id="basic" value="basic" checked>
-        <label for="basic"><i class="fas fa-star"></i> basic</label>
-      </div>
-      <div class="radio-card">
-        <input type="radio" name="plan" id="plus" value="plus">
-        <label for="plus"><i class="fas fa-gem"></i> plus</label>
-      </div>
-      <div class="radio-card">
-        <input type="radio" name="plan" id="premium" value="premium">
-        <label for="premium"><i class="fas fa-bolt"></i> premium</label>
-      </div>
-      <div class="radio-card">
-        <input type="radio" name="plan" id="creator" value="creator">
-        <label for="creator"><i class="fas fa-camera"></i> creator</label>
-      </div>
-    </div>
-
-    <div class="row-duo" style="margin-top: 0.5rem;">
-      <div class="field-group">
-        <label><i class="fas fa-globe"></i> country</label>
-        <select>
-          <option>united states</option>
-          <option>canada</option>
-          <option>united kingdom</option>
-          <option selected>australia</option>
-          <option>japan</option>
-        </select>
-      </div>
-      <div class="field-group">
-        <label><i class="fas fa-hashtag"></i> language</label>
-        <select>
-          <option>english</option>
-          <option>spanish</option>
-          <option>french</option>
-          <option selected>japanese</option>
-        </select>
-      </div>
-    </div>
-
-    <div>
-      <label><i class="far fa-smile-wink"></i> additional vibe</label>
-      <textarea placeholder="extra thoughts ..."></textarea>
-    </div>
-
-    <div class="social-row">
-      <i class="fab fa-instagram"></i>
-      <span>@jordan.morgan</span>
-      <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.8rem; color: #7d8fb2;"></i>
-    </div>
-
-    <div class="row-duo">
-      <div class="field-group">
-        <label><i class="fas fa-at"></i> handle</label>
-        <input type="text" placeholder="@username" value="jordan.c">
-      </div>
-      <div class="field-group">
-        <label><i class="fas fa-calendar"></i> join month</label>
-        <select>
-          <option>january</option>
-          <option>february</option>
-          <option>march</option>
-          <option>april</option>
-          <option selected>may</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="meta-note">
-      <span><i class="far fa-clock"></i> last active 5m ago</span>
-      <span><i class="fas fa-share-alt"></i> public</span>
-    </div>
-
-    <div class="button-row">
-      <button class="btn btn-like"><i class="far fa-heart"></i> like</button>
-      <button class="btn btn-outline"><i class="far fa-bookmark"></i> save draft</button>
-      <button class="btn btn-primary"><i class="fas fa-paper-plane"></i> post update</button>
-    </div>
-
-    <div
-      style="display: flex; gap: 1.5rem; justify-content: flex-end; margin-top: 0.4rem; font-size: 0.9rem; color: #627595;">
-      <span><i class="far fa-comment"></i> 24</span>
-      <span><i class="fas fa-retweet"></i> 7</span>
-      <span><i class="far fa-heart"></i> 142</span>
-    </div>
-  </div> 
-
-  <hr>
-  <div style="display: flex; gap: 1.8rem; color: #798cb0; font-size: 0.85rem; padding-left: 0.3rem;">
-    <span><i class="fas fa-check-circle" style="color: #3f5e8c;"></i> fields & cards</span>
-    <span><i class="fas fa-chevron-circle-down"></i> 3 dropdowns</span>
-    <span><i class="fas fa-message"></i> 2 areas</span>
-  </div>
-</div> 
-
-<div style="max-width: 760px; margin-top: 1.2rem; color: #7a8bb1; font-size: 0.85rem; display: flex; gap: 1rem;">
-  <span>⚡️ social media app vibe · standard buttons · white card</span>
-  <span><i class="fab fa-twitter"></i> <i class="fab fa-instagram"></i> <i class="fab fa-tiktok"></i></span>
-</div> -->
-
-
-
-<!-- TOP NAV -->
-<!-- <nav class="topnav">
-  <div class="nav-logo">camp<span>.</span>io</div>
-  <div class="nav-right">
-    <span class="nav-saved">● Auto-saved</span>
-    <button class="nav-exit">Exit</button>
-  </div>
-</nav> -->
-
 <div class="layout">
-
-  <!-- SIDEBAR -->
-  <!-- <aside class="sidebar">
-    <div class="sidebar-label">Steps</div>
-    <div class="step-list">
-      <button
-        *ngFor="let step of steps; let i = index"
-        class="step-btn"
-        [class.active]="i === currentStep"
-        [class.done]="i < currentStep"
-        (click)="goTo(i)"
-      >
-        <div class="step-num">{{ i < currentStep ? '✓' : i + 1 }}</div>
-        <div class="step-text-wrap">
-          <div class="step-name">{{ step.label }}</div>
-          <div class="step-sub">{{ step.sub }}</div>
-        </div>
-      </button>
-    </div>
-
-    <div class="sidebar-sep"></div>
-
-    <div class="prog-wrap">
-      <div class="prog-top">
-        <span>Progress</span>
-        <span>{{ progressPct }}%</span>
-      </div>
-      <div class="prog-bar">
-        <div class="prog-fill" [style.width.%]="progressPct"></div>
-      </div>
-    </div>
-  </aside> -->
-
-
-
-
-  <!-- MAIN -->
   <main class="main">
 
 
@@ -389,12 +16,10 @@
       </div>
     </div>
 
-    <!-- ── PAGE 1: BASICS ── -->
     <div class="page-content" *ngIf="currentStep === 0">
       <div class="page-header">
         <div class="page-tag">Step 1 of 4</div>
         <h2>Campaign Details</h2>
-        <!-- <p class="page-desc">Start with the core details — name, description, link, and when it runs.</p> -->
       </div>
 
       <div class="section">
@@ -416,29 +41,6 @@
         </div>
       </div>
 
-      <!-- <div class="section">
-        <div class="section-title">Details</div>
-        <div class="card">
-          <div class="field">
-            <label>Campaign Link <span class="req">*</span></label>
-            <input type="url" [(ngModel)]="link" placeholder="https://yoursite.com/campaign">
-          </div>
-          <div class="grid-2">
-            <div class="field" style="margin-bottom:0">
-              <label>Language</label>
-              <select [(ngModel)]="language">
-                <option *ngFor="let lang of languages" [value]="lang">{{ lang }}</option>
-              </select>
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label>Media Type</label>
-              <select [(ngModel)]="mediaType">
-                <option *ngFor="let mt of mediaTypes" [value]="mt">{{ mt }}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div> -->
       <div class="section">
         <div class="section-title">Post Generation</div>
         <div class="card">
@@ -552,25 +154,6 @@
         <p class="page-desc">Choose your subscription, set who can share, and review payout rates.</p>
       </div>
 
-      <!-- <div class="section">
-        <div class="section-title">Subscription Plan</div>
-        <div class="plans-grid">
-          <div class="plan-item" *ngFor="let plan of plans">
-            <input type="radio" [id]="'pl-' + plan.value" name="plan" [value]="plan.value" [(ngModel)]="selectedPlan">
-            <label class="plan-label" [for]="'pl-' + plan.value">
-              <div class="plan-name">{{ plan.name }}</div>
-              <div class="plan-price">
-                {{ plan.price }}<span *ngIf="plan.value !== 'Enterprise'">/mo</span>
-              </div>
-              <div class="plan-posts">{{ plan.posts }}</div>
-              <ul class="plan-feats">
-                <li *ngFor="let f of plan.features">{{ f }}</li>
-              </ul>
-            </label>
-          </div>
-        </div>
-      </div> -->
-
       <div class="section">
         <div class="section-title">Who Can Join</div>
         <div class="card">
@@ -599,7 +182,9 @@
         </div>
       </div>
 
-      <div class="section">
+
+@if(selectedAccess === 'open'){
+<div class="section" >
         <div class="section-title">
           Payout Tiers
           <span class="tier-info-label">— info only</span>
@@ -615,10 +200,263 @@
           </div>
         </div>
       </div>
+}
+
+@if (selectedAccess === 'invite_only') {
+
+ <div class="batch-container">
+  <div class="search-section">
+    <input 
+      type="text" 
+      [value]="searchQuery()"
+      (input)="searchQuery.set($any($event.target).value)"
+      placeholder="Search member to add..."
+      class="search-bar"
+    />
+
+    @if (searchResults().length > 0) {
+      <ul class="dropdown">
+        @for (m of searchResults(); track m.id) {
+          <li (click)="addMember(m)" class="dropdown-item">
+            <strong>{{ m.name }}</strong>
+            <span>{{ m.hospital_number }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <div class="table-wrapper">
+    <table class="member-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Hospital ID</th>
+          <th>Status</th>
+          <th></th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of selectedMembers(); track m.id) {
+          <tr>
+            <td><strong>{{ m.name }}</strong></td>
+            <td><code>{{ m.hospital_number }}</code></td>
+            <td>
+              <span class="status-badge" [class.active]="m.status === 'ACTIVE'">
+                {{ m.status }}
+              </span>
+            </td>
+            <td>
+              <span class="profile-badge">
+                View Profile
+              </span>
+            </td>
+            <td>
+              <button (click)="removeMember(m.id)" class="btn-delete">Remove</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="empty-msg">No members added to this batch yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+}
+
+
+@if (selectedAccess === 'application') {
+
+
+
+<div class="page-header">
+  <div>
+    <p>Review applicants and manage active members</p>
+  </div>
+  <div class="badge-row">
+    <span class="badge-count badge-pending">{{ applicants().length }} pending</span>
+    <span class="badge-count badge-active">{{ selectedMembers().length }} active</span>
+  </div>
+</div>
+
+<!-- Applicants -->
+<div class="section-label">
+  <h2>Applicants</h2>
+  <div class="line"></div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Applicant</th>
+        <th>Platforms</th>
+        <th class="hide-mobile">Status</th>
+        <th class="align-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (applicants().length === 0) {
+        <tr class="empty-row">
+          <td colspan="4">
+            <span class="empty-icon">📭</span>
+            No pending applicants
+          </td>
+        </tr>
+      }
+      @for (a of applicants(); track a.id) {
+        <tr>
+          <td>
+            <div class="cell-name">
+              <div class="avatar">{{ initials(a.name) }}</div>
+              <div>
+                <div class="name-text">{{ a.name }}</div>
+                <div class="id-text">#{{ a.id }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="platforms">
+              @for (p of a.platforms; track p.name) {
+                <span class="plat-chip">
+                  {{ p.name }} <span class="followers">{{ p.followers }}</span>
+                </span>
+              }
+            </div>
+          </td>
+          <td class="hide-mobile">
+            <span class="status-dot status-pending">{{ a.status }}</span>
+          </td>
+          <td>
+            <div class="actions align-right">
+              <button class="btn btn-profile"  (click)="showProfile(a)">↗</button>
+              <button class="btn btn-decline"  (click)="declineApplicant(a.id)">Decline</button>
+              <button class="btn btn-accept"   (click)="acceptApplicant(a)">Accept</button>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<!-- Members -->
+<div class="section-label">
+  <h2>Active Members</h2>
+  <div class="line"></div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Member</th>
+        <th>Platforms</th>
+        <th class="hide-mobile">Status</th>
+        <th class="align-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (selectedMembers().length === 0) {
+        <tr class="empty-row">
+          <td colspan="4">
+            <span class="empty-icon">👥</span>
+            No active members yet
+          </td>
+        </tr>
+      }
+      @for (m of selectedMembers(); track m.id; let i = $index) {
+        <tr>
+          <td>
+            <div class="cell-name">
+              <div class="avatar avatar-active">{{ initials(m.name) }}</div>
+              <div>
+                <div class="name-text">{{ m.name }}</div>
+                <div class="id-text">#{{ m.id }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="platforms">
+              @for (p of m.platforms; track p.name) {
+                <span class="plat-chip">
+                  {{ p.name }} <span class="followers">{{ p.followers }}</span>
+                </span>
+              }
+            </div>
+          </td>
+          <td class="hide-mobile">
+            <span class="status-dot status-active">{{ m.status }}</span>
+          </td>
+          <td>
+            <div class="actions align-right">
+              <button class="btn btn-profile" (click)="showProfile(m)">↗</button>
+              <button class="btn btn-remove"  (click)="removeMember(i)">Remove</button>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<!-- Profile Modal -->
+@if (viewingProfile()) {
+  <div class="modal-overlay" (click)="onOverlayClick($event)">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Profile</h3>
+        <button class="btn-close" (click)="viewingProfile.set(null)">✕</button>
+      </div>
+      <div class="modal-avatar">{{ initials(viewingProfile()!.name) }}</div>
+      <div class="modal-name">{{ viewingProfile()!.name }}</div>
+      <div class="modal-id">ID: {{ viewingProfile()!.id }} · {{ viewingProfile()!.status }}</div>
+      <div class="modal-divider"></div>
+      <div class="modal-section-title">Social Platforms</div>
+      <div class="modal-platforms">
+        @for (p of viewingProfile()!.platforms; track p.name) {
+          <div class="modal-plat-row">
+            <span class="modal-plat-name">{{ p.name }}</span>
+            <span class="modal-plat-followers">{{ p.followers }}</span>
+          </div>
+        }
+      </div>
     </div>
+  </div>
+}
+
+
+}
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
     <!-- ── PAGE 4: REVIEW ── -->
     <div class="page-content" *ngIf="currentStep === 3">
       <div class="page-header">
@@ -758,15 +596,3 @@
     </div>
   </main>
 </div>
-
-<!-- BOTTOM NAV
-<div class="bottom-nav">
-  <button class="btn-back" [style.visibility]="currentStep === 0 ? 'hidden' : 'visible'" (click)="prev()">←
-    Back</button>
-
-  <div class="step-ind">
-    Step <strong>{{ currentStep + 1 }}</strong> of <strong>{{ totalSteps }}</strong>
-  </div>
-
-  <button class="btn-next" *ngIf="currentStep < totalSteps - 1" (click)="next()">{{ nextLabel }}</button>
-</div> -->
