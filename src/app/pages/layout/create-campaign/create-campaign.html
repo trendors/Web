@@ -17,11 +17,6 @@
     </div>
 
     <div class="page-content" *ngIf="currentStep === 0">
-      <div class="page-header">
-        <div class="page-tag">Step 1 of 4</div>
-        <h2>Campaign Details</h2>
-      </div>
-
       <div class="section">
         <div class="section-title">Identity</div>
         <div class="card">
@@ -92,11 +87,6 @@
 
     <!-- ── PAGE 2: CONTENT ── -->
     <div class="page-content" *ngIf="currentStep === 1">
-      <div class="page-header">
-        <div class="page-tag">Step 2 of 4</div>
-        <h2>Content & Media</h2>
-        <p class="page-desc">Upload your assets, choose platforms, and set your hashtags.</p>
-      </div>
 
       <div class="section">
         <div class="section-title">Campaign Media</div>
@@ -148,11 +138,6 @@
 
     <!-- ── PAGE 3: PLAN & ACCESS ── -->
     <div class="page-content" *ngIf="currentStep === 2">
-      <div class="page-header">
-        <div class="page-tag">Step 3 of 4</div>
-        <h2>Plan & Access</h2>
-        <p class="page-desc">Choose your subscription, set who can share, and review payout rates.</p>
-      </div>
 
       <div class="section">
         <div class="section-title">Who Can Join</div>
@@ -183,8 +168,8 @@
       </div>
 
 
-@if(selectedAccess === 'open'){
-<div class="section" >
+      @if(selectedAccess === 'open'){
+      <div class="section">
         <div class="section-title">
           Payout Tiers
           <span class="tier-info-label">— info only</span>
@@ -200,236 +185,231 @@
           </div>
         </div>
       </div>
-}
-
-@if (selectedAccess === 'invite_only') {
-
- <div class="batch-container">
-  <div class="search-section">
-    <input 
-      type="text" 
-      [value]="searchQuery()"
-      (input)="searchQuery.set($any($event.target).value)"
-      placeholder="Search member to add..."
-      class="search-bar"
-    />
-
-    @if (searchResults().length > 0) {
-      <ul class="dropdown">
-        @for (m of searchResults(); track m.id) {
-          <li (click)="addMember(m)" class="dropdown-item">
-            <strong>{{ m.name }}</strong>
-            <span>{{ m.hospital_number }}</span>
-          </li>
-        }
-      </ul>
-    }
-  </div>
-
-  <div class="table-wrapper">
-    <table class="member-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Hospital ID</th>
-          <th>Status</th>
-          <th></th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (m of selectedMembers(); track m.id) {
-          <tr>
-            <td><strong>{{ m.name }}</strong></td>
-            <td><code>{{ m.hospital_number }}</code></td>
-            <td>
-              <span class="status-badge" [class.active]="m.status === 'ACTIVE'">
-                {{ m.status }}
-              </span>
-            </td>
-            <td>
-              <span class="profile-badge">
-                View Profile
-              </span>
-            </td>
-            <td>
-              <button (click)="removeMember(m.id)" class="btn-delete">Remove</button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="4" class="empty-msg">No members added to this batch yet.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-</div>
-}
-
-
-@if (selectedAccess === 'application') {
-
-
-
-<div class="page-header">
-  <div>
-    <p>Review applicants and manage active members</p>
-  </div>
-  <div class="badge-row">
-    <span class="badge-count badge-pending">{{ applicants().length }} pending</span>
-    <span class="badge-count badge-active">{{ selectedMembers().length }} active</span>
-  </div>
-</div>
-
-<!-- Applicants -->
-<div class="section-label">
-  <h2>Applicants</h2>
-  <div class="line"></div>
-</div>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>Applicant</th>
-        <th>Platforms</th>
-        <th class="hide-mobile">Status</th>
-        <th class="align-right">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      @if (applicants().length === 0) {
-        <tr class="empty-row">
-          <td colspan="4">
-            <span class="empty-icon">📭</span>
-            No pending applicants
-          </td>
-        </tr>
       }
-      @for (a of applicants(); track a.id) {
-        <tr>
-          <td>
-            <div class="cell-name">
-              <div class="avatar">{{ initials(a.name) }}</div>
-              <div>
-                <div class="name-text">{{ a.name }}</div>
-                <div class="id-text">#{{ a.id }}</div>
-              </div>
-            </div>
-          </td>
-          <td>
-            <div class="platforms">
-              @for (p of a.platforms; track p.name) {
-                <span class="plat-chip">
-                  {{ p.name }} <span class="followers">{{ p.followers }}</span>
-                </span>
+
+      @if (selectedAccess === 'invite_only') {
+
+      <div class="batch-container">
+        <div class="search-section">
+          <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)"
+            placeholder="Search member to add..." class="search-bar" />
+
+          @if (searchResults().length > 0) {
+          <ul class="dropdown">
+            @for (m of searchResults(); track m.id) {
+            <li (click)="addMember(m)" class="dropdown-item">
+              <strong>{{ m.name }}</strong>
+              <span>{{ m.hospital_number }}</span>
+            </li>
+            }
+          </ul>
+          }
+        </div>
+
+        <div class="table-wrapper">
+          <table class="member-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Hospital ID</th>
+                <th>Status</th>
+                <th></th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of selectedMembers(); track m.id) {
+              <tr>
+                <td><strong>{{ m.name }}</strong></td>
+                <td><code>{{ m.hospital_number }}</code></td>
+                <td>
+                  <span class="status-badge" [class.active]="m.status === 'ACTIVE'">
+                    {{ m.status }}
+                  </span>
+                </td>
+                <td>
+                  <span class="profile-badge">
+                    View Profile
+                  </span>
+                </td>
+                <td>
+                  <button (click)="removeMember(m.id)" class="btn-delete">Remove</button>
+                </td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="4" class="empty-msg">No members added to this batch yet.</td>
+              </tr>
               }
-            </div>
-          </td>
-          <td class="hide-mobile">
-            <span class="status-dot status-pending">{{ a.status }}</span>
-          </td>
-          <td>
-            <div class="actions align-right">
-              <button class="btn btn-profile"  (click)="showProfile(a)">↗</button>
-              <button class="btn btn-decline"  (click)="declineApplicant(a.id)">Decline</button>
-              <button class="btn btn-accept"   (click)="acceptApplicant(a)">Accept</button>
-            </div>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
-</div>
-
-<!-- Members -->
-<div class="section-label">
-  <h2>Active Members</h2>
-  <div class="line"></div>
-</div>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>Member</th>
-        <th>Platforms</th>
-        <th class="hide-mobile">Status</th>
-        <th class="align-right">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      @if (selectedMembers().length === 0) {
-        <tr class="empty-row">
-          <td colspan="4">
-            <span class="empty-icon">👥</span>
-            No active members yet
-          </td>
-        </tr>
-      }
-      @for (m of selectedMembers(); track m.id; let i = $index) {
-        <tr>
-          <td>
-            <div class="cell-name">
-              <div class="avatar avatar-active">{{ initials(m.name) }}</div>
-              <div>
-                <div class="name-text">{{ m.name }}</div>
-                <div class="id-text">#{{ m.id }}</div>
-              </div>
-            </div>
-          </td>
-          <td>
-            <div class="platforms">
-              @for (p of m.platforms; track p.name) {
-                <span class="plat-chip">
-                  {{ p.name }} <span class="followers">{{ p.followers }}</span>
-                </span>
-              }
-            </div>
-          </td>
-          <td class="hide-mobile">
-            <span class="status-dot status-active">{{ m.status }}</span>
-          </td>
-          <td>
-            <div class="actions align-right">
-              <button class="btn btn-profile" (click)="showProfile(m)">↗</button>
-              <button class="btn btn-remove"  (click)="removeMember(i)">Remove</button>
-            </div>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
-</div>
-
-<!-- Profile Modal -->
-@if (viewingProfile()) {
-  <div class="modal-overlay" (click)="onOverlayClick($event)">
-    <div class="modal">
-      <div class="modal-head">
-        <h3>Profile</h3>
-        <button class="btn-close" (click)="viewingProfile.set(null)">✕</button>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="modal-avatar">{{ initials(viewingProfile()!.name) }}</div>
-      <div class="modal-name">{{ viewingProfile()!.name }}</div>
-      <div class="modal-id">ID: {{ viewingProfile()!.id }} · {{ viewingProfile()!.status }}</div>
-      <div class="modal-divider"></div>
-      <div class="modal-section-title">Social Platforms</div>
-      <div class="modal-platforms">
-        @for (p of viewingProfile()!.platforms; track p.name) {
-          <div class="modal-plat-row">
-            <span class="modal-plat-name">{{ p.name }}</span>
-            <span class="modal-plat-followers">{{ p.followers }}</span>
+      }
+
+
+      @if (selectedAccess === 'application') {
+
+
+
+      <div class="page-header">
+        <div>
+          <p>Review applicants and manage active members</p>
+        </div>
+        <div class="badge-row">
+          <span class="badge-count badge-pending">{{ applicants().length }} pending</span>
+          <span class="badge-count badge-active">{{ selectedMembers().length }} active</span>
+        </div>
+      </div>
+
+      <!-- Applicants -->
+      <div class="section-label">
+        <h2>Applicants</h2>
+        <div class="line"></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Applicant</th>
+              <th>Platforms</th>
+              <th class="hide-mobile">Status</th>
+              <th class="align-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (applicants().length === 0) {
+            <tr class="empty-row">
+              <td colspan="4">
+                <span class="empty-icon">📭</span>
+                No pending applicants
+              </td>
+            </tr>
+            }
+            @for (a of applicants(); track a.id) {
+            <tr>
+              <td>
+                <div class="cell-name">
+                  <div class="avatar">{{ initials(a.name) }}</div>
+                  <div>
+                    <div class="name-text">{{ a.name }}</div>
+                    <div class="id-text">#{{ a.id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="platforms">
+                  @for (p of a.platforms; track p.name) {
+                  <span class="plat-chip">
+                    {{ p.name }} <span class="followers">{{ p.followers }}</span>
+                  </span>
+                  }
+                </div>
+              </td>
+              <td class="hide-mobile">
+                <span class="status-dot status-pending">{{ a.status }}</span>
+              </td>
+              <td>
+                <div class="actions align-right">
+                  <button class="btn btn-profile" (click)="showProfile(a)">↗</button>
+                  <button class="btn btn-decline" (click)="declineApplicant(a.id)">Decline</button>
+                  <button class="btn btn-accept" (click)="acceptApplicant(a)">Accept</button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Members -->
+      <div class="section-label">
+        <h2>Active Members</h2>
+        <div class="line"></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Platforms</th>
+              <th class="hide-mobile">Status</th>
+              <th class="align-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (selectedMembers().length === 0) {
+            <tr class="empty-row">
+              <td colspan="4">
+                <span class="empty-icon">👥</span>
+                No active members yet
+              </td>
+            </tr>
+            }
+            @for (m of selectedMembers(); track m.id; let i = $index) {
+            <tr>
+              <td>
+                <div class="cell-name">
+                  <div class="avatar avatar-active">{{ initials(m.name) }}</div>
+                  <div>
+                    <div class="name-text">{{ m.name }}</div>
+                    <div class="id-text">#{{ m.id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="platforms">
+                  @for (p of m.platforms; track p.name) {
+                  <span class="plat-chip">
+                    {{ p.name }} <span class="followers">{{ p.followers }}</span>
+                  </span>
+                  }
+                </div>
+              </td>
+              <td class="hide-mobile">
+                <span class="status-dot status-active">{{ m.status }}</span>
+              </td>
+              <td>
+                <div class="actions align-right">
+                  <button class="btn btn-profile" (click)="showProfile(m)">↗</button>
+                  <button class="btn btn-remove" (click)="removeMember(i)">Remove</button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Profile Modal -->
+      @if (viewingProfile()) {
+      <div class="modal-overlay" (click)="onOverlayClick($event)">
+        <div class="modal">
+          <div class="modal-head">
+            <h3>Profile</h3>
+            <button class="btn-close" (click)="viewingProfile.set(null)">✕</button>
           </div>
-        }
+          <div class="modal-avatar">{{ initials(viewingProfile()!.name) }}</div>
+          <div class="modal-name">{{ viewingProfile()!.name }}</div>
+          <div class="modal-id">ID: {{ viewingProfile()!.id }} · {{ viewingProfile()!.status }}</div>
+          <div class="modal-divider"></div>
+          <div class="modal-section-title">Social Platforms</div>
+          <div class="modal-platforms">
+            @for (p of viewingProfile()!.platforms; track p.name) {
+            <div class="modal-plat-row">
+              <span class="modal-plat-name">{{ p.name }}</span>
+              <span class="modal-plat-followers">{{ p.followers }}</span>
+            </div>
+            }
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-}
+      }
 
 
-}
+      }
 
 
 
@@ -459,11 +439,7 @@
     </div>
     <!-- ── PAGE 4: REVIEW ── -->
     <div class="page-content" *ngIf="currentStep === 3">
-      <div class="page-header">
-        <div class="page-tag">Step 4 of 4</div>
-        <h2>Review & Launch</h2>
-        <p class="page-desc">Everything look good? Check the details and go live.</p>
-      </div>
+
 
       <!-- Plan highlight bar -->
       <div class="review-plan-bar">
@@ -485,23 +461,15 @@
         <div class="rv-card">
           <div class="rv-row">
             <div class="rv-key">Name</div>
-            <div class="rv-val" [class.empty]="!campaignName">{{ campaignName || '—' }}</div>
+            <div class="rv-val" [class.empty]="!campaignName">{{ campaignTitle() || '—' }}</div>
           </div>
           <div class="rv-row">
             <div class="rv-key">Description</div>
-            <div class="rv-val" [class.empty]="!description" style="max-width:300px">{{ description || '—' }}</div>
+            <div class="rv-val" [class.empty]="!description" style="max-width:300px">{{ campaignDescription() || '—' }}</div>
           </div>
           <div class="rv-row">
             <div class="rv-key">Link</div>
             <div class="rv-val" [class.empty]="!link">{{ link || '—' }}</div>
-          </div>
-          <div class="rv-row">
-            <div class="rv-key">Language</div>
-            <div class="rv-val">{{ language }}</div>
-          </div>
-          <div class="rv-row">
-            <div class="rv-key">Media Type</div>
-            <div class="rv-val">{{ mediaType }}</div>
           </div>
           <div class="rv-row">
             <div class="rv-key">Start Date</div>
@@ -546,8 +514,7 @@
           <div class="rv-row">
             <div class="rv-key">Files</div>
             <div class="rv-val" [class.empty]="files.length === 0">
-              {{ files.length > 0 ? files.length + ' file' + (files.length > 1 ? 's' : '') + ' uploaded' : 'No files
-              uploaded' }}
+              {{ files.length > 0 ? files.length + ' file' + (files.length > 1 ? 's' : '') + ' uploaded' : 'No files uploaded' }}
             </div>
           </div>
         </div>
@@ -568,14 +535,14 @@
             <div class="rv-key">Access Type</div>
             <div class="rv-val">{{ selectedAccess }}</div>
           </div>
-          <div class="rv-row">
+          <!-- <div class="rv-row">
             <div class="rv-key">Payout Tiers</div>
             <div class="rv-val">
               <div class="rv-tags">
                 <span class="rv-tag" *ngFor="let tier of tiers">{{ tier.name }} {{ tier.amount }}</span>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -585,14 +552,52 @@
         <span>By launching, you agree to our terms. Your campaign will be reviewed within a few minutes before going
           live. You can pause or edit it at any time from your dashboard.</span>
       </div>
+    </div>
+    <div>
 
-      <button class="btn-launch" (click)="createCampaign()">
-        {{ isSubmitting() ? 'Creating...' : 'Create Campaign' }}</button>
-      <!-- <button 
-        class="btn-primary" 
-        (click)="createCampaign()">
-        {{ isSubmitting() ? 'Creating...' : 'Create Campaign' }}
-      </button> -->
+
+        <div class="form-demo">
+ 
+
+    <!-- FULL WIDTH NAVIGATION — PREV · icon · NEXT / SAVE -->
+    <nav class="nav-bar" aria-label="form navigation">
+      
+      <!-- left group: previous button (always visible) -->
+      <div class="nav-left">
+        <button class="nav-btn prev" aria-label="previous page" (click)="prev()">
+          <svg viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+          <span>Previous</span>
+        </button>
+      </div>
+
+      <!-- center icon — ring with calm blue accent (loader dna) -->
+      <!-- <div class="center-icon" aria-hidden="true">
+        <div class="center-dot"></div>
+      </div> -->
+
+      <!-- <app-alert></app-alert> -->
+
+      <!-- right group: next + save (save appears as primary on last page) -->
+      <div class="nav-right">
+        <!-- next button (visible on early pages) -->
+        <button class="nav-btn next" aria-label="next page" (click)="next()">
+          <span>Next</span>
+          <svg viewBox="0 0 24 24">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+
+        <button class="nav-btn save" aria-label="save form"  (click)="createCampaign()" [disabled]="currentStep < 3">
+          @if (isSubmitting() === true) {
+            <app-alert></app-alert> 
+          }
+          <span >Save</span>
+        </button>
+      </div>
+    </nav>
+  </div>
     </div>
   </main>
 </div>

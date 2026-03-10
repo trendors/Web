@@ -6,6 +6,9 @@ import { Store } from '@ngrx/store';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { take } from 'rxjs';
+import { LoaderComponent } from '../../../components/loader/loader';
+import { Alert } from '../../../components/alert/alert';
+import { Actions, ofType } from '@ngrx/effects';
 
 
 
@@ -39,7 +42,7 @@ interface Tier {
 
 @Component({
   selector: 'app-create-campaign',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoaderComponent, Alert],
   templateUrl: './create-campaign.html',
   styleUrl: './create-campaign.scss',
 })
@@ -194,6 +197,8 @@ export class CreateCampaign {
   totalSteps = 4;
   selectedTier = ""
   private store = inject(Store);
+  private actions$ = inject(Actions);
+
   user$ = this.store.select(selectCurrentUser);
   selectedType = signal<'paid' | 'free' | null>(null);
   campaignTitle = signal('');
@@ -231,6 +236,8 @@ export class CreateCampaign {
     );
   }
 
+ 
+
   get progressPct(): number {
     return Math.round(((this.currentStep + 1) / this.totalSteps) * 100);
   }
@@ -245,8 +252,14 @@ export class CreateCampaign {
   }
 
   next(): void {
-    if (this.currentStep < this.totalSteps - 1) this.goTo(this.currentStep + 1);
+  const isLastStep = this.currentStep === this.totalSteps - 1;
+
+  if (isLastStep) {
+    return
+  } else {
+    this.goTo(this.currentStep + 1);
   }
+}
 
   prev(): void {
     if (this.currentStep > 0) this.goTo(this.currentStep - 1);
@@ -333,40 +346,65 @@ export class CreateCampaign {
     return this.plans.find(p => p.value === this.selectedPlan) ?? this.plans[1];
   }
 
+ resetForm(): void {
+  this.currentStep = 0; 
+  this.campaignTitle.set('');
+  this.campaignDescription.set('');
+  this.campaignCategory.set('');
+  this.selectedType.set(null);
+  this.selectedImages.set([]);
+  this.hash_tags.set([]);
+  this.auto_generate_captions.set(false);
+  this.start_date.set('');
+  this.end_date.set('');
+  this.selectedAccess = '';
+  this.shareCount.set(0);
+  this.totalBudget = 0;
+}
   selectTier(): void {
     alert('Tier selection coming soon!');
   }
+
   async createCampaign() {
+  this.isSubmitting.set(true);
+
+  try {
+    const user = await this.user$.pipe(take(1)).toPromise(); // fetch once
+
     const formData = new FormData();
     formData.append('title', this.campaignTitle());
     formData.append('description', this.campaignDescription());
     formData.append('category', this.campaignCategory());
     formData.append('type', this.selectedType()!);
-    formData.append('creator_id', (await this.user$.pipe(take(1)).toPromise())?.id.toString() || '');
+    formData.append('creator_id', user?.id.toString() || '');
     formData.append('auto_generate_captions', this.auto_generate_captions().toString());
     formData.append('hash_tags', JSON.stringify(this.hash_tags()));
-    formData.append('name', `${(await this.user$.pipe(take(1)).toPromise())?.first_name || 'default_id'}` + `_${(await this.user$.pipe(take(1)).toPromise())?.last_name || 'default_id'}`);
-    formData.append('start_date', this.start_date())
-    formData.append('end_date', this.end_date())
-    formData.append('access', this.selectedAccess)
-    formData.append('platform', JSON.stringify(this.selectedPlatforms))
+    formData.append('name', `${user?.first_name}_${user?.last_name}`);
+    formData.append('start_date', this.start_date());
+    formData.append('end_date', this.end_date());
+    formData.append('access', this.selectedAccess);
+    formData.append('platform', JSON.stringify(this.selectedPlatforms));
 
     if (this.selectedType() === 'paid') {
       formData.append('shareCount', this.shareCount().toString());
       formData.append('totalBudget', this.totalBudget.toString());
     }
 
-    this.selectedImages().forEach((img) => {
-      formData.append('files', img.file);
-    });
+    this.selectedImages().forEach((img) => formData.append('files', img.file));
 
-    try {
-      this.store.dispatch(CampaignActions.createCampaign({ dto: formData, files: this.selectedImages().map(img => img.file) }));
-    } catch (error: any) {
-      console.log(error)
-      alert(`❌ Error: ${error.message || 'Failed to create campaign'}`);
-    } finally {
-      this.isSubmitting.set(false);
-    }
+    this.store.dispatch(CampaignActions.createCampaign({
+      dto: formData,
+      files: this.selectedImages().map(img => img.file)
+    }));
+
+    this.resetForm();
+
+  } catch (error: any) {
+    console.error(error);
+    alert(`❌ Error: ${error.message || 'Failed to create campaign'}`);
+  } finally {
+    this.isSubmitting.set(false); // always unblocks the UI
   }
+}
+
 }

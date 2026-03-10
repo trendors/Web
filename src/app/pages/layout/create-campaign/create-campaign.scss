@@ -1474,12 +1474,220 @@ td {
   border-radius: 8px;
 }
 
-.modal-plat-name { font-size: 13px; font-weight: 500; }
-.modal-plat-followers { font-size: 12px; color: var(--accent); }
 
-// ── Responsive ───────────────────────────────
-@media (max-width: 768px) {
-  :host { padding: 24px 16px; }
-  .hide-mobile { display: none; }
-  .modal { width: calc(100vw - 32px); }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.form-demo {
+      width: 100%;
+      max-width: 720px;
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+      padding: 2rem 2rem 1.5rem 2rem;
+    }
+
+    /* mock form fields — just for visual context */
+    .form-fields {
+      margin-bottom: 2.5rem;
+    }
+
+  
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    /* FULL-WIDTH NAVIGATION BAR — modern, subtle color */
+    .nav-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      // gap: 1rem;
+      // padding: 0.75rem 0.25rem; 
+      // border-top: 1px solid rgba(0, 0, 0, 0.05);
+      // margin-top: 0.5rem;
+    }
+
+    /* button base — clean, calm, modern */
+    .nav-btn {
+      background: transparent;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      font-size: 0.95rem;
+      font-weight: 480;
+      color: #1e293b;  /* deep slate */
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.01em;
+      border: 1px solid transparent;
+
+      // Hover effect for active buttons
+  &:hover:not(:disabled) {
+    background: #f1f5f9; // Light slate gray
+    border-color: #e2e8f0;
+  }
+
+  // THE DISABLED STATE
+  &:disabled {
+    cursor: not-allowed;     // Crucial for UX
+    opacity: 0.45;           // Standard "faded" look
+    filter: grayscale(1);    // Removes color from any icons inside
+    pointer-events: none;    // Extra layer of protection against clicks
+    
+    // If it's the "save" version specifically
+    &.save {
+      background: #e2e8f0;   // Subtle solid background so it doesn't look empty
+      color: #94a3b8;        // Muted text color
+    }
+  }
+    }
+
+    
+
+    /* previous / next — minimal border on hover, soft color */
+    .nav-btn.prev, .nav-btn.next {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .nav-btn.prev:hover, .nav-btn.next:hover {
+      background: white;
+      border-color: rgba(0, 112, 243, 0.2);  /* hint of blue */
+      box-shadow: 0 4px 12px rgba(0, 112, 243, 0.08);
+    }
+
+    /* SAVE BUTTON — main color, but still calm */
+    .nav-btn.save {
+      background: #1e4c7a;  /* deep, calm navy-blue — not loud, trustworthy */
+      color: white;
+      padding: 0.7rem 2rem;
+      border: none;
+      box-shadow: 0 8px 18px -8px rgba(30, 76, 122, 0.3);
+    }
+
+    .nav-btn.save:hover {
+      background: #163a5e;  /* slightly deeper on hover */
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px -10px rgba(30, 76, 122, 0.4);
+    }
+
+    /* icon styles — super thin, precise */
+    .nav-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s;
+    }
+
+    .nav-btn.prev svg {
+      margin-right: 2px;
+    }
+
+    .nav-btn.next svg {
+      margin-left: 2px;
+    }
+
+    .nav-btn.save svg {
+      margin-right: 6px;
+      stroke-width: 2.2;
+    }
+
+    /* micro move on hover — subtle feedback */
+    .nav-btn.prev:hover svg {
+      transform: translateX(-3px);
+    }
+
+    .nav-btn.next:hover svg {
+      transform: translateX(3px);
+    }
+
+    /* center icon — ring homage, now with a touch of the calm blue */
+    .center-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, #1e4c7a 0deg 60deg, transparent 60deg 300deg, #1e4c7a 300deg 360deg);
+      mask: radial-gradient(circle, transparent 68%, black 69%);
+      -webkit-mask: radial-gradient(circle, transparent 68%, black 69%);
+      opacity: 0.75;
+      transition: opacity 0.2s;
+    }
+
+    .center-dot {
+      width: 6px;
+      height: 6px;
+      background: #1e4c7a;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.9);
+    }
+
+    /* left & right button groups — keep them flexible */
+    .nav-left, .nav-right {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    /* on small screens, keep it clean */
+    @media (max-width: 520px) {
+      .nav-bar {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+      }
+      .nav-left, .nav-right {
+        flex: 1 1 auto;
+      }
+      .nav-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
+      .center-icon {
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    /* focus style accessible */
+    .nav-btn:focus-visible {
+      outline: 3px solid #1e4c7a;
+      outline-offset: 2px;
+    }
+
+    /* extra polish — disable state example (if needed) */
+    .nav-btn.prev:disabled, .nav-btn.next:disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
