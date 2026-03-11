@@ -1,47 +1,345 @@
-.notifications-page {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 16px;
+// .notifications-page {
+//   max-width: 720px;
+//   margin: 0 auto;
+//   padding: 16px;
+// }
+
+// .notifications-list {
+//   background: white;
+//   border-radius: 12px;
+// }
+
+// .notification-item {
+//   padding: 12px 16px;
+//   border-bottom: 1px solid #eee;
+//   align-items: flex-start;
+//   margin-bottom: 10px;
+
+//   &.unread {
+//     background-color: #f5f7ff;
+//     margin-top: 20px;
+//   }
+
+//   .message {
+//     font-weight: 500;
+//     line-height: 1.4;
+//   }
+
+//   .meta {
+//     font-size: 12px;
+//     color: #666;
+//   }
+
+//   button {
+//     margin-left: 12px;
+//     height: 32px;
+//   }
+// }
+
+// .empty {
+//   padding: 24px;
+//   text-align: center;
+//   color: #888;
+// }
+
+// .loading {
+//   padding: 16px;
+// }
+
+
+
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+:host {
+  --gold: #B8860B;
+  --gold-light: rgba(184, 134, 11, 0.07);
+  --black: #0a0a0a;
+  --grey-dark: #333333;
+  --grey-mid: #666666;
+  --grey-light: #f7f7f7;
+  --divider: #ebebeb;
+  --unread-bg: rgba(184, 134, 11, 0.03);
+
+  display: block;
+  font-family: 'DM Sans', sans-serif;
 }
 
-.notifications-list {
-  background: white;
-  border-radius: 12px;
+/* ── Page ── */
+.page {
+  max-width: 640px;
+  padding-bottom: 48px;
 }
 
-.notification-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid #eee;
+/* ── Header ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--black);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.notif-count {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--gold);
+  background: var(--gold-light);
+  border: 1px solid rgba(184, 134, 11, 0.18);
+  border-radius: 20px;
+  padding: 2px 10px;
+  letter-spacing: 0.04em;
+}
+
+.btn-mark-all {
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--grey-mid);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  padding: 0;
+  transition: color 0.15s;
+
+  &:hover { color: var(--black); }
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: var(--divider);
+}
+
+.item-divider {
+  height: 1px;
+  background: var(--divider);
+  margin-left: 56px; // aligns with text, skips icon column
+}
+
+/* ── Skeleton ── */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 8px;
+}
+
+.skeleton-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.skeleton-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  flex-shrink: 0;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeleton-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-line {
+  height: 10px;
+  border-radius: 4px;
+  background: #f0f0f0;
+  animation: shimmer 1.4s infinite;
+
+  &.wide   { width: 70%; }
+  &.narrow { width: 35%; }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+/* ── Empty ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  gap: 8px;
+}
+
+.empty-icon {
+  font-size: 24px;
+  color: #ddd;
+  margin-bottom: 8px;
+}
+
+.empty-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--grey-dark);
+  margin: 0;
+}
+
+.empty-sub {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--grey-mid);
+  margin: 0;
+}
+
+/* ── Notification List ── */
+.notif-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notif-item {
+  display: flex;
   align-items: flex-start;
-  margin-bottom: 10px;
+  gap: 14px;
+  padding: 18px 0;
+  transition: background 0.15s;
 
   &.unread {
-    background-color: #f5f7ff;
-    margin-top: 20px;
-  }
-
-  .message {
-    font-weight: 500;
-    line-height: 1.4;
-  }
-
-  .meta {
-    font-size: 12px;
-    color: #666;
-  }
-
-  button {
-    margin-left: 12px;
-    height: 32px;
+    background: var(--unread-bg);
+    margin: 0 -8px;
+    padding: 18px 8px;
+    border-radius: 6px;
   }
 }
 
-.empty {
-  padding: 24px;
-  text-align: center;
-  color: #888;
+/* ── Unread dot ── */
+.unread-dot-wrap {
+  width: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-top: 6px;
 }
 
-.loading {
-  padding: 16px;
+.unread-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+/* ── Icon ── */
+.notif-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--grey-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  color: var(--grey-dark);
+
+  // type variants
+  &.icon-campaign  { background: rgba(184,134,11,0.08); color: var(--gold); }
+  &.icon-payment   { background: rgba(45,159,110,0.08); color: #2d9f6e; }
+  &.icon-system    { background: rgba(99,102,241,0.08); color: #6366f1; }
+  &.icon-warning   { background: rgba(192,57,43,0.08);  color: #c0392b; }
+}
+
+/* ── Body ── */
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-message {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--black);
+  margin: 0 0 5px;
+  line-height: 1.55;
+}
+
+.notif-item.unread .notif-message {
+  font-weight: 400;
+}
+
+.notif-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notif-type {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--grey-mid);
+}
+
+.meta-dot {
+  font-size: 10px;
+  color: #ccc;
+}
+
+.notif-time {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--grey-mid);
+}
+
+/* ── Action ── */
+.notif-action {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.btn-read {
+  height: 30px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid rgba(184, 134, 11, 0.3);
+  border-radius: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--gold-light);
+    border-color: var(--gold);
+  }
+}
+
+.read-indicator {
+  font-size: 12px;
+  color: #ccc;
 }

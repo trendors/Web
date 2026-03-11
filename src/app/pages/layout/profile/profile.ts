@@ -12,6 +12,8 @@ import { UserService } from '../../../core/services/users/user.service';
 import { selectCurrentUser, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
 import { UserAction } from '../../../store/user/user.action';
 import { selectUserError } from '../../../store/user/user.selector';
+import { SocialVerify } from '../social-verify/social-verify';
+import { TopupModalComponent } from '../../../components/topup-modal/topup-modal';
 
 @Component({
   selector: 'app-profile',
@@ -21,14 +23,14 @@ import { selectUserError } from '../../../store/user/user.selector';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    AsyncPipe,
+    AsyncPipe, SocialVerify, TopupModalComponent
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit {
   ngOnInit(): void {
-    throw new Error('Method not implemented.');
+    // throw new Error('Method not implemented.');
   }
   private fb = inject(FormBuilder);
   private store = inject(Store);
@@ -38,6 +40,7 @@ export class Profile implements OnInit {
   user$ = this.store.select(selectCurrentUser);
   isLoading$ = this.store.select(selectIsLoading);
   userError$ = this.store.select(selectUserError);
+  walletBalance = 0; // This would ideally come from the user state or a separate wallet state
 
   profileForm = this.fb.group({
     first_name: ['', Validators.required],
@@ -48,6 +51,14 @@ export class Profile implements OnInit {
     instagram_handle: [''],
     facebook_username: [''],
   });
+
+  showTopup = false;
+
+onTopupSuccess(amount: number): void {
+  this.walletBalance += amount; // optimistic update
+  // your store dispatch here e.g:
+  // this.store.dispatch(WalletActions.topupSuccess({ amount }))
+}
 
   ççç() {
     this.user$.pipe(take(1)).subscribe((user) => {

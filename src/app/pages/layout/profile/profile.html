@@ -1,4 +1,4 @@
-<div class="profile-container">
+<!-- <div class="profile-container">
   <mat-card class="profile-card">
     <mat-card-header>
       <mat-card-title>Edit Profile</mat-card-title>
@@ -77,4 +77,150 @@
       }
     </mat-card-content>
   </mat-card>
+</div> -->
+
+
+
+<div class="account-layout">
+  <div class="account-main">
+
+    <div class="page">
+
+      <!-- <div class="page-header">
+    <h1 class="page-title">Account</h1>
+    <p class="page-sub">Manage your profile and wallet</p>
+  </div> -->
+
+      <div class="card">
+        <div class="section-label">Wallet</div>
+
+        <div class="wallet-balance-row">
+          <div class="wallet-info">
+            <span class="wallet-balance">{{ walletBalance }}</span>
+            <span class="wallet-tag">Available balance</span>
+          </div>
+          <div class="wallet-actions">
+            <button class="btn-outline" type="button">Withdraw</button>
+            <button class="btn-gold" type="button" (click)="showTopup = true"500>Top Up</button>
+          </div>
+        </div>
+ 
+        @if (showTopup) {
+        <app-topup-modal [userEmail]="currentUser?.email || 'sayil@mail.com'" (closed)="showTopup = false"
+          (topupSuccess)="onTopupSuccess($event)" />
+        }
+
+        <div class="notice">
+          <span class="notice-icon">◈</span>
+          <span class="notice-text">
+            Withdrawals are available once your balance reaches <strong>₦50,000.00</strong>.
+            You need <strong>₦37,600.00</strong> more to unlock.
+          </span>
+        </div>
+
+        <div class="inner-divider"></div>
+
+        <div class="section-label" style="margin-bottom: 14px;">Withdrawal Account</div>
+
+        <div class="field">
+          <label class="field-label">Account Number</label>
+          <input class="field-input locked" type="text" placeholder="0123456789" maxlength="10" />
+        </div>
+
+        <div class="field" style="margin-top: 16px;">
+          <label class="field-label">Bank Name</label>
+          <input class="field-input locked" value="First Bank of Nigeria" readonly />
+        </div>
+
+        <div class="field" style="margin-top: 16px;">
+          <label class="field-label">
+            Transaction PIN
+            <span class="field-badge">Required</span>
+          </label>
+          <input class="field-input pin-input" type="password" placeholder="• • • • " maxlength="4" />
+          <span class="field-hint">Enter your 4-digit PIN to confirm account changes</span>
+        </div>
+
+        <button class="btn-gold full-width" style="margin-top: 20px;" type="button">
+          Update Withdrawal Account
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Personal Info</div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="form">
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">First Name</label>
+              <input class="field-input" formControlName="first_name" type="text" placeholder="John" />
+            </div>
+            <div class="field">
+              <label class="field-label">Last Name</label>
+              <input class="field-input" formControlName="last_name" type="text" placeholder="Doe" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">
+              Email Address
+              <span class="field-badge">Locked</span>
+            </label>
+            <input class="field-input locked" formControlName="email" type="email" readonly />
+          </div>
+
+          <div class="field">
+            <label class="field-label">Phone Number</label>
+            <input class="field-input" formControlName="phone_number" type="tel" placeholder="+234 000 0000" />
+          </div>
+        </form>
+      </div>
+
+      <!-- <div class="card">
+        <div class="section-label">Social Links</div>
+
+        <form [formGroup]="profileForm" class="form">
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Twitter</label>
+              <div class="input-prefix-wrap">
+                <span class="prefix">@</span>
+                <input class="field-input prefixed" formControlName="twitter_handle" type="text" placeholder="handle" />
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Instagram</label>
+              <div class="input-prefix-wrap">
+                <span class="prefix">@</span>
+                <input class="field-input prefixed" formControlName="instagram_handle" type="text"
+                  placeholder="handle" />
+              </div>
+            </div>
+          </div>
+        </form>
+      </div> -->
+
+      <div class="card actions-card">
+        <button class="btn-gold full-width" type="submit" (click)="onSave()"
+          [disabled]="profileForm.invalid || (isLoading$ | async)">
+          {{ (isLoading$ | async) ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+
+      <div class="card danger-card">
+        <div class="section-label danger-label">Danger Zone</div>
+        <p class="danger-text">Deleting your account is permanent and cannot be undone.</p>
+        <button class="btn-danger" type="button" (click)="onDelete()">Delete Account</button>
+
+        @if (userError$ | async) {
+        <p class="error-msg">{{ userError$ | async }}</p>
+        }
+      </div>
+
+    </div>
+  </div>
+
+  <aside class="account-side">
+    <app-social-verify />
+  </aside>
 </div>

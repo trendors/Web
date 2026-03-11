@@ -1,0 +1,497 @@
+/* ── Shared vars inherited from parent :host ── */
+.page-sub {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--grey-mid);
+  margin: 0;
+}
+.social-card {
+  height: fit-content;
+  background: #ffffff;
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.card-sub {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--grey-mid);
+  margin: -10px 0 20px;
+  line-height: 1.6;
+}
+
+/* ── Platform List ── */
+.platform-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-divider {
+  height: 1px;
+  background: var(--divider);
+  margin: 0;
+}
+
+.platform-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  gap: 12px;
+  transition: opacity 0.2s;
+
+  &.verified .platform-name {
+    color: var(--black);
+  }
+}
+
+.platform-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.platform-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.twitter-icon  { background: #000; color: #fff; }
+  &.instagram-icon {
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    color: #fff;
+  }
+  &.tiktok-icon   { background: #010101; color: #fff; }
+}
+
+.platform-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.platform-name {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--grey-dark);
+}
+
+.platform-handle {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--gold);
+}
+
+.platform-status {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--grey-mid);
+}
+
+.platform-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: #2d9f6e;
+  background: rgba(45, 159, 110, 0.08);
+  border: 1px solid rgba(45, 159, 110, 0.2);
+  border-radius: 20px;
+  padding: 4px 10px;
+}
+
+/* ── Buttons ── */
+.btn-connect {
+  height: 34px;
+  padding: 0 16px;
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover { opacity: 0.85; }
+}
+
+.btn-disconnect {
+  height: 34px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--grey-mid);
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+
+  &:hover {
+    border-color: var(--error);
+    color: var(--error);
+  }
+}
+
+/* ── Verify Panel ── */
+.verify-panel {
+  animation: fadeSlide 0.2s ease;
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.inner-divider {
+  height: 1px;
+  background: var(--divider);
+  margin: 4px 0 20px;
+}
+
+.verify-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.verify-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--black);
+  letter-spacing: 0.02em;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 11px;
+  color: var(--grey-mid);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.15s;
+
+  &:hover { color: var(--black); }
+}
+
+/* ── Method Tabs ── */
+.method-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.method-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 40px;
+  background: var(--grey-light);
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--grey-mid);
+  cursor: pointer;
+  transition: all 0.18s;
+
+  &.active {
+    background: #fff;
+    border-color: var(--black);
+    color: var(--black);
+    font-weight: 500;
+  }
+
+  &:not(.active):hover {
+    border-color: #ccc;
+    color: var(--grey-dark);
+  }
+}
+
+/* ── Method Body ── */
+.method-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.method-desc {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--grey-mid);
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+
+/* ── DM Warning ── */
+.dm-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(192, 57, 43, 0.04);
+  border: 1px solid rgba(192, 57, 43, 0.15);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.warning-icon {
+  stroke: var(--error);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--error);
+  margin: 0 0 4px;
+}
+
+.warning-body {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--grey-dark);
+  margin: 0;
+  line-height: 1.6;
+
+  strong {
+    font-weight: 500;
+    color: var(--black);
+  }
+}
+
+/* ── Shared field styles (same as parent) ── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-badge {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey-mid);
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  padding: 1px 6px;
+}
+
+.field-hint {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--grey-mid);
+}
+
+.field-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  background: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--black);
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #bbb; }
+  &:focus { border-color: var(--black); }
+}
+
+.input-prefix-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.prefix {
+  position: absolute;
+  left: 14px;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--grey-mid);
+  pointer-events: none;
+}
+
+.field-input.prefixed { padding-left: 28px; }
+
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 24px;
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover { opacity: 0.88; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &.full-width { width: 100%; }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 24px;
+  background: transparent;
+  color: var(--black);
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+
+  &:hover { border-color: var(--black); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &.full-width { width: 100%; }
+}
+
+/* ── Value Prop Banner ── */
+.connect-value {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: var(--gold-light);
+  border: 1px solid var(--notice-border);
+  border-radius: 8px;
+  padding: 11px 13px;
+  margin-bottom: 16px;
+
+  svg { stroke: var(--gold); flex-shrink: 0; margin-top: 1px; }
+
+  span {
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--grey-dark);
+    line-height: 1.6;
+  }
+}
+
+/* ── Summary Pills ── */
+.connect-summary {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.summary-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--divider);
+  color: var(--grey-dark);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.connected-dot { background: #2d9f6e; }
+  &.pending-dot   { background: #ccc; }
+}
+
+/* ── Per-platform status chip ── */
+.platform-name-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.status-chip {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+.connected-chip {
+  background: rgba(45, 159, 110, 0.08);
+  color: #2d9f6e;
+  border: 1px solid rgba(45, 159, 110, 0.2);
+}
+
+.pending-chip {
+  background: var(--grey-light);
+  color: var(--grey-mid);
+  border: 1px solid var(--divider);
+}
+
+/* ── Followers ── */
+.platform-followers {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--grey-mid);
+  margin-top: 1px;
+
+  &::before {
+    content: '▲ ';
+    font-size: 8px;
+    color: #2d9f6e;
+  }
+}

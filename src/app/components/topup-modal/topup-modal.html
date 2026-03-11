@@ -1,0 +1,84 @@
+<div class="backdrop" @backdrop (click)="close()"></div>
+
+<div class="modal" @modal>
+
+  <!-- Header -->
+  <div class="modal-header">
+    <div>
+      <h2 class="modal-title">Top Up Wallet</h2>
+      <p class="modal-sub">Funds reflect instantly after payment</p>
+    </div>
+    <button class="close-btn" (click)="close()" [disabled]="isProcessing()" type="button">✕</button>
+  </div>
+
+  <div class="modal-divider"></div>
+
+  <!-- Preset Amounts -->
+  <div class="section-label">Quick Amounts</div>
+  <div class="preset-grid">
+    @for (amount of presets; track amount) {
+      <button
+        class="preset-btn"
+        [class.active]="selectedPreset === amount"
+        (click)="selectPreset(amount)"
+        type="button">
+        ₦{{ amount | number }}
+      </button>
+    }
+  </div>
+
+  <!-- Custom Amount -->
+  <div class="custom-section">
+    <div class="section-label">Or Enter Amount</div>
+    <div class="custom-input-wrap">
+      <span class="currency-prefix">₦</span>
+      <input
+        class="custom-input"
+        [(ngModel)]="customAmount"
+        (ngModelChange)="onCustomInput()"
+        type="number"
+        placeholder="0.00"
+        min="100"
+      />
+    </div>
+  </div>
+
+  <!-- Summary -->
+  @if (finalAmount > 0) {
+    <div class="summary-row">
+      <span class="summary-label">You're topping up</span>
+      <span class="summary-amount">₦{{ finalAmount | number }}</span>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (errorMsg()) {
+    <p class="error-msg">{{ errorMsg() }}</p>
+  }
+
+  <div class="modal-divider"></div>
+
+  <!-- Paystack Notice -->
+  <div class="secure-notice">
+    <svg viewBox="0 0 24 24" fill="none" width="13" height="13">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span>Secured by <strong>Paystack</strong>. Card details never touch our servers.</span>
+  </div>
+
+  <!-- CTA -->
+  <button
+    class="btn-pay"
+    (click)="pay()"
+    [disabled]="!isValid || isProcessing()"
+    type="button">
+    @if (isProcessing()) {
+      <span class="spinner"></span>
+      Processing...
+    } @else {
+      Pay ₦{{ finalAmount > 0 ? (finalAmount | number) : '—' }}
+    }
+  </button>
+
+</div>

@@ -1,0 +1,224 @@
+<!-- <div class="page-header">
+    <h1 class="page-title">Account</h1>
+    <p class="page-sub">Manage your profile and wallet</p>
+</div> -->
+
+
+
+<div class="card social-card">
+    <div class="section-label">Connected Accounts</div>
+   
+
+
+
+  <!-- Value Prop -->
+  <div class="connect-value">
+    <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
+      <path d="M13 2L3 14h9l-1 10 10-12h-9l1-10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>Connected accounts display your follower count, making it easier for businesses to find and partner with you.</span>
+  </div>
+
+  <!-- Connection Summary -->
+  <div class="connect-summary">
+    <div class="summary-pill connected">
+      <span class="dot connected-dot"></span>
+      {{ connectedCount }} Connected
+    </div>
+    <div class="summary-pill pending">
+      <span class="dot pending-dot"></span>
+      {{ 3 - connectedCount }} Not Connected
+    </div>
+  </div>
+
+  <!-- Platform List -->
+  <div class="platform-list">
+
+    <!-- Twitter -->
+    <div class="platform-item" [class.verified]="twitter.verified">
+      <div class="platform-left">
+        <div class="platform-icon twitter-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622z"/>
+          </svg>
+        </div>
+        <div class="platform-meta">
+          <div class="platform-name-row">
+            <span class="platform-name">Twitter / X</span>
+            <span class="status-chip connected-chip" *ngIf="twitter.verified">Connected</span>
+            <span class="status-chip pending-chip" *ngIf="!twitter.verified">Not Connected</span>
+          </div>
+          <span class="platform-handle" *ngIf="twitter.handle">@{{ twitter.handle }}</span>
+          <span class="platform-followers" *ngIf="twitter.verified && twitter.followers">
+            {{ twitter.followers | number }} followers
+          </span>
+        </div>
+      </div>
+      <div class="platform-right">
+        <button class="btn-connect" *ngIf="!twitter.verified" (click)="openVerify('twitter')" type="button">Connect</button>
+        <button class="btn-disconnect" *ngIf="twitter.verified" (click)="disconnect('twitter')" type="button">Remove</button>
+      </div>
+    </div>
+
+    <div class="item-divider"></div>
+
+    <!-- Instagram -->
+    <div class="platform-item" [class.verified]="instagram.verified">
+      <div class="platform-left">
+        <div class="platform-icon instagram-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+          </svg>
+        </div>
+        <div class="platform-meta">
+          <div class="platform-name-row">
+            <span class="platform-name">Instagram</span>
+            <span class="status-chip connected-chip" *ngIf="instagram.verified">Connected</span>
+            <span class="status-chip pending-chip" *ngIf="!instagram.verified">Not Connected</span>
+          </div>
+          <span class="platform-handle" *ngIf="instagram.handle">@{{ instagram.handle }}</span>
+          <span class="platform-followers" *ngIf="instagram.verified && instagram.followers">
+            {{ instagram.followers | number }} followers
+          </span>
+        </div>
+      </div>
+      <div class="platform-right">
+        <button class="btn-connect" *ngIf="!instagram.verified" (click)="openVerify('instagram')" type="button">Connect</button>
+        <button class="btn-disconnect" *ngIf="instagram.verified" (click)="disconnect('instagram')" type="button">Remove</button>
+      </div>
+    </div>
+
+    <div class="item-divider"></div>
+
+    <!-- TikTok -->
+    <div class="platform-item" [class.verified]="tiktok.verified">
+      <div class="platform-left">
+        <div class="platform-icon tiktok-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/>
+          </svg>
+        </div>
+        <div class="platform-meta">
+          <div class="platform-name-row">
+            <span class="platform-name">TikTok</span>
+            <span class="status-chip connected-chip" *ngIf="tiktok.verified">Connected</span>
+            <span class="status-chip pending-chip" *ngIf="!tiktok.verified">Not Connected</span>
+          </div>
+          <span class="platform-handle" *ngIf="tiktok.handle">@{{ tiktok.handle }}</span>
+          <span class="platform-followers" *ngIf="tiktok.verified && tiktok.followers">
+            {{ tiktok.followers | number }} followers
+          </span>
+        </div>
+      </div>
+      <div class="platform-right">
+        <button class="btn-connect" *ngIf="!tiktok.verified" (click)="openVerify('tiktok')" type="button">Connect</button>
+        <button class="btn-disconnect" *ngIf="tiktok.verified" (click)="disconnect('tiktok')" type="button">Remove</button>
+      </div>
+    </div>
+
+    <!-- Verify Panel -->
+    @if (activeVerify) {
+    <div class="verify-panel">
+
+        <div class="inner-divider"></div>
+
+        <div class="verify-header">
+            <span class="verify-title">Verify {{ activeVerify | titlecase }}</span>
+            <button class="close-btn" (click)="closeVerify()" type="button">✕</button>
+        </div>
+
+        <!-- Method Selector -->
+        <div class="method-tabs">
+            <button class="method-tab" [class.active]="verifyMethod === 'oauth'" (click)="verifyMethod = 'oauth'"
+                type="button">
+                <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
+                    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" />
+                    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" />
+                </svg>
+                Connect via OAuth
+            </button>
+            <button class="method-tab" [class.active]="verifyMethod === 'dm'" (click)="verifyMethod = 'dm'"
+                type="button">
+                <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Verify via DM
+            </button>
+        </div>
+
+        <!-- OAuth Method -->
+        @if (verifyMethod === 'oauth') {
+        <div class="method-body">
+            <p class="method-desc">
+                Securely link your {{ activeVerify | titlecase }} account with one tap.
+                We only request read access to verify ownership.
+            </p>
+            <button class="btn-gold full-width" type="button" (click)="connectOAuth()">
+                Continue with {{ activeVerify | titlecase }}
+            </button>
+        </div>
+        }
+
+        <!-- DM Method -->
+        @if (verifyMethod === 'dm') {
+        <div class="method-body">
+
+            <!-- Safety Warning -->
+            <div class="dm-warning">
+                <svg viewBox="0 0 24 24" fill="none" width="14" height="14" class="warning-icon">
+                    <path
+                        d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div>
+                    <p class="warning-title">Only accept a DM from our official account</p>
+                    <p class="warning-body">
+                        We will send the code from
+                        <strong>{{ officialHandles[activeVerify] }}</strong> only.
+                        Do not enter any code sent from a different account — it may be a scam.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Handle Input -->
+            <div class="field">
+                <label class="field-label">Your {{ activeVerify | titlecase }} Handle</label>
+                <div class="input-prefix-wrap">
+                    <span class="prefix">@</span>
+                    <input class="field-input prefixed" [(ngModel)]="dmHandle" type="text"
+                        [placeholder]="'your' + activeVerify + 'handle'" />
+                </div>
+            </div>
+
+            <button class="btn-outline full-width" type="button" [disabled]="!dmHandle" (click)="requestDM()"
+                style="margin-top: 14px;">
+                Send Me a Code
+            </button>
+
+            <!-- Code Input (shown after DM sent) -->
+            @if (dmSent) {
+            <div class="field" style="margin-top: 16px;">
+                <label class="field-label">
+                    Enter Code
+                    <span class="field-badge">Sent to @{{ dmHandle }}</span>
+                </label>
+                <input class="field-input" [(ngModel)]="dmCode" type="text" placeholder="e.g. AX9-28K" maxlength="10" />
+                <span class="field-hint">Check your DMs from {{ officialHandles[activeVerify] }}</span>
+            </div>
+
+            <button class="btn-gold full-width" type="button" [disabled]="!dmCode" (click)="verifyDMCode()"
+                style="margin-top: 14px;">
+                Confirm & Verify
+            </button>
+            }
+
+        </div>
+        }
+
+    </div>
+    }
+
+</div>
