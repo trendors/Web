@@ -101,7 +101,7 @@
           </div>
           <div class="wallet-actions">
             <button class="btn-outline" type="button">Withdraw</button>
-            <button class="btn-gold" type="button" (click)="showTopup = true"500>Top Up</button>
+            <button class="btn-accent" type="button" (click)="showTopup = true"500>Top Up</button>
           </div>
         </div>
  
@@ -141,7 +141,7 @@
           <span class="field-hint">Enter your 4-digit PIN to confirm account changes</span>
         </div>
 
-        <button class="btn-gold full-width" style="margin-top: 20px;" type="button">
+        <button class="btn-accent full-width" style="margin-top: 20px;" type="button">
           Update Withdrawal Account
         </button>
       </div>
@@ -201,7 +201,7 @@
       </div> -->
 
       <div class="card actions-card">
-        <button class="btn-gold full-width" type="submit" (click)="onSave()"
+        <button class="btn-accent full-width" type="submit" (click)="onSave()"
           [disabled]="profileForm.invalid || (isLoading$ | async)">
           {{ (isLoading$ | async) ? 'Saving...' : 'Save Changes' }}
         </button>

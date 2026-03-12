@@ -12,8 +12,8 @@ export class NotificationEffects {
   loadNotifications$ = createEffect(() =>
     this.actions$.pipe(
       ofType(NotificationActions.loadNotifications),
-      mergeMap(({ userId }) =>
-        this.notificationService.findMyNotifications(userId).pipe(
+      mergeMap(({ trendorId }) =>
+        this.notificationService.findMyNotifications(trendorId).pipe(
           map((res) => {
             if (res.error)
               return NotificationActions.loadNotificationsFailure({ error: res.message });
@@ -34,8 +34,8 @@ export class NotificationEffects {
   markAsRead$ = createEffect(() =>
     this.actions$.pipe(
       ofType(NotificationActions.markAsRead),
-      mergeMap(({ notificationId, userId }) =>
-        this.notificationService.markAsRead(notificationId, userId).pipe(
+      mergeMap(({ notificationId, trendorId }) =>
+        this.notificationService.markAsRead(notificationId, trendorId).pipe(
           map((res) => {
             if (res.error) return NotificationActions.markAsReadFailure({ error: res.message });
             return NotificationActions.markAsReadSuccess({ notificationId });

@@ -9,13 +9,13 @@ export class NotificationService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/notifications`;
 
-  findMyNotifications(userId: number): Observable<ApiResponse<Notification[]>> {
-    return this.http.get<ApiResponse<Notification[]>>(`${this.apiUrl}/my-notifications/${userId}`);
+  findMyNotifications(trendorId: string): Observable<ApiResponse<Notification[]>> {
+    return this.http.get<ApiResponse<Notification[]>>(`${this.apiUrl}/my-notifications/${trendorId}`);
   }
 
-  markAsRead(notificationId: number, userId: number): Observable<ApiResponse<null>> {
+  markAsRead(notificationId: number, trendorId: string): Observable<ApiResponse<null>> {
     return this.http.patch<ApiResponse<null>>(
-      `${this.apiUrl}/${notificationId}/read/${userId}`,
+      `${this.apiUrl}/${notificationId}/read/${trendorId}`,
       {},
     );
   }

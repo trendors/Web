@@ -26,7 +26,7 @@ export class SideNavCard implements OnInit {
   ngOnInit() {
     this.currentUser$.pipe(take(1)).subscribe((user) => {
       if (user?.id) {
-        this.store.dispatch(NotificationActions.loadNotifications({ userId: user.id }));
+        this.store.dispatch(NotificationActions.loadNotifications({ trendorId: user.trendors_id }));
       }
     });
   }

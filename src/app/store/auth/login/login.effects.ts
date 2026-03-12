@@ -60,7 +60,7 @@ export class LoginEffects {
         tap(({ response }) => {
           if (response?.user?.id) {
             this.store.dispatch(
-              NotificationActions.loadNotifications({ userId: response.user.id }),
+              NotificationActions.loadNotifications({ trendorId: response.user.trendors_id }),
             );
           }
           this.router.navigate(['/home']);

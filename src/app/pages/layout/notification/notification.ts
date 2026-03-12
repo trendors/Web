@@ -47,12 +47,12 @@ markAllRead(): void {
     });
     this.user$.pipe(take(1)).subscribe((u) => {
       if (u && u.id) {
-        this.store.dispatch(NotificationActions.loadNotifications({ userId: u.id }));
+        this.store.dispatch(NotificationActions.loadNotifications({ trendorId: u.trendors_id }));
       }
     });
   }
 
-  markRead(notificationId: number, userId: number) {
-    this.store.dispatch(NotificationActions.markAsRead({ notificationId, userId }));
+  markRead(notificationId: number, trendorId: string) {
+    this.store.dispatch(NotificationActions.markAsRead({ notificationId, trendorId }));
   }
 }

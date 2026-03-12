@@ -126,8 +126,8 @@
 .btn-connect {
   height: 34px;
   padding: 0 16px;
-  background: var(--gold);
-  color: #fff;
+  background: var(--accent-soft);
+  color: var(--accent);
   border: none;
   border-radius: 6px;
   font-family: 'DM Sans', sans-serif;
@@ -367,8 +367,8 @@
   justify-content: center;
   height: 44px;
   padding: 0 24px;
-  background: var(--gold);
-  color: #fff;
+  background: var(--accent-soft);
+  color: var(--accent);
   border: none;
   border-radius: 6px;
   font-family: 'DM Sans', sans-serif;
@@ -409,7 +409,6 @@
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  background: var(--gold-light);
   border: 1px solid var(--notice-border);
   border-radius: 8px;
   padding: 11px 13px;
