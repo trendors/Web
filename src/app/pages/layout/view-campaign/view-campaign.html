@@ -28,7 +28,26 @@
     }
 
     @if ((isLoading$ | async) === false && (error$ | async) === null) {
-      @if ((campaigns$ | async)?.length === 0) {
+      <div class="filters">
+        <div class="search-box">
+          <span class="material-icons">search</span>
+          <input
+            type="text"
+            placeholder="Search campaigns..."
+            (input)="updateSearch($any($event.target).value)"
+          />
+        </div>
+
+        <select (change)="updateMonthFilter(+$any($event.target).value)">
+          <option value="0">All Dates</option>
+          <option value="1">Last 1 Month</option>
+          <option value="2">Last 2 Months</option>
+          <option value="3">Last 3 Months</option>
+          <option value="6">Last 6 Months</option>
+        </select>
+      </div>
+
+      @if ((filteredCampaigns$ | async)?.length === 0) {
         <div class="state-container empty-state">
           <span class="material-icons empty-icon">campaign</span>
           <h3>No Campaigns Yet</h3>
@@ -37,9 +56,9 @@
         </div>
       }
 
-      @if ((campaigns$ | async)?.length ?? 0 > 0) {
+      @if ((filteredCampaigns$ | async)?.length ?? 0 > 0) {
         <div class="campaign-grid">
-          @for (campaign of (campaigns$ | async) ?? []; track campaign.id) {
+          @for (campaign of (filteredCampaigns$ | async) ?? []; track campaign.id) {
             <article class="campaign-card">
               <div class="card-image">
                 @if (campaign.files && campaign.files.length > 0) {
