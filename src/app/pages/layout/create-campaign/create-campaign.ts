@@ -9,8 +9,8 @@ import { take } from 'rxjs';
 import { LoaderComponent } from '../../../components/loader/loader';
 import { Alert } from '../../../components/alert/alert';
 import { Actions, ofType } from '@ngrx/effects';
-
-
+import { InvitationService } from '../../../core/services/invitation/invitation.service';
+import { Invitation } from '../../../core/models/invitation/invitation.model';
 
 interface CampaignFile {
   file: File;
@@ -47,7 +47,6 @@ interface Tier {
   styleUrl: './create-campaign.scss',
 })
 export class CreateCampaign {
-
   platforms = [
     { id: 'twitter', emoji: '𝕏', name: 'Twitter', selected: false },
     { id: 'instagram', emoji: '📸', name: 'Instagram', selected: false },
@@ -95,8 +94,6 @@ export class CreateCampaign {
     { value: 'application', icon: '📋', title: 'Application', desc: 'Sharers apply, you approve' },
   ];
 
-
-
   tiers: Tier[] = [
     { name: 'Nano', range: '0 – 9,999 followers', amount: '₦500', color: '#0ea5e9' },
     { name: 'Micro', range: '10,000 – 49,999 followers', amount: '₦2,000', color: '#8b5cf6' },
@@ -104,15 +101,43 @@ export class CreateCampaign {
     { name: 'Mega', range: '500,000+ followers', amount: '₦50,000', color: '#ef4444' },
   ];
 
+  // Real Database
+  private invitationSvc = inject(InvitationService);
+  invitations = signal<Invitation[]>([]);
 
-
+  ngOnInit() {
+    this.user$.pipe(take(1)).subscribe((user) => {
+      console.log('CreateCampaign / ngOnInit user', user);
+      if (user?.id) {
+        this.invitationSvc.getMyInvitations(user.id).subscribe({
+          next: (list) => {
+            console.log('invitationSvc list', list);
+            this.selectedMembers.set(list);
+          },
+          error: (err) => console.error('invitationSvc failed', err),
+        });
+      }
+    });
+  }
 
   // Fake Database
   allRecords = signal([
-    { id: '1', name: 'Sayil Tests', hospital_number: 'SALH-PH-10034', status: 'ACTIVE', gender: 'Male' },
-    { id: '2', name: 'Preye Owa', hospital_number: 'SALH-PH-10065', status: 'ACTIVE', gender: 'Female' },
-    { id: '3', name: 'Boma George', hospital_number: 'SALH-PH-10099', status: 'INACTIVE', gender: 'Male' },
-    { id: '4', name: 'Kelechi Amadi', hospital_number: 'SALH-PH-10122', status: 'ACTIVE', gender: 'Male' },
+    { id: '1', name: 'Sayil Tests', trendor_id: 'SALH-PH-10034', status: 'ACTIVE', gender: 'Male' },
+    { id: '2', name: 'Preye Owa', trendor_id: 'SALH-PH-10065', status: 'ACTIVE', gender: 'Female' },
+    {
+      id: '3',
+      name: 'Boma George',
+      trendor_id: 'SALH-PH-10099',
+      status: 'INACTIVE',
+      gender: 'Male',
+    },
+    {
+      id: '4',
+      name: 'Kelechi Amadi',
+      trendor_id: 'SALH-PH-10122',
+      status: 'ACTIVE',
+      gender: 'Male',
+    },
   ]);
 
   searchQuery = signal('');
@@ -122,29 +147,25 @@ export class CreateCampaign {
   searchResults = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     if (!q) return [];
-    return this.allRecords().filter(r => 
-      r.name.toLowerCase().includes(q) && 
-      !this.selectedMembers().some(s => s.id === r.id)
+    return this.allRecords().filter(
+      (r) => r.name.toLowerCase().includes(q) && !this.selectedMembers().some((s) => s.id === r.id),
     );
   });
 
   addMember(member: any) {
-    this.selectedMembers.update(list => [...list, member]);
+    this.selectedMembers.update((list) => [...list, member]);
     this.searchQuery.set(''); // Collapse dropdown
   }
 
   removeMember(id: any) {
-    this.selectedMembers.update(list => list.filter(m => m.id !== id));
+    this.selectedMembers.update((list) => list.filter((m) => m.id !== id));
   }
-
-
-  
-
-
 
   applicants = signal([
     {
-      id: 'a1', name: 'Zina Victor', status: 'PENDING',
+      id: 'a1',
+      name: 'Zina Victor',
+      status: 'PENDING',
       platforms: [
         { name: 'Instagram', followers: '12.5k' },
         { name: 'TikTok', followers: '45k' },
@@ -152,7 +173,9 @@ export class CreateCampaign {
       ],
     },
     {
-      id: 'a2', name: 'Tunde Mike', status: 'PENDING',
+      id: 'a2',
+      name: 'Tunde Mike',
+      status: 'PENDING',
       platforms: [
         { name: 'Instagram', followers: '1.2k' },
         { name: 'Facebook', followers: '500' },
@@ -161,23 +184,28 @@ export class CreateCampaign {
   ]);
 
   selectedMembers2 = signal<any[]>([]);
-  viewingProfile  = signal<any | null>(null);
+  viewingProfile = signal<any | null>(null);
 
   initials(name: string): string {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   }
 
   acceptApplicant(applicant: any): void {
-    this.selectedMembers.update(list => [...list, { ...applicant, status: 'ACTIVE' }]);
-    this.applicants.update(list => list.filter(a => a.id !== applicant.id));
+    this.selectedMembers.update((list) => [...list, { ...applicant, status: 'ACTIVE' }]);
+    this.applicants.update((list) => list.filter((a) => a.id !== applicant.id));
   }
 
   declineApplicant(id: string): void {
-    this.applicants.update(list => list.filter(a => a.id !== id));
+    this.applicants.update((list) => list.filter((a) => a.id !== id));
   }
 
   removeMember2(index: number): void {
-    this.selectedMembers.update(list => list.filter((_, i) => i !== index));
+    this.selectedMembers.update((list) => list.filter((_, i) => i !== index));
   }
 
   showProfile(applicant: any): void {
@@ -190,12 +218,11 @@ export class CreateCampaign {
     }
   }
 
-
   selectedAccess = 'open';
   autoAssignTier = true;
   currentStep = 0;
   totalSteps = 4;
-  selectedTier = ""
+  selectedTier = '';
   private store = inject(Store);
   private actions$ = inject(Actions);
 
@@ -217,26 +244,12 @@ export class CreateCampaign {
   autoGenerate = true;
   topicInput = '';
   hash_tags = signal<string[]>([]);
-   campaignName = '';
+  campaignName = '';
   description = '';
   link = '';
   language = 'English';
   mediaType = 'Image';
   files: CampaignFile[] = [];
-
-
-
-
-  ngOnInit() {
-    this.user$.subscribe(user => {
-      // if (!user) {
-      //   window.history.back();
-      // }
-    }
-    );
-  }
-
- 
 
   get progressPct(): number {
     return Math.round(((this.currentStep + 1) / this.totalSteps) * 100);
@@ -252,14 +265,14 @@ export class CreateCampaign {
   }
 
   next(): void {
-  const isLastStep = this.currentStep === this.totalSteps - 1;
+    const isLastStep = this.currentStep === this.totalSteps - 1;
 
-  if (isLastStep) {
-    return
-  } else {
-    this.goTo(this.currentStep + 1);
+    if (isLastStep) {
+      return;
+    } else {
+      this.goTo(this.currentStep + 1);
+    }
   }
-}
 
   prev(): void {
     if (this.currentStep > 0) this.goTo(this.currentStep - 1);
@@ -267,27 +280,28 @@ export class CreateCampaign {
   formatDate(d: string): string {
     if (!d) return '—';
     return new Date(d).toLocaleDateString('en-NG', {
-      day: 'numeric', month: 'short', year: 'numeric',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
     });
   }
 
   get selectedPlatforms(): string[] {
-    return this.platforms.filter(p => p.selected).map(p => p.id);
+    return this.platforms.filter((p) => p.selected).map((p) => p.id);
   }
-
 
   addTopic(): void {
     const v = this.topicInput.trim();
     if (!v || this.hash_tags().length >= 4) return;
     const formatted = v.startsWith('#') ? v : '#' + v;
     if (!this.hash_tags().includes(formatted)) {
-      this.hash_tags.update(topics => [...topics, formatted]);
+      this.hash_tags.update((topics) => [...topics, formatted]);
     }
     this.topicInput = '';
   }
 
   removeTopic(i: number): void {
-    this.hash_tags.update(topics => topics.filter((_, index) => index !== i));
+    this.hash_tags.update((topics) => topics.filter((_, index) => index !== i));
   }
 
   onTopicKeydown(event: KeyboardEvent): void {
@@ -306,8 +320,7 @@ export class CreateCampaign {
     event.preventDefault();
   }
 
-  onDragLeave(): void {
-  }
+  onDragLeave(): void {}
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
@@ -316,9 +329,9 @@ export class CreateCampaign {
 
   private addFiles(fileList: FileList): void {
     const incoming = Array.from(fileList);
-    const currentFiles = this.selectedImages().map(f => f.file);
+    const currentFiles = this.selectedImages().map((f) => f.file);
     const combined = [...currentFiles, ...incoming].slice(0, 10);
-    const mappedFiles = combined.map(f => this.buildCampaignFile(f))
+    const mappedFiles = combined.map((f) => this.buildCampaignFile(f));
     this.selectedImages.set(mappedFiles);
   }
 
@@ -343,68 +356,68 @@ export class CreateCampaign {
   }
 
   get activePlan(): Plan {
-    return this.plans.find(p => p.value === this.selectedPlan) ?? this.plans[1];
+    return this.plans.find((p) => p.value === this.selectedPlan) ?? this.plans[1];
   }
 
- resetForm(): void {
-  this.currentStep = 0; 
-  this.campaignTitle.set('');
-  this.campaignDescription.set('');
-  this.campaignCategory.set('');
-  this.selectedType.set(null);
-  this.selectedImages.set([]);
-  this.hash_tags.set([]);
-  this.auto_generate_captions.set(false);
-  this.start_date.set('');
-  this.end_date.set('');
-  this.selectedAccess = '';
-  this.shareCount.set(0);
-  this.totalBudget = 0;
-}
+  resetForm(): void {
+    this.currentStep = 0;
+    this.campaignTitle.set('');
+    this.campaignDescription.set('');
+    this.campaignCategory.set('');
+    this.selectedType.set(null);
+    this.selectedImages.set([]);
+    this.hash_tags.set([]);
+    this.auto_generate_captions.set(false);
+    this.start_date.set('');
+    this.end_date.set('');
+    this.selectedAccess = '';
+    this.shareCount.set(0);
+    this.totalBudget = 0;
+  }
   selectTier(): void {
     alert('Tier selection coming soon!');
   }
 
   async createCampaign() {
-  this.isSubmitting.set(true);
+    this.isSubmitting.set(true);
 
-  try {
-    const user = await this.user$.pipe(take(1)).toPromise(); // fetch once
+    try {
+      const user = await this.user$.pipe(take(1)).toPromise(); // fetch once
 
-    const formData = new FormData();
-    formData.append('title', this.campaignTitle());
-    formData.append('description', this.campaignDescription());
-    formData.append('category', this.campaignCategory());
-    formData.append('type', this.selectedType()!);
-    formData.append('creator_id', user?.id.toString() || '');
-    formData.append('auto_generate_captions', this.auto_generate_captions().toString());
-    formData.append('hash_tags', JSON.stringify(this.hash_tags()));
-    formData.append('name', `${user?.first_name}_${user?.last_name}`);
-    formData.append('start_date', this.start_date());
-    formData.append('end_date', this.end_date());
-    formData.append('access', this.selectedAccess);
-    formData.append('platform', JSON.stringify(this.selectedPlatforms));
+      const formData = new FormData();
+      formData.append('title', this.campaignTitle());
+      formData.append('description', this.campaignDescription());
+      formData.append('category', this.campaignCategory());
+      formData.append('type', this.selectedType()!);
+      formData.append('creator_id', user?.id.toString() || '');
+      formData.append('auto_generate_captions', this.auto_generate_captions().toString());
+      formData.append('hash_tags', JSON.stringify(this.hash_tags()));
+      formData.append('name', `${user?.first_name}_${user?.last_name}`);
+      formData.append('start_date', this.start_date());
+      formData.append('end_date', this.end_date());
+      formData.append('access', this.selectedAccess);
+      formData.append('platform', JSON.stringify(this.selectedPlatforms));
 
-    if (this.selectedType() === 'paid') {
-      formData.append('shareCount', this.shareCount().toString());
-      formData.append('totalBudget', this.totalBudget.toString());
+      if (this.selectedType() === 'paid') {
+        formData.append('shareCount', this.shareCount().toString());
+        formData.append('totalBudget', this.totalBudget.toString());
+      }
+
+      this.selectedImages().forEach((img) => formData.append('files', img.file));
+
+      this.store.dispatch(
+        CampaignActions.createCampaign({
+          dto: formData,
+          files: this.selectedImages().map((img) => img.file),
+        }),
+      );
+
+      this.resetForm();
+    } catch (error: any) {
+      console.error(error);
+      alert(`❌ Error: ${error.message || 'Failed to create campaign'}`);
+    } finally {
+      this.isSubmitting.set(false); // always unblocks the UI
     }
-
-    this.selectedImages().forEach((img) => formData.append('files', img.file));
-
-    this.store.dispatch(CampaignActions.createCampaign({
-      dto: formData,
-      files: this.selectedImages().map(img => img.file)
-    }));
-
-    this.resetForm();
-
-  } catch (error: any) {
-    console.error(error);
-    alert(`❌ Error: ${error.message || 'Failed to create campaign'}`);
-  } finally {
-    this.isSubmitting.set(false); // always unblocks the UI
   }
-}
-
 }
