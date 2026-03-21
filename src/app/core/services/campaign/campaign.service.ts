@@ -26,4 +26,10 @@ export class CampaignService {
   updateCampaign(id: number, dto: any): Observable<ApiResponse<any>> {
     return this.http.put<ApiResponse<any>>(`${this.apiUrl}/${id}`, dto);
   }
+
+  findAllByCampaign(campaignId: number): Observable<Campaign[]> {
+    return this.http
+      .get<ApiResponse<{ list: Campaign[] }>>(`${this.apiUrl}/${campaignId}/all-inivites`)
+      .pipe(map((res) => res.data?.list || []));
+  }
 }

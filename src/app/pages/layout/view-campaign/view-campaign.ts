@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { Campaign, CampaignStatus } from '../../../core/models/campaign/campaign.model';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import { CampaignSummary } from '../campaign-summary/campaign-summary';
+import { BehaviorSubject, combineLatest, map, tap } from 'rxjs';
 
 
  
@@ -60,6 +61,8 @@ export type FilterOption = 'all' | CampaignStatus;
 })
 export class ViewCampaign implements OnInit {
   private store = inject(Store);
+  private search$ = new BehaviorSubject<string>('');
+  private monthFilter$ = new BehaviorSubject<number>(0);
 
   campaigns$ = this.store.select(selectCampaignList);
   isLoading$ = this.store.select(selectCampaignLoading);
@@ -96,6 +99,10 @@ export class ViewCampaign implements OnInit {
     // });
   }
 
+  // filteredCampaigns$ = combineLatest([this.campaigns$, this.search$, this.monthFilter$]).pipe(
+  //   map(([campaigns, search, months]) => this.applyFilters(campaigns, search, months)),
+  //   tap(list => console.log('Filtered Campaigns:', list))
+  // );
   ngOnInit() {
     const user$ = this.store.select(selectCurrentUser);
     user$.subscribe((user) => {
@@ -174,5 +181,9 @@ export class ViewCampaign implements OnInit {
 
   createNew() {
     console.log('Navigate to create campaign');
+  }
+
+  trackById(_i: number, campaign: Campaign) {
+    return campaign.id;
   }
 }
