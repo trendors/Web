@@ -32,8 +32,11 @@ export class SideNavCard implements OnInit {
   }
 
   routeTo(path: string) {
-    // Implement your routing logic here, e.g. using Angular's Router
     this.router.navigate([path]);
     console.log(`Navigating to: ${path}`);
+  }
+
+  logout() { 
+    this.router.navigate(['/login']); 
   }
 }

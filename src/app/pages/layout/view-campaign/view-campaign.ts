@@ -14,6 +14,9 @@ import {
 } from '../../../store/campaign/campaign.selector';
 import { FormsModule } from '@angular/forms';
 import { Campaign, CampaignStatus } from '../../../core/models/campaign/campaign.model';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import { CampaignSummary } from '../campaign-summary/campaign-summary';
+
 
  
 export interface CampaignMetric {
@@ -61,6 +64,7 @@ export class ViewCampaign implements OnInit {
   campaigns$ = this.store.select(selectCampaignList);
   isLoading$ = this.store.select(selectCampaignLoading);
   error$ = this.store.select(selectCampaignError);
+   readonly dialog = inject(MatDialog);
 
    
   searchQuery = '';
@@ -117,6 +121,15 @@ export class ViewCampaign implements OnInit {
     // this.selectedCampaign = campaign;
     // this.isModalOpen = true;
     // document.body.style.overflow = 'hidden';
+    console.log('Opening modal for campaign:', campaign);
+        const dialogRef = this.dialog.open(CampaignSummary, {
+          data: campaign
+        });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(`Dialog result: ${result}`);
+    });
+
   }
  
   closeModal(): void {
@@ -147,7 +160,6 @@ export class ViewCampaign implements OnInit {
 }
  
   capitalize(s: string): string {
-    if (!s) return '';
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
  

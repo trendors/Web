@@ -211,10 +211,6 @@
     </div>
     }
 
-
-
-
-
     }
 
 
@@ -249,150 +245,146 @@
 
 <!-- MODAL -->
 @if (selectedCampaign) {
-  <div
-    class="modal-overlay"
-    [class.open]="isModalOpen"
-    (click)="closeModalOutside($event)"
-  >
-    <div class="modal">
-      <div class="modal-header">
-        <div>
-          <div style="margin-bottom: 10px">
-            <span class="status-badge" [ngClass]="statusClass(selectedCampaign.access)">
-              {{ capitalize(selectedCampaign.access) }}
+<div class="modal-overlay" [class.open]="isModalOpen" (click)="closeModalOutside($event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div style="margin-bottom: 10px">
+          <span class="status-badge" [ngClass]="statusClass(selectedCampaign.access)">
+            {{ capitalize(selectedCampaign.access) }}
+          </span>
+        </div>
+        <div class="modal-title">{{ selectedCampaign.name }}</div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Description -->
+      <div class="modal-section">
+        <div class="modal-section-label">Description</div>
+        <div class="modal-desc">
+          {{ selectedCampaign.description || 'No description provided.' }}
+        </div>
+      </div>
+
+      <!-- Platforms -->
+      <div class="modal-section">
+        <div class="modal-section-label">Platforms</div>
+        <div class="card-platforms">
+          @for (platform of getPlatforms(selectedCampaign.platforms); track platform) {
+          <span class="platform-tag">{{ platform }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Campaign Details -->
+      <div class="modal-section">
+        <div class="modal-section-label">Details</div>
+        <div class="modal-metrics-grid">
+          <div class="modal-metric">
+            <div class="modal-metric-val">
+              {{ selectedCampaign.start_date ? (selectedCampaign.start_date | date:'MMM d, y') : '—' }}
+            </div>
+            <div class="modal-metric-label">Start Date</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">
+              {{ selectedCampaign.end_date ? (selectedCampaign.end_date | date:'MMM d, y') : '—' }}
+            </div>
+            <div class="modal-metric-label">End Date</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">{{ selectedCampaign.invitations.length }}</div>
+            <div class="modal-metric-label">Invitations</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">{{ selectedCampaign.files.length }}</div>
+            <div class="modal-metric-label">Files</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">{{ selectedCampaign.auto_generate_captions ? 'Yes' : 'No' }}</div>
+            <div class="modal-metric-label">Auto Captions</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">{{ selectedCampaign.generate_post ? 'Yes' : 'No' }}</div>
+            <div class="modal-metric-label">Auto Post</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hashtags -->
+      @if (selectedCampaign.hash_tags) {
+      <div class="modal-section">
+        <div class="modal-section-label">Hashtags</div>
+        <div class="modal-desc">{{ selectedCampaign.hash_tags }}</div>
+      </div>
+      }
+
+      <!-- Campaign Link -->
+      @if (selectedCampaign.link) {
+      <div class="modal-section">
+        <div class="modal-section-label">Campaign Link</div>
+        <a [href]="selectedCampaign.link" target="_blank" class="modal-link">
+          {{ selectedCampaign.link }}
+        </a>
+      </div>
+      }
+
+      <!-- Media Files -->
+      @if (selectedCampaign.files.length > 0) {
+      <div class="modal-section">
+        <div class="modal-section-label">Media</div>
+        <div class="modal-media-grid">
+          @for (file of selectedCampaign.files; track file) {
+          <div class="modal-media-item">
+            <img [src]="file" [alt]="selectedCampaign.name" />
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Timeline -->
+      <div class="modal-section">
+        <div class="modal-section-label">Timeline</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot done"></div>
+            <span>Campaign created — {{ selectedCampaign.createdAt | date:'MMM d, y' }}</span>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" [class.done]="!!selectedCampaign.start_date"></div>
+            <span>
+              Start date —
+              {{ selectedCampaign.start_date ? (selectedCampaign.start_date | date:'MMM d, y') : 'Not set' }}
             </span>
           </div>
-          <div class="modal-title">{{ selectedCampaign.name }}</div>
+          <div class="timeline-item">
+            <div class="timeline-dot" [class.done]="!!selectedCampaign.end_date"></div>
+            <span>
+              End date —
+              {{ selectedCampaign.end_date ? (selectedCampaign.end_date | date:'MMM d, y') : 'Not set' }}
+            </span>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" [class.done]="selectedCampaign.invitations.length > 0"></div>
+            <span>{{ selectedCampaign.invitations.length }} creator(s) invited</span>
+          </div>
         </div>
-        <button class="modal-close" (click)="closeModal()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 6 6 18M6 6l12 12"/>
-          </svg>
-        </button>
       </div>
 
-      <div class="modal-body">
-
-        <!-- Description -->
-        <div class="modal-section">
-          <div class="modal-section-label">Description</div>
-          <div class="modal-desc">
-            {{ selectedCampaign.description || 'No description provided.' }}
-          </div>
-        </div>
-
-        <!-- Platforms -->
-        <div class="modal-section">
-          <div class="modal-section-label">Platforms</div>
-          <div class="card-platforms">
-            @for (platform of getPlatforms(selectedCampaign.platforms); track platform) {
-              <span class="platform-tag">{{ platform }}</span>
-            }
-          </div>
-        </div>
-
-        <!-- Campaign Details -->
-        <div class="modal-section">
-          <div class="modal-section-label">Details</div>
-          <div class="modal-metrics-grid">
-            <div class="modal-metric">
-              <div class="modal-metric-val">
-                {{ selectedCampaign.start_date ? (selectedCampaign.start_date | date:'MMM d, y') : '—' }}
-              </div>
-              <div class="modal-metric-label">Start Date</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">
-                {{ selectedCampaign.end_date ? (selectedCampaign.end_date | date:'MMM d, y') : '—' }}
-              </div>
-              <div class="modal-metric-label">End Date</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">{{ selectedCampaign.invitations.length }}</div>
-              <div class="modal-metric-label">Invitations</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">{{ selectedCampaign.files.length }}</div>
-              <div class="modal-metric-label">Files</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">{{ selectedCampaign.auto_generate_captions ? 'Yes' : 'No' }}</div>
-              <div class="modal-metric-label">Auto Captions</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">{{ selectedCampaign.generate_post ? 'Yes' : 'No' }}</div>
-              <div class="modal-metric-label">Auto Post</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Hashtags -->
-        @if (selectedCampaign.hash_tags) {
-          <div class="modal-section">
-            <div class="modal-section-label">Hashtags</div>
-            <div class="modal-desc">{{ selectedCampaign.hash_tags }}</div>
-          </div>
-        }
-
-        <!-- Campaign Link -->
-        @if (selectedCampaign.link) {
-          <div class="modal-section">
-            <div class="modal-section-label">Campaign Link</div>
-            <a [href]="selectedCampaign.link" target="_blank" class="modal-link">
-              {{ selectedCampaign.link }}
-            </a>
-          </div>
-        }
-
-        <!-- Media Files -->
-        @if (selectedCampaign.files.length > 0) {
-          <div class="modal-section">
-            <div class="modal-section-label">Media</div>
-            <div class="modal-media-grid">
-              @for (file of selectedCampaign.files; track file) {
-                <div class="modal-media-item">
-                  <img [src]="file" [alt]="selectedCampaign.name" />
-                </div>
-              }
-            </div>
-          </div>
-        }
-
-        <!-- Timeline -->
-        <div class="modal-section">
-          <div class="modal-section-label">Timeline</div>
-          <div class="timeline">
-            <div class="timeline-item">
-              <div class="timeline-dot done"></div>
-              <span>Campaign created — {{ selectedCampaign.createdAt | date:'MMM d, y' }}</span>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" [class.done]="!!selectedCampaign.start_date"></div>
-              <span>
-                Start date —
-                {{ selectedCampaign.start_date ? (selectedCampaign.start_date | date:'MMM d, y') : 'Not set' }}
-              </span>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" [class.done]="!!selectedCampaign.end_date"></div>
-              <span>
-                End date —
-                {{ selectedCampaign.end_date ? (selectedCampaign.end_date | date:'MMM d, y') : 'Not set' }}
-              </span>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" [class.done]="selectedCampaign.invitations.length > 0"></div>
-              <span>{{ selectedCampaign.invitations.length }} creator(s) invited</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn btn-primary" style="flex: 1">Manage Campaign</button>
-          <button class="btn btn-ghost" (click)="closeModal()">Close</button>
-        </div>
-
+      <div class="modal-footer">
+        <button class="btn btn-primary" style="flex: 1">Manage Campaign</button>
+        <button class="btn btn-ghost" (click)="closeModal()">Close</button>
       </div>
+
     </div>
   </div>
+</div>
 }
