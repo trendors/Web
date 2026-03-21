@@ -31,31 +31,21 @@ export class CampaignEffects {
   createCampaign$ = createEffect(() =>
     this.actions$.pipe(
       ofType(CampaignActions.createCampaign),
-      switchMap(({ dto, files }) => {
-        const formData = new FormData();
-        if (files && files.length > 0) {
-          files.forEach(file => {
-            formData.append('files', file);
-          });
-        }
-        return this.campaignService.createCampaign(dto).pipe(
+      switchMap(({ dto, files }) =>
+        this.campaignService.createCampaign(dto).pipe(
           map((response) => {
-            if (response.error !== true) {
-              return CampaignActions.createCampaignFailure({
-                error: response.message || 'Failed to create campaign',
-              });
+            if (response.error === true || response.data) {
+              return CampaignActions.createCampaignSuccess({ campaign: response.data });
             }
-            return CampaignActions.createCampaignSuccess({ message: response.message });
+            return CampaignActions.createCampaignFailure({
+              error: response.message || 'Failed to create campaign',
+            });
           }),
           catchError((error: any) =>
-            of(
-              CampaignActions.createCampaignFailure({
-                error: error?.message || 'Failed to create campaign',
-              }),
-            ),
+            of(CampaignActions.createCampaignFailure({ error: error?.message || 'Failed to create campaign' })),
           ),
-        );
-      }),
+        ),
+      ),
     ),
   );
 }
