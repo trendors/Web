@@ -1,16 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, Input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
-import { take } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { LoaderComponent } from '../../../components/loader/loader';
 import { Alert } from '../../../components/alert/alert';
 import { Actions, ofType } from '@ngrx/effects';
 import { InvitationService } from '../../../core/services/invitation/invitation.service';
 import { Invitation } from '../../../core/models/invitation/invitation.model';
+import {
+  selectActiveMembers,
+  selectInvitationLoading,
+  selectPendingApplicants,
+} from '../../../store/invitation/invitation.selector';
+import { InvitationActions } from '../../../store/invitation/invitation.action';
 
 interface CampaignFile {
   file: File;
@@ -102,10 +108,49 @@ export class CreateCampaign {
   ];
 
   // Real Database
-  private invitationSvc = inject(InvitationService);
-  invitations = signal<Invitation[]>([]);
+  private store = inject(Store);
+  private actions$ = inject(Actions);
 
-  ngOnInit() {
+  user$ = this.store.select(selectCurrentUser);
+  private invitationSvc = inject(InvitationService);
+  pendingApplicants$: Observable<Invitation[]> = this.store.select(selectPendingApplicants);
+  activeMembers$: Observable<Invitation[]> = this.store.select(selectActiveMembers);
+  invitationLoading$: Observable<boolean> = this.store.select(selectInvitationLoading);
+  // invitations = signal<Invitation[]>([]);
+  // selectedMembers2 = signal<any[]>([]);
+  viewingProfile = signal<any | null>(null);
+  @Input() campaignId: number | null = null;
+
+  ngOnInit(): void {
+    if (this.campaignId) {
+      this.store.dispatch(
+        InvitationActions.loadCampaignInvitations({ campaignId: this.campaignId }),
+      );
+    } else {
+      console.warn('campaignId missing; using placeholder demo invitations');
+      this.store.dispatch(
+        InvitationActions.loadCampaignInvitationsSuccess({
+          invites: [
+            {
+              id: 999,
+              status: 'Pending',
+              role: 'Influncer',
+              user: {
+                id: 111,
+                name: 'Test User',
+                trendor_id: 'T-001',
+                influencerProfile: { platforms: [{ name: 'Instagram', followers: '1.2k' }] },
+                status: 'Pending'
+              },
+              campaign: { id: 123, name: 'Demo Campaign' },
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+          ],
+        }),
+      );
+    }
+
     this.user$.pipe(take(1)).subscribe((user) => {
       console.log('CreateCampaign / ngOnInit user', user);
       if (user?.id) {
@@ -118,7 +163,68 @@ export class CreateCampaign {
         });
       }
     });
+
+    this.actions$
+      .pipe(ofType(CampaignActions.createCampaignSuccess), take(1))
+      .subscribe(({ campaign }) => {
+        if (campaign?.id) {
+          this.campaignId = campaign.id;
+          this.store.dispatch(
+            InvitationActions.loadCampaignInvitations({ campaignId: campaign.id }),
+          );
+        }
+      });
   }
+
+  addMember(member: any) {
+    this.selectedMembers.update((list) => [...list, member]);
+    this.searchQuery.set(''); // Collapse dropdown
+  }
+
+  removeMember(id: any) {
+    this.selectedMembers.update((list) => list.filter((m) => m.id !== id));
+  }
+
+  // Aplicant
+  acceptApplicant(invite: Invitation): void {
+    this.user$.pipe(take(1)).subscribe((user) => {
+      if (!user?.id) return;
+      this.store.dispatch(
+        InvitationActions.acceptInvite({
+          inviteId: invite.id,
+          userId: user.id,
+        }),
+      );
+    });
+  }
+
+  declineApplicant(invite: Invitation): void {
+    this.user$.pipe(take(1)).subscribe((user) => {
+      if (!user?.id) return;
+      this.store.dispatch(
+        InvitationActions.declineInvite({
+          inviteId: invite.id,
+          userId: user.id,
+        }),
+      );
+    });
+  }
+
+  removeActiveMember(invite: Invitation): void {
+    this.store.dispatch(InvitationActions.removeActiveMember({ inviteId: invite.id }));
+  }
+
+  showProfile(invite: Invitation): void {
+    this.viewingProfile.set(invite);
+  }
+
+  onOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
+      this.viewingProfile.set(null);
+    }
+  }
+
+  // end of real database logic
 
   // Fake Database
   allRecords = signal([
@@ -152,15 +258,6 @@ export class CreateCampaign {
     );
   });
 
-  addMember(member: any) {
-    this.selectedMembers.update((list) => [...list, member]);
-    this.searchQuery.set(''); // Collapse dropdown
-  }
-
-  removeMember(id: any) {
-    this.selectedMembers.update((list) => list.filter((m) => m.id !== id));
-  }
-
   applicants = signal([
     {
       id: 'a1',
@@ -183,9 +280,6 @@ export class CreateCampaign {
     },
   ]);
 
-  selectedMembers2 = signal<any[]>([]);
-  viewingProfile = signal<any | null>(null);
-
   initials(name: string): string {
     return name
       .split(' ')
@@ -195,38 +289,35 @@ export class CreateCampaign {
       .slice(0, 2);
   }
 
-  acceptApplicant(applicant: any): void {
-    this.selectedMembers.update((list) => [...list, { ...applicant, status: 'ACTIVE' }]);
-    this.applicants.update((list) => list.filter((a) => a.id !== applicant.id));
-  }
+  // acceptApplicant(applicant: any): void {
+  //   this.selectedMembers.update((list) => [...list, { ...applicant, status: 'ACTIVE' }]);
+  //   this.applicants.update((list) => list.filter((a) => a.id !== applicant.id));
+  // }
 
-  declineApplicant(id: string): void {
-    this.applicants.update((list) => list.filter((a) => a.id !== id));
-  }
+  // declineApplicant(id: string): void {
+  //   this.applicants.update((list) => list.filter((a) => a.id !== id));
+  // }
 
-  removeMember2(index: number): void {
-    this.selectedMembers.update((list) => list.filter((_, i) => i !== index));
-  }
+  // removeMember2(index: number): void {
+  //   this.selectedMembers.update((list) => list.filter((_, i) => i !== index));
+  // }
 
-  showProfile(applicant: any): void {
-    this.viewingProfile.set(applicant);
-  }
+  // showProfile(applicant: any): void {
+  //   this.viewingProfile.set(applicant);
+  // }
 
-  onOverlayClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.viewingProfile.set(null);
-    }
-  }
+  // onOverlayClick(event: MouseEvent): void {
+  //   if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
+  //     this.viewingProfile.set(null);
+  //   }
+  // }
 
   selectedAccess = 'open';
   autoAssignTier = true;
   currentStep = 0;
   totalSteps = 4;
   selectedTier = '';
-  private store = inject(Store);
-  private actions$ = inject(Actions);
 
-  user$ = this.store.select(selectCurrentUser);
   selectedType = signal<'paid' | 'free' | null>(null);
   campaignTitle = signal('');
   campaignDescription = signal('');
