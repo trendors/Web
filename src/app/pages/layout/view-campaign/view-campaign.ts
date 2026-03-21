@@ -1,4 +1,5 @@
 import { Component, HostListener, inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { AsyncPipe, CommonModule, DatePipe, NgClass, TitleCasePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -57,6 +58,7 @@ export type FilterOption = 'all' | CampaignStatus;
 })
 export class ViewCampaign implements OnInit {
   private store = inject(Store);
+  private router = inject(Router);
 
   campaigns$ = this.store.select(selectCampaignList);
   isLoading$ = this.store.select(selectCampaignLoading);
@@ -132,8 +134,7 @@ export class ViewCampaign implements OnInit {
   }
  
   openNewCampaign(): void {
-    // TODO: navigate to new campaign creation route
-    alert('New Campaign flow coming soon!');
+    this.router.navigate(['/home/create-campaign']);
   }
  
  statusClass(access: string): string {
@@ -160,7 +161,7 @@ export class ViewCampaign implements OnInit {
     return pkg?.toLowerCase() === 'paid' ? 'paid' : 'free';
   }
 
-  createNew() {
-    console.log('Navigate to create campaign');
+  createNew(): void {
+    this.router.navigate(['/home/create-campaign']);
   }
 }
