@@ -1,14 +1,13 @@
+import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { InvitationService } from '../../core/services/invitation/invitation.service';
 import { InvitationActions } from './invitation.action';
 import { catchError, map, mergeMap, of } from 'rxjs';
-import { error } from 'console';
 
+@Injectable()
 export class InvitationEffects {
-  constructor(
-    private actions$: Actions,
-    private invitationService: InvitationService,
-  ) {}
+  private actions$ = inject(Actions);
+  private invitationService = inject(InvitationService);
 
   loadCampaignInvitations$ = createEffect(() =>
     this.actions$.pipe(
