@@ -10,7 +10,7 @@ export const CampaignActions = createActionGroup({
     'Load Campaigns Failure': props<{ error: string }>(),
 
     'Create Campaign': props<{ dto: FormData; files?: File[] }>(),
-    'Create Campaign Success': props<{ message: string }>(),
+    'Create Campaign Success': props<{ campaign: Campaign }>(),
     'Create Campaign Failure': props<{ error: string }>(),
   },
 });
