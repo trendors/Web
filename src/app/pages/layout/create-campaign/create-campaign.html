@@ -297,8 +297,12 @@
             <p>Review applicants and manage active members</p>
           </div>
           <div class="badge-row">
-            <span class="badge-count badge-pending">{{ applicants().length }} pending</span>
-            <span class="badge-count badge-active">{{ selectedMembers().length }} active</span>
+            <span class="badge-count badge-pending"
+              >{{ (pendingApplicants$ | async)?.length || 0 }} pending</span
+            >
+            <span class="badge-count badge-active"
+              >{{ (activeMembers$ | async)?.length || 0 }} active</span
+            >
           </div>
         </div>
 
@@ -319,7 +323,7 @@
               </tr>
             </thead>
             <tbody>
-              @if (applicants().length === 0) {
+              @if ((pendingApplicants$ | async)?.length === 0) {
                 <tr class="empty-row">
                   <td colspan="4">
                     <span class="empty-icon">📭</span>
@@ -327,20 +331,23 @@
                   </td>
                 </tr>
               }
-              @for (a of applicants(); track a.id) {
+              @for (a of pendingApplicants$ | async; track a.id) {
                 <tr>
                   <td>
                     <div class="cell-name">
-                      <div class="avatar">{{ initials(a.name) }}</div>
+                      <div class="avatar">{{ initials(a.user.name || 'NA') }}</div>
                       <div>
-                        <div class="name-text">{{ a.name }}</div>
-                        <div class="id-text">#{{ a.id }}</div>
+                        <div class="name-text">{{ a.user.name || a.name }}</div>
+                        <div class="id-text">#{{ a.user.trendor_id || a.campaign.id || a.id }}</div>
                       </div>
                     </div>
                   </td>
                   <td>
                     <div class="platforms">
-                      @for (p of a.platforms; track p.name) {
+                      @for (
+                        p of a.user?.influencerProfile?.platforms || a['platforms'] || [];
+                        track p.name
+                      ) {
                         <span class="plat-chip">
                           {{ p.name }} <span class="followers">{{ p.followers }}</span>
                         </span>
@@ -353,9 +360,7 @@
                   <td>
                     <div class="actions align-right">
                       <button class="btn btn-profile" (click)="showProfile(a)">↗</button>
-                      <button class="btn btn-decline" (click)="declineApplicant(a.id)">
-                        Decline
-                      </button>
+                      <button class="btn btn-decline" (click)="declineApplicant(a)">Decline</button>
                       <button class="btn btn-accept" (click)="acceptApplicant(a)">Accept</button>
                     </div>
                   </td>
@@ -382,7 +387,7 @@
               </tr>
             </thead>
             <tbody>
-              @if (selectedMembers().length === 0) {
+              @if ((activeMembers$ | async)?.length === 0) {
                 <tr class="empty-row">
                   <td colspan="4">
                     <span class="empty-icon">👥</span>
@@ -390,20 +395,23 @@
                   </td>
                 </tr>
               }
-              @for (m of selectedMembers(); track m.id; let i = $index) {
+              @for (m of activeMembers$ | async; track m.id) {
                 <tr>
                   <td>
                     <div class="cell-name">
-                      <div class="avatar avatar-active">{{ initials(m.name) }}</div>
+                      <div class="avatar avatar-active">{{ initials(m.user.name || 'NA') }}</div>
                       <div>
-                        <div class="name-text">{{ m.name }}</div>
-                        <div class="id-text">#{{ m.id }}</div>
+                        <div class="name-text">{{ m.user.name || 'NA' }}</div>
+                        <div class="id-text">#{{ m.user.trendor_id }}</div>
                       </div>
                     </div>
                   </td>
                   <td>
                     <div class="platforms">
-                      @for (p of m.platforms; track p.name) {
+                      @for (
+                        p of m.user?.influencerProfile?.platforms || m['platforms'] || [];
+                        track p.name
+                      ) {
                         <span class="plat-chip">
                           {{ p.name }} <span class="followers">{{ p.followers }}</span>
                         </span>
@@ -416,7 +424,7 @@
                   <td>
                     <div class="actions align-right">
                       <button class="btn btn-profile" (click)="showProfile(m)">↗</button>
-                      <button class="btn btn-remove" (click)="removeMember(i)">Remove</button>
+                      <button class="btn btn-remove" (click)="removeActiveMember(m)">Remove</button>
                     </div>
                   </td>
                 </tr>
@@ -433,15 +441,24 @@
                 <h3>Profile</h3>
                 <button class="btn-close" (click)="viewingProfile.set(null)">✕</button>
               </div>
-              <div class="modal-avatar">{{ initials(viewingProfile()!.name) }}</div>
-              <div class="modal-name">{{ viewingProfile()!.name }}</div>
+              <div class="modal-avatar">
+                {{ initials(viewingProfile()!.user.name || viewingProfile()!.name || '') }}
+              </div>
+              <div class="modal-name">
+                {{ viewingProfile()!.user?.name || viewingProfile()!.name }}
+              </div>
               <div class="modal-id">
                 ID: {{ viewingProfile()!.id }} · {{ viewingProfile()!.status }}
               </div>
               <div class="modal-divider"></div>
               <div class="modal-section-title">Social Platforms</div>
               <div class="modal-platforms">
-                @for (p of viewingProfile()!.platforms; track p.name) {
+                @for (
+                  p of viewingProfile()!.user?.influencerProfile?.platforms ||
+                    viewingProfile()!['platforms'] ||
+                    [];
+                  track p.name
+                ) {
                   <div class="modal-plat-row">
                     <span class="modal-plat-name">{{ p.name }}</span>
                     <span class="modal-plat-followers">{{ p.followers }}</span>
