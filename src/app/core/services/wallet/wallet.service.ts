@@ -1,0 +1,22 @@
+import { HttpClient } from "@angular/common/http";
+import { inject, Injectable } from "@angular/core";
+import { Observable } from "rxjs";
+import { environment } from "../../../../environments/environment.development";
+
+@Injectable({
+  providedIn: 'root' // <-- Tells Angular to make this available globally
+})
+
+export class WalletService {
+  private http = inject(HttpClient);
+  // private apiUrl = 'http://localhost:3000/wallet';
+  private apiUrl = `${environment.apiUrl}/wallet`;
+
+  createPendingTopup(data: { reference: string; amount: number; email: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/topup/initiate`, data);
+  }
+
+  getUserWallet(trendors_id: string): Observable<{ balance: number }> {
+    return this.http.get<{ balance: number }>(`${this.apiUrl}/user/${trendors_id}`);
+  }
+}

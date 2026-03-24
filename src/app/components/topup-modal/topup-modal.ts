@@ -19,6 +19,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { PaystackService } from '../../core/services/utility/paystack.service';
+import { WalletService } from '../../core/services/wallet/wallet.service';
+import { Store } from '@ngrx/store';
+import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
+import { take } from 'rxjs';
+import { User } from '../../core/models/users/user.model';
 
 @Component({
   selector: 'app-topup-modal',
@@ -53,6 +58,16 @@ export class TopupModalComponent {
   @Input() userEmail = '';
   @Output() closed = new EventEmitter<void>();
   @Output() topupSuccess = new EventEmitter<number>(); // emits amount topped up
+  private store = inject(Store);
+  user: User | null = null;
+
+  currentUser$ = this.store.select(selectCurrentUser);
+  walletBalance?: number;
+
+  constructor() {
+  }
+
+
 
   private paystack = inject(PaystackService);
 
@@ -70,6 +85,11 @@ export class TopupModalComponent {
     return this.finalAmount >= 100; // ₦100 minimum
   }
 
+
+
+
+
+
   selectPreset(amount: number): void {
     this.selectedPreset = amount;
     this.customAmount = '';
@@ -81,6 +101,7 @@ export class TopupModalComponent {
     this.errorMsg.set('');
   }
 
+
   pay(): void {
     if (!this.isValid) {
       this.errorMsg.set('Minimum top-up amount is ₦100.');
@@ -90,29 +111,84 @@ export class TopupModalComponent {
     this.isProcessing.set(true);
     this.errorMsg.set('');
 
+    const ref = this.paystack.generateRef();
+
+    // this.http.post('/api/wallet/topup/initiate', {
+    //   reference: ref,
+    //   amount: this.finalAmount,
+    //   email: this.userEmail
+    // }).subscribe({
+    //   next: () => {
+    //     this.openPaystackPopup(ref);
+    //   },
+    //   error: () => {
+    //     this.isProcessing.set(false);
+    //     this.errorMsg.set('Could not initiate payment. Try again.');
+    //   }
+    // });
+
+    // this.walletService.createPendingTopup({
+    //   reference: ref,
+    //   amount: this.finalAmount,
+    //   userId: this.userId,
+    // }).subscribe({
+    //   next: () => {
+    //     this.openPaystackPopup(ref);
+    //   },
+    //   error: () => {
+    //     this.isProcessing.set(false);
+    //     this.errorMsg.set('Could not initiate payment. Try again.');
+    //   }
+    // });
+  }
+
+  private openPaystackPopup(ref: string): void {
     this.paystack.openPopup({
       email: this.userEmail,
-      amount: this.finalAmount * 100, // convert to kobo
-      ref: this.paystack.generateRef(),
-      onSuccess: (reference) => {
-        // verify on backend before crediting wallet
-        this.paystack.verifyTransaction(reference).subscribe({
-          next: () => {
-            this.isProcessing.set(false);
-            this.topupSuccess.emit(this.finalAmount);
-            this.closed.emit();
-          },
-          error: () => {
-            this.isProcessing.set(false);
-            this.errorMsg.set('Payment received but verification failed. Contact support with your reference: ' + reference);
-          }
-        });
+      amount: this.finalAmount * 100,
+      ref,
+      onSuccess: () => {
+        this.isProcessing.set(false);
+        this.topupSuccess.emit(this.finalAmount);
+        this.closed.emit();
       },
       onClose: () => {
         this.isProcessing.set(false);
       }
     });
   }
+
+  // pay(): void {
+  //   if (!this.isValid) {
+  //     this.errorMsg.set('Minimum top-up amount is ₦100.');
+  //     return;
+  //   }
+
+  //   this.isProcessing.set(true);
+  //   this.errorMsg.set('');
+
+  //   this.paystack.openPopup({
+  //     email: this.userEmail,
+  //     amount: this.finalAmount * 100,
+  //     ref: this.paystack.generateRef(),
+  //     onSuccess: (reference) => {
+  //       this.paystack.verifyTransaction(reference).subscribe({
+  //         next: () => {
+  //           this.isProcessing.set(false);
+  //           this.topupSuccess.emit(this.finalAmount);
+  //           this.closed.emit();
+  //         },
+  //         error: () => {
+  //           this.isProcessing.set(false);
+  //           this.errorMsg.set('Payment received but verification failed. Contact support with your reference: ' + reference);
+  //         }
+  //       });
+  //     },
+  //     onClose: () => {
+  //       this.isProcessing.set(false);
+  //     }
+  //   });
+  // }
 
   close(): void {
     if (!this.isProcessing()) this.closed.emit();

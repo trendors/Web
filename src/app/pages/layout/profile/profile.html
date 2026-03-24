@@ -96,7 +96,7 @@
 
         <div class="wallet-balance-row">
           <div class="wallet-info">
-            <span class="wallet-balance">{{ walletBalance }}</span>
+            <span class="wallet-balance"> {{ (wallet$ | async).balance | currency}}</span>
             <span class="wallet-tag">Available balance</span>
           </div>
           <div class="wallet-actions">
@@ -106,7 +106,7 @@
         </div>
  
         @if (showTopup) {
-        <app-topup-modal [userEmail]="currentUser?.email || 'sayil@mail.com'" (closed)="showTopup = false"
+        <app-topup-modal [userEmail]="user?.email || 'sayil@mail.com'" (closed)="showTopup = false"
           (topupSuccess)="onTopupSuccess($event)" />
         }
 

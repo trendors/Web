@@ -1,4 +1,4 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, CurrencyPipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Store } from '@ngrx/store';
-import { take } from 'rxjs';
+import { catchError, map, Observable, of, shareReplay, switchMap, take } from 'rxjs';
 import { User, UpdateUserDto } from '../../../core/models/users/user.model';
 import { UserService } from '../../../core/services/users/user.service';
 import { selectCurrentUser, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
@@ -14,6 +14,7 @@ import { UserAction } from '../../../store/user/user.action';
 import { selectUserError } from '../../../store/user/user.selector';
 import { SocialVerify } from '../social-verify/social-verify';
 import { TopupModalComponent } from '../../../components/topup-modal/topup-modal';
+import { WalletService } from '../../../core/services/wallet/wallet.service';
 
 @Component({
   selector: 'app-profile',
@@ -23,24 +24,43 @@ import { TopupModalComponent } from '../../../components/topup-modal/topup-modal
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    AsyncPipe, SocialVerify, TopupModalComponent
+    AsyncPipe, SocialVerify, TopupModalComponent,
+    CurrencyPipe
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit {
+  constructor(private walletService: WalletService) { }
   ngOnInit(): void {
-    // throw new Error('Method not implemented.');
+    this.user$.pipe(take(1)).subscribe((user) => {
+      if (user) {
+      this.user = user;
+      }
+    });
   }
   private fb = inject(FormBuilder);
   private store = inject(Store);
   private userService = inject(UserService);
 
-  currentUser: User | null = null;
+
   user$ = this.store.select(selectCurrentUser);
   isLoading$ = this.store.select(selectIsLoading);
   userError$ = this.store.select(selectUserError);
-  walletBalance = 0; // This would ideally come from the user state or a separate wallet state
+  wallet$ = this.user$.pipe(
+    take(1),
+    switchMap(user =>
+      user
+        ? this.walletService.getUserWallet(user.trendors_id).pipe(
+          map((res: any) => res.data ?? { balance: 0 }),
+          catchError(() => of({ balance: 0 })),
+          shareReplay(1)
+        )
+        : of({ balance: 0 })
+    )
+  );
+  user: User | null = null;
+
 
   profileForm = this.fb.group({
     first_name: ['', Validators.required],
@@ -54,15 +74,22 @@ export class Profile implements OnInit {
 
   showTopup = false;
 
-onTopupSuccess(amount: number): void {
-  this.walletBalance += amount; // optimistic update
-  // your store dispatch here e.g:
-  // this.store.dispatch(WalletActions.topupSuccess({ amount }))
-}
+  onTopupSuccess(amount: number): void {
+    // this.walletBalance += amount; 
+    // your store dispatch here e.g:
+    // this.store.dispatch(WalletActions.topupSuccess({ amount }))
+  }
+
+  // getUserWallet(trendors_id: string) {
+  //   this.wallet$ = this.walletService.getUserWallet(trendors_id ?? '').pipe(
+  //     map((res: any) => res.data ?? { balance: 0 }),
+  //     catchError(() => of({ balance: 0 }))
+  //   );
+  // }
 
   ççç() {
     this.user$.pipe(take(1)).subscribe((user) => {
-      this.currentUser = user;
+      // this.currentUser = user;
       if (user) {
         this.profileForm.patchValue({
           first_name: user.first_name,
@@ -78,7 +105,7 @@ onTopupSuccess(amount: number): void {
   }
 
   onSave() {
-    if (this.profileForm.valid && this.currentUser) {
+    if (this.profileForm.valid && this.user) {
       const updateData: UpdateUserDto = {
         first_name: this.profileForm.value.first_name ?? undefined,
         last_name: this.profileForm.value.last_name ?? undefined,
@@ -88,13 +115,13 @@ onTopupSuccess(amount: number): void {
         facebook_username: this.profileForm.value.facebook_username ?? undefined,
       };
 
-      this.store.dispatch(UserAction.updateUser({ userId: this.currentUser.id, updateData }));
+      this.store.dispatch(UserAction.updateUser({ userId: this.user!.id, updateData }));
     }
   }
 
   onDelete() {
     if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
-      this.store.dispatch(UserAction.deleteUser({ userId: this.currentUser!.id }));
+      this.store.dispatch(UserAction.deleteUser({ userId: this.user!.id }));
     }
   }
 }

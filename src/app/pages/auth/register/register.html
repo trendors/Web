@@ -1,4 +1,4 @@
-<div class="register-container">
+<!-- <div class="register-container">
   <mat-card class="register-card">
     <mat-card-header>
       <mat-card-title>Create Account</mat-card-title>
@@ -96,4 +96,186 @@
       <p>Already have an account? <a routerLink="/login">Login</a></p>
     </mat-card-footer>
   </mat-card>
+</div> -->
+
+
+
+<div class="register-page">
+
+  <!-- LEFT PANEL -->
+  <div class="left">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div class="brand-name">trendors</div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-label">Join the platform</div>
+      <h1 class="hero-title">
+        Start growing<br/>with <em>creators</em><br/>today.
+      </h1>
+      <p class="hero-desc">
+        Connect with thousands of creators, launch campaigns, and track results — all in one place.
+      </p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-value">12K+</div>
+        <div class="stat-label">Active creators</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">₦4.2B</div>
+        <div class="stat-label">Paid out</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">98%</div>
+        <div class="stat-label">Success rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+    <div class="form-header">
+      <div class="form-title">Create account</div>
+      <div class="form-subtitle">Fill in your details to get started</div>
+    </div>
+
+    <!-- Error message -->
+    @if (error$ | async; as error) {
+      <div class="error-banner">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+        </svg>
+        <span>{{ error }}</span>
+      </div>
+    }
+
+    <form class="form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+      <!-- Username -->
+      <div class="field">
+        <label for="user_name">Username</label>
+        <input
+          id="user_name"
+          type="text"
+          placeholder="yourhandle"
+          formControlName="user_name"
+          [class.invalid]="registerForm.get('user_name')?.invalid && registerForm.get('user_name')?.touched"
+        />
+        @if (registerForm.get('user_name')?.hasError('required') && registerForm.get('user_name')?.touched) {
+          <span class="field-error">Username is required</span>
+        }
+      </div>
+
+      <!-- First + Last name -->
+      <div class="field-row">
+        <div class="field">
+          <label for="first_name">First Name</label>
+          <input
+            id="first_name"
+            type="text"
+            placeholder="John"
+            formControlName="first_name"
+            [class.invalid]="registerForm.get('first_name')?.invalid && registerForm.get('first_name')?.touched"
+          />
+          @if (registerForm.get('first_name')?.hasError('required') && registerForm.get('first_name')?.touched) {
+            <span class="field-error">Required</span>
+          }
+        </div>
+        <div class="field">
+          <label for="last_name">Last Name</label>
+          <input
+            id="last_name"
+            type="text"
+            placeholder="Doe"
+            formControlName="last_name"
+            [class.invalid]="registerForm.get('last_name')?.invalid && registerForm.get('last_name')?.touched"
+          />
+          @if (registerForm.get('last_name')?.hasError('required') && registerForm.get('last_name')?.touched) {
+            <span class="field-error">Required</span>
+          }
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          placeholder="you@example.com"
+          formControlName="email"
+          [class.invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+        />
+        @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
+          <span class="field-error">Email is required</span>
+        }
+        @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
+          <span class="field-error">Invalid email format</span>
+        }
+      </div>
+
+      <!-- Phone (optional) -->
+      <div class="field">
+        <label for="phone_number">
+          Phone Number
+          <span class="optional">optional</span>
+        </label>
+        <input
+          id="phone_number"
+          type="tel"
+          placeholder="08012345678"
+          formControlName="phone_number"
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <input
+            id="password"
+            [type]="hidePassword ? 'password' : 'text'"
+            placeholder="Min. 6 characters"
+            formControlName="password"
+            [class.invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+          />
+          <button type="button" class="toggle-pw" (click)="hidePassword = !hidePassword">
+            {{ hidePassword ? 'show' : 'hide' }}
+          </button>
+        </div>
+        @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
+          <span class="field-error">Password is required</span>
+        }
+        @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
+          <span class="field-error">Must be at least 6 characters</span>
+        }
+      </div>
+
+      <!-- Submit -->
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="registerForm.invalid || (isLoading$ | async)"
+      >
+        @if (isLoading$ | async) {
+          <span class="spinner"></span>
+          Creating account...
+        } @else {
+          Create account
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        }
+      </button>
+
+      <div class="signin-link">
+        Already have an account? <a routerLink="/login">Sign in</a>
+      </div>
+
+    </form>
+  </div>
+
 </div>
