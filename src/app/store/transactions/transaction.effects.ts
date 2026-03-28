@@ -12,8 +12,8 @@ export class TransactionsEffects {
   loadTransactions$ = createEffect(() =>
     this.actions$.pipe(
       ofType(TransactionsActions.loadTransactions),
-      mergeMap(({ params }) =>
-        this.transactionService.findAll(params).pipe(
+      mergeMap(({ query }) =>
+        this.transactionService.findAll(query).pipe(
           map((response) => TransactionsActions.loadTransactionsSuccess({ response })),
           catchError((error) => [
             TransactionsActions.loadTransactionsFailure({

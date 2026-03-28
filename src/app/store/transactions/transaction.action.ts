@@ -7,7 +7,7 @@ import {
 export const TransactionsActions = createActionGroup({
   source: 'Transactions Action Flow',
   events: {
-    'Load Transactions': props<{ params: FindTransactionsDto }>(),
+    'Load Transactions': props<{ query: FindTransactionsDto }>(),
     'Load Transactions Success': props<{ response: TransactionResponse }>(),
     'Load Transactions Failure': props<{ error: string }>(),
   },
