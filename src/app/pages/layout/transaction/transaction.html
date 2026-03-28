@@ -1,0 +1,63 @@
+<div class="transactions-container">
+  <h2>My Transactions</h2>
+
+  <form [formGroup]="filterForm" class="filters">
+    <mat-form-field>
+      <mat-label>Search</mat-label>
+      <input matInput formControlName="searchQuery" />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Type</mat-label>
+      <mat-select formControlName="transaction_type">
+        <mat-option [value]="TransactionType.ALL">All</mat-option>
+        <mat-option [value]="TransactionType.CREDIT">Credit</mat-option>
+        <mat-option [value]="TransactionType.DEBIT">Debit</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+
+  @if (loading$ | async) {
+    <div class="loading">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+  }
+
+  @if (error$ | async) {
+    <div class="error">Error loading transactions</div>
+  }
+
+  @if (transactions$ | async; as transactions) {
+    <table class="transactions-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (tx of transactions; track tx.id) {
+          <tr>
+            <td>{{ tx.createdAt | date: 'short' }}</td>
+            <td>{{ tx.description }}</td>
+            <td>{{ tx.type }}</td>
+            <td>{{ tx.amount }} {{ tx.currency }}</td>
+            <td>{{ tx.status }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  <mat-paginator
+    [length]="(totalCount$ | async) ?? 0"
+    [pageSize]="filterForm.value.limit ?? 10"
+    [pageSizeOptions]="[5, 10, 20]"
+    (page)="onPageChange($event)"
+  >
+  </mat-paginator>
+</div>
