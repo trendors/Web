@@ -11,7 +11,7 @@ import { User, UpdateUserDto } from '../../../core/models/users/user.model';
 import { UserService } from '../../../core/services/users/user.service';
 import { selectCurrentUser, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
 import { UserAction } from '../../../store/user/user.action';
-import { selectUserError } from '../../../store/user/user.selector';
+import { selectUserError, selectUserIsLoading } from '../../../store/user/user.selector';
 import { SocialVerify } from '../social-verify/social-verify';
 import { TopupModalComponent } from '../../../components/topup-modal/topup-modal';
 import { WalletService } from '../../../core/services/wallet/wallet.service';
@@ -31,22 +31,38 @@ import { WalletService } from '../../../core/services/wallet/wallet.service';
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit {
-  constructor(private walletService: WalletService) { }
+  private fb = inject(FormBuilder);
+  private store = inject(Store);
+  private walletService = inject(WalletService);
+
+  user$ = this.store.select(selectCurrentUser);
+  isLoading$ = this.store.select(selectUserIsLoading);
+  loading: boolean = false;
+  userError$ = this.store.select(selectUserError);
+
   ngOnInit(): void {
     this.user$.pipe(take(1)).subscribe((user) => {
       if (user) {
-      this.user = user;
+        this.user = user;
+        this.profileForm.patchValue({
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          phone_number: user.phone_number,
+          user_name: user.user_name,
+          trendors_id: user.trendors_id,
+          twitter_handle: user.twitter_handle,
+          instagram_handle: user.instagram_handle,
+          facebook_username: user.facebook_username,
+        });
+
+        console.log('Current user in Profile component:', user);
       }
     });
   }
-  private fb = inject(FormBuilder);
-  private store = inject(Store);
-  private userService = inject(UserService);
 
 
-  user$ = this.store.select(selectCurrentUser);
-  isLoading$ = this.store.select(selectIsLoading);
-  userError$ = this.store.select(selectUserError);
+
   wallet$ = this.user$.pipe(
     take(1),
     switchMap(user =>
@@ -67,6 +83,8 @@ export class Profile implements OnInit {
     last_name: ['', Validators.required],
     email: [{ value: '', disabled: true }],
     phone_number: [''],
+    user_name: [{ value: '', disabled: true }],
+    trendors_id: [{ value: '', disabled: true }],
     twitter_handle: [''],
     instagram_handle: [''],
     facebook_username: [''],
@@ -80,43 +98,23 @@ export class Profile implements OnInit {
     // this.store.dispatch(WalletActions.topupSuccess({ amount }))
   }
 
-  // getUserWallet(trendors_id: string) {
-  //   this.wallet$ = this.walletService.getUserWallet(trendors_id ?? '').pipe(
-  //     map((res: any) => res.data ?? { balance: 0 }),
-  //     catchError(() => of({ balance: 0 }))
-  //   );
-  // }
-
-  ççç() {
-    this.user$.pipe(take(1)).subscribe((user) => {
-      // this.currentUser = user;
-      if (user) {
-        this.profileForm.patchValue({
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          phone_number: user.phone_number,
-          twitter_handle: user.twitter_handle,
-          instagram_handle: user.instagram_handle,
-          facebook_username: user.facebook_username,
-        });
-      }
-    });
-  }
-
   onSave() {
-    if (this.profileForm.valid && this.user) {
-      const updateData: UpdateUserDto = {
-        first_name: this.profileForm.value.first_name ?? undefined,
-        last_name: this.profileForm.value.last_name ?? undefined,
-        phone_number: this.profileForm.value.phone_number ?? undefined,
-        twitter_handle: this.profileForm.value.twitter_handle ?? undefined,
-        instagram_handle: this.profileForm.value.instagram_handle ?? undefined,
-        facebook_username: this.profileForm.value.facebook_username ?? undefined,
-      };
+    const updateData: UpdateUserDto = {
+      first_name: this.profileForm.value.first_name ?? undefined,
+      last_name: this.profileForm.value.last_name ?? undefined,
+      phone_number: this.profileForm.value.phone_number ?? undefined,
+      twitter_handle: this.profileForm.value.twitter_handle ?? undefined,
+      instagram_handle: this.profileForm.value.instagram_handle ?? undefined,
+      facebook_username: this.profileForm.value.facebook_username ?? undefined,
+    };
 
-      this.store.dispatch(UserAction.updateUser({ userId: this.user!.id, updateData }));
-    }
+    console.log(`Dispatching updateUser with data:`, this.profileForm.value);
+    console.log('User:', this.user);
+
+
+    this.store.dispatch(UserAction.updateUser({ userId: this.user!.id, updateData }))
+
+
   }
 
   onDelete() {

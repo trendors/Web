@@ -26,6 +26,7 @@ import { campaignFeatureKey, campaignReducer } from './store/campaign/campaign.r
 import { CampaignEffects } from './store/campaign/campaign.effects';
 import { invitationFeatureKey, invitationReducer } from './store/invitation/invitation.reducer';
 import { InvitationEffects } from './store/invitation/invitation.effects';
+import { UserEffects } from './store/user/user.effect';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -51,6 +52,7 @@ export const appConfig: ApplicationConfig = {
       SharesEffects,
       CampaignEffects,
       InvitationEffects,
+      UserEffects,
     ]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],

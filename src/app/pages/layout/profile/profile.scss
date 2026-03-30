@@ -111,6 +111,16 @@
   margin: 0;
 }
 
+.copy-btn{
+ 
+  text-transform: uppercase;
+  color: var(--grey-mid);
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  padding: 1px 6px;
+  cursor: pointer;
+}
+
 /* ── Card ── */
 .card {
   background: #ffffff;
