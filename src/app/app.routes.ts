@@ -14,35 +14,45 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/layout/home/home').then((m) => m.Home),
     children: [
       { path: '', redirectTo: 'posts', pathMatch: 'full' },
-      { path: 'posts', loadComponent: () => import('./pages/layout/posts/posts').then((m) => m.Posts) },
+      {
+        path: 'posts',
+        loadComponent: () => import('./pages/layout/posts/posts').then((m) => m.Posts),
+      },
       {
         path: 'post/:id',
-        loadComponent: () => import('./pages/layout/single-post/single-post').then((m) => m.SinglePost)
-      }, {
+        loadComponent: () =>
+          import('./pages/layout/single-post/single-post').then((m) => m.SinglePost),
+      },
+      {
         path: 'shares',
-        loadComponent: () => import('./pages/layout/shares/shares').then((m) => m.SharesDashboard)
-      }, {
+        loadComponent: () => import('./pages/layout/shares/shares').then((m) => m.SharesDashboard),
+      },
+      {
         path: 'create-campaign',
         loadComponent: () =>
           import('./pages/layout/create-campaign/create-campaign').then((m) => m.CreateCampaign),
-      },{
-         path: 'notifications',
+      },
+      {
+        path: 'notifications',
         loadComponent: () =>
-          import('./pages/layout/notification/notification').then((m) => m.NotificationsPage),    
+          import('./pages/layout/notification/notification').then((m) => m.NotificationsPage),
       },
       {
         path: 'profile',
-        loadComponent: () =>
-          import('./pages/layout/profile/profile').then((m) => m.Profile),
+        loadComponent: () => import('./pages/layout/profile/profile').then((m) => m.Profile),
       },
       {
         path: 'view-campaign',
         loadComponent: () =>
           import('./pages/layout/view-campaign/view-campaign').then((m) => m.ViewCampaign),
-      }
+      },
+      {
+        path: 'transactions',
+        loadComponent: () =>
+          import('./pages/layout/transaction/transaction').then((m) => m.Transaction),
+      },
     ],
   },
-
 
   {
     path: 'register',
@@ -68,6 +78,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
   },
+
   {
     path: '**',
     redirectTo: 'login',

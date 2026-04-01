@@ -70,7 +70,7 @@
   <!-- CTA -->
   <button
     class="btn-pay"
-    (click)="pay()"
+    (click)="initiatePayment()"
     [disabled]="!isValid || isProcessing()"
     type="button">
     @if (isProcessing()) {

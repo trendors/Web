@@ -1,16 +1,3 @@
-// import { Component } from '@angular/core';
-
-// @Component({
-//   selector: 'app-topup-modal',
-//   imports: [],
-//   templateUrl: './topup-modal.html',
-//   styleUrl: './topup-modal.scss',
-// })
-// export class TopupModal {
-
-// }
-
-
 
 import {
   Component, Output, EventEmitter, inject, signal, Input
@@ -19,11 +6,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { PaystackService } from '../../core/services/utility/paystack.service';
-import { WalletService } from '../../core/services/wallet/wallet.service';
 import { Store } from '@ngrx/store';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
-import { take } from 'rxjs';
 import { User } from '../../core/models/users/user.model';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment.development';
+import { take } from 'rxjs';
+declare var PaystackPop: any;
+
 
 @Component({
   selector: 'app-topup-modal',
@@ -64,10 +54,21 @@ export class TopupModalComponent {
   currentUser$ = this.store.select(selectCurrentUser);
   walletBalance?: number;
 
-  constructor() {
+  amount: number = 0;
+  loading = false;
+
+  constructor(private http: HttpClient) {
   }
 
-
+  ngOnInit(): void {
+    this.currentUser$.pipe(take(1)).subscribe((user) => {
+      if (user) {
+        this.user = user;
+        this.userEmail = user.email;
+        console.log('Current user in TopupModalComponent:', user);
+      }
+    });
+  }
 
   private paystack = inject(PaystackService);
 
@@ -85,10 +86,71 @@ export class TopupModalComponent {
     return this.finalAmount >= 100; // ₦100 minimum
   }
 
+  initiatePayment() {
 
 
+    this.loading = true;
+
+    this.http.post(`${environment.apiUrl}/utility/initialize`, {
+      email: this.userEmail,
+      amount: this.finalAmount * 100,
+      trendors_id: this.user?.trendors_id 
+    }).subscribe({
+      next: (res: any) => {
+        this.launchPaystack(res.data);
+      },
+      error: (err) => {
+        this.loading = false;
+        alert('Could not initialize payment');
+        console.error(err);
+      }
+    });
+  }
+
+  launchPaystack(paymentData: any) {
+    const handler = PaystackPop.setup({
+      key: environment.paystackPublicKey,
+      email: this.userEmail,
+      amount: this.finalAmount * 100,
+      ref: paymentData.reference, 
+      currency: 'NGN',
+      channels: ['card', 'bank', 'bank_transfer', 'ussd', 'qr', 'eft'],
+      onClose: () => {
+        this.loading = false;
+        console.log('Payment window closed');
+        this.closed.emit();
+      },
+      onSuccess: (response: any) => {
+        this.loading = false;
+        console.log('Payment successful:', response);
+
+        
+
+        // this.verifyPayment(response.reference);
+
+        this.topupSuccess.emit(response);
+      }
+    });
+
+    handler.openIframe();
+  }
 
 
+  verifyPayment(reference: string) {
+    this.http.post(`${environment.apiUrl}/payments/verify`, {
+      reference: reference,
+      email: this.userEmail,
+      amount: this.finalAmount * 100,
+    }).subscribe({
+      next: (res: any) => {
+        console.log('Payment verified:', res);
+        alert('Payment successful! Account topped up.');
+      },
+      error: (err) => {
+        console.error('Verification failed:', err);
+      }
+    });
+  }
 
   selectPreset(amount: number): void {
     this.selectedPreset = amount;
@@ -107,39 +169,9 @@ export class TopupModalComponent {
       this.errorMsg.set('Minimum top-up amount is ₦100.');
       return;
     }
-
     this.isProcessing.set(true);
     this.errorMsg.set('');
-
     const ref = this.paystack.generateRef();
-
-    // this.http.post('/api/wallet/topup/initiate', {
-    //   reference: ref,
-    //   amount: this.finalAmount,
-    //   email: this.userEmail
-    // }).subscribe({
-    //   next: () => {
-    //     this.openPaystackPopup(ref);
-    //   },
-    //   error: () => {
-    //     this.isProcessing.set(false);
-    //     this.errorMsg.set('Could not initiate payment. Try again.');
-    //   }
-    // });
-
-    // this.walletService.createPendingTopup({
-    //   reference: ref,
-    //   amount: this.finalAmount,
-    //   userId: this.userId,
-    // }).subscribe({
-    //   next: () => {
-    //     this.openPaystackPopup(ref);
-    //   },
-    //   error: () => {
-    //     this.isProcessing.set(false);
-    //     this.errorMsg.set('Could not initiate payment. Try again.');
-    //   }
-    // });
   }
 
   private openPaystackPopup(ref: string): void {
@@ -157,38 +189,6 @@ export class TopupModalComponent {
       }
     });
   }
-
-  // pay(): void {
-  //   if (!this.isValid) {
-  //     this.errorMsg.set('Minimum top-up amount is ₦100.');
-  //     return;
-  //   }
-
-  //   this.isProcessing.set(true);
-  //   this.errorMsg.set('');
-
-  //   this.paystack.openPopup({
-  //     email: this.userEmail,
-  //     amount: this.finalAmount * 100,
-  //     ref: this.paystack.generateRef(),
-  //     onSuccess: (reference) => {
-  //       this.paystack.verifyTransaction(reference).subscribe({
-  //         next: () => {
-  //           this.isProcessing.set(false);
-  //           this.topupSuccess.emit(this.finalAmount);
-  //           this.closed.emit();
-  //         },
-  //         error: () => {
-  //           this.isProcessing.set(false);
-  //           this.errorMsg.set('Payment received but verification failed. Contact support with your reference: ' + reference);
-  //         }
-  //       });
-  //     },
-  //     onClose: () => {
-  //       this.isProcessing.set(false);
-  //     }
-  //   });
-  // }
 
   close(): void {
     if (!this.isProcessing()) this.closed.emit();
