@@ -1,6 +1,42 @@
 @use '@angular/material' as mat;
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
+// Complete setup for your luxury minimalist app
+
+:root {
+  --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;  // Headers
+  --font-body: 'Inter', -apple-system, sans-serif;                 // Body text
+}
+
+* {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, .title, .heading {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+body, p, span {
+  font-family: var(--font-body);
+  font-weight: 400;
+  letter-spacing: -0.1px;
+}
+
+.subtitle, .secondary, .date, .time {
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: 0.2px;
+}
+
+.category, .badge, .label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
 *,
 *::before,
 *::after {
@@ -37,30 +73,13 @@
   --blue: #5a9ef5;
   --radius: 16px;
   --radius-sm: 8px;
-
-  // --bg: #f5f5f2;
-  // --surface: #ffffff;
-  // --surface-2: #f0f0ed;
-  // --border: #e4e4e0;
-  // --border-light: #d8d8d4;
   --text-black: #111111;
-  // --text-secondary: #666666;
-  // --text-muted: #aaaaaa;
-  // --accent: #6abf30;
-  // --accent-dark: #4e9220;
-  // --accent-dim: rgba(106, 191, 48, 0.1);
-  // --accent-glow: rgba(106, 191, 48, 0.2);
-  // --radius: 12px;
+
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  // color: var(--text-primary);
-  // font-family: 'DM Sans', sans-serif;
-  // font-size: 15px;
-  // line-height: 1.6;
-  // min-height: 100vh;
   font-family: 'DM Sans', sans-serif;
   font-size: 15px;
   min-height: 100vh;

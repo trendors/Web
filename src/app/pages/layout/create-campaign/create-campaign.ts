@@ -17,6 +17,7 @@ import {
   selectPendingApplicants,
 } from '../../../store/invitation/invitation.selector';
 import { InvitationActions } from '../../../store/invitation/invitation.action';
+import { UserInfoCard } from '../../../components/user-info-card/user-info-card';
 
 interface CampaignFile {
   file: File;
@@ -48,7 +49,7 @@ interface Tier {
 
 @Component({
   selector: 'app-create-campaign',
-  imports: [CommonModule, FormsModule, LoaderComponent, Alert],
+  imports: [CommonModule, FormsModule, LoaderComponent, Alert, UserInfoCard],
   templateUrl: './create-campaign.html',
   styleUrl: './create-campaign.scss',
 })

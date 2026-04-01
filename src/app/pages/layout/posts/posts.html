@@ -60,38 +60,6 @@
   </main>
 
   <aside class="sidebar right">
-    <aside class="mini-dashboard">
-      @if (user$ | async; as user) {
-
-      <div class="user-header">
-        <div class="avatar-small gray">
-          {{ user.first_name.slice(0, 1).toUpperCase() || 'U' }}
-        </div>
-        <div class="user-info">
-          <span class="name">{{ user.first_name }} {{ user.last_name }}</span>
-          <span class="label">Pro Member</span>
-        </div>
-      </div>
-      }
-      <hr class="divider" />
-
-      <div class="stats-grid">
-
-        <div class="stat-item">
-          <span class="stat-value">124</span>
-          <span class="stat-label">Shares</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">1.2k</span>
-          <span class="stat-label">Viewers</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">1.2k</span>
-          <span class="stat-label">Viewers</span>
-        </div>
-      </div>
-
-      <button (click)="routeTo('home/profile')" class="btn-profile">View Profile</button>
-    </aside>
+    <app-user-info-card></app-user-info-card>
   </aside>
 </div>

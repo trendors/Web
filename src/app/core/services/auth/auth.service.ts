@@ -41,10 +41,10 @@ export class AuthService {
   }
 
   login(emailOrPhone: string, password: string): Observable<LoginResponse> {
-    console.log(this.apiUrl);
+    let body = { emailOrPhone, password };
     const params = new HttpParams().set('emailOrPhone', emailOrPhone).set('password', password);
     return this.http
-      .post<LoginResponse>(`${this.apiUrl}/login`, {}, { params })
+      .post<LoginResponse>(`${this.apiUrl}/login`, body)
       .pipe(catchError(this.handleError));
   }
 
