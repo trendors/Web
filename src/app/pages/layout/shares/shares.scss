@@ -1,353 +1,777 @@
 
-    .container {
-      margin: 0 auto;
-    }
+    // .container {
+    //   margin: 0 auto;
+    // }
 
-    /* Header */
-    .page-header {
-      margin-bottom: 32px;
-    }
+    // /* Header */
+    // .page-header {
+    //   margin-bottom: 32px;
+    // }
 
-    .page-title {
-      font-size: 32px;
-      font-weight: 700;
-      color: #000000;
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
+    // .page-title {
+    //   font-size: 32px;
+    //   font-weight: 700;
+    //   color: #000000;
+    //   margin-bottom: 8px;
+    //   letter-spacing: -0.5px;
+    // }
 
-    .page-subtitle {
-      font-size: 14px;
-      font-weight: 300;
-      color: rgba(0, 0, 0, 0.54);
-    }
+    // .page-subtitle {
+    //   font-size: 14px;
+    //   font-weight: 300;
+    //   color: rgba(0, 0, 0, 0.54);
+    // }
 
-    /* Filter Section */
-    .filter-section {
-      background-color: #FFFFFF;
-      border: 1px solid #E0E0E0;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
+    // /* Filter Section */
+    // .filter-section {
+    //   background-color: #FFFFFF;
+    //   border: 1px solid #E0E0E0;
+    //   padding: 20px;
+    //   margin-bottom: 24px;
+    // }
 
-    .filter-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #000000;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-      display: block;
-    }
+    // .filter-label {
+    //   font-size: 12px;
+    //   font-weight: 600;
+    //   color: #000000;
+    //   text-transform: uppercase;
+    //   letter-spacing: 0.5px;
+    //   margin-bottom: 12px;
+    //   display: block;
+    // }
 
-    .filter-buttons {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    // .filter-buttons {
+    //   display: flex;
+    //   gap: 8px;
+    //   flex-wrap: wrap;
+    // }
 
-    .filter-btn {
-      padding: 10px 20px;
-      border: 1px solid #E0E0E0;
-      background-color: #FFFFFF;
-      color: rgba(0, 0, 0, 0.87);
-      font-size: 13px;
-      font-weight: 400;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-transform: capitalize;
-    }
+    // .filter-btn {
+    //   padding: 10px 20px;
+    //   border: 1px solid #E0E0E0;
+    //   background-color: #FFFFFF;
+    //   color: rgba(0, 0, 0, 0.87);
+    //   font-size: 13px;
+    //   font-weight: 400;
+    //   cursor: pointer;
+    //   transition: all 0.2s ease;
+    //   text-transform: capitalize;
+    // }
 
-    .filter-btn:hover {
-      border-color: #000000;
-    }
+    // .filter-btn:hover {
+    //   border-color: #000000;
+    // }
 
-    .filter-btn.active {
-      background-color: #000000;
-      color: #FFFFFF;
-      border-color: #000000;
-    }
+    // .filter-btn.active {
+    //   background-color: #000000;
+    //   color: #FFFFFF;
+    //   border-color: #000000;
+    // }
 
-    /* Shares List */
-    .shares-list {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+    // /* Shares List */
+    // .shares-list {
+    //   display: flex;
+    //   flex-direction: column;
+    //   gap: 16px;
+    // }
 
-    /* Share Item */
-    .share-item {
-      background-color: #FFFFFF;
-      border: 1px solid #E0E0E0;
-      padding: 20px;
-      transition: border-color 0.2s ease;
-      position: relative;
-    }
+    // /* Share Item */
+    // .share-item {
+    //   background-color: #FFFFFF;
+    //   border: 1px solid #E0E0E0;
+    //   padding: 20px;
+    //   transition: border-color 0.2s ease;
+    //   position: relative;
+    // }
 
-    .share-item:hover {
-      border-color: #000000;
-    }
+    // .share-item:hover {
+    //   border-color: #000000;
+    // }
 
-    /* Paid Share - Subtle gold accent */
-    .share-item.paid {
-      border-left: 3px solid #B8860B;
-    }
+    // /* Paid Share - Subtle gold accent */
+    // .share-item.paid {
+    //   border-left: 3px solid #B8860B;
+    // }
 
-    /* Free Share - Standard */
-    .share-item.free {
-      border-left: 3px solid #E0E0E0;
-    }
+    // /* Free Share - Standard */
+    // .share-item.free {
+    //   border-left: 3px solid #E0E0E0;
+    // }
 
-    /* Share Header */
-    .share-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 16px;
-    }
+    // /* Share Header */
+    // .share-header {
+    //   display: flex;
+    //   justify-content: space-between;
+    //   align-items: flex-start;
+    //   margin-bottom: 16px;
+    // }
 
-    .share-info {
-      flex: 1;
-    }
+    // .share-info {
+    //   flex: 1;
+    // }
 
-    .share-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #000000;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    // .share-title {
+    //   font-size: 16px;
+    //   font-weight: 600;
+    //   color: #000000;
+    //   margin-bottom: 4px;
+    //   display: flex;
+    //   align-items: center;
+    //   gap: 8px;
+    // }
 
-    .share-meta {
-      font-size: 12px;
-      font-weight: 300;
-      color: rgba(0, 0, 0, 0.54);
-    }
+    // .share-meta {
+    //   font-size: 12px;
+    //   font-weight: 300;
+    //   color: rgba(0, 0, 0, 0.54);
+    // }
 
-    /* Reward Badge */
-    .reward-badge {
-      font-size: 18px;
-      font-weight: 700;
-      color: #B8860B;
-      white-space: nowrap;
-    }
+    // /* Reward Badge */
+    // .reward-badge {
+    //   font-size: 18px;
+    //   font-weight: 700;
+    //   color: #B8860B;
+    //   white-space: nowrap;
+    // }
 
-    .reward-badge.free {
-      font-size: 12px;
-      font-weight: 300;
-      color: rgba(0, 0, 0, 0.38);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    // .reward-badge.free {
+    //   font-size: 12px;
+    //   font-weight: 300;
+    //   color: rgba(0, 0, 0, 0.38);
+    //   text-transform: uppercase;
+    //   letter-spacing: 0.5px;
+    // }
 
-    /* Share Status */
-    .share-status {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #F5F5F5;
-    }
+    // /* Share Status */
+    // .share-status {
+    //   display: flex;
+    //   align-items: center;
+    //   gap: 12px;
+    //   margin-bottom: 16px;
+    //   padding-bottom: 16px;
+    //   border-bottom: 1px solid #F5F5F5;
+    // }
 
-    .status-badge {
-      padding: 4px 12px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    // .status-badge {
+    //   padding: 4px 12px;
+    //   font-size: 11px;
+    //   font-weight: 600;
+    //   text-transform: uppercase;
+    //   letter-spacing: 0.5px;
+    // }
 
-    .status-badge.verified {
-      background-color: #000000;
-      color: #FFFFFF;
-    }
+    // .status-badge.verified {
+    //   background-color: #000000;
+    //   color: #FFFFFF;
+    // }
 
-    .status-badge.pending {
-      background-color: #F5F5F5;
-      color: rgba(0, 0, 0, 0.54);
-      border: 1px solid #E0E0E0;
-    }
+    // .status-badge.pending {
+    //   background-color: #F5F5F5;
+    //   color: rgba(0, 0, 0, 0.54);
+    //   border: 1px solid #E0E0E0;
+    // }
 
-    .status-badge.claimed {
-      background-color: #B8860B;
-      color: #FFFFFF;
-    }
+    // .status-badge.claimed {
+    //   background-color: #B8860B;
+    //   color: #FFFFFF;
+    // }
 
-    .shares-count {
-      font-size: 12px;
-      font-weight: 300;
-      color: rgba(0, 0, 0, 0.54);
-    }
+    // .shares-count {
+    //   font-size: 12px;
+    //   font-weight: 300;
+    //   color: rgba(0, 0, 0, 0.54);
+    // }
 
-    /* Claim Section */
-    .claim-section {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+    // /* Claim Section */
+    // .claim-section {
+    //   display: flex;
+    //   gap: 8px;
+    //   align-items: center;
+    // }
 
-    .claim-input {
-      flex: 1;
-      padding: 12px 16px;
-      border: 1px solid #E0E0E0;
-      font-size: 13px;
-      font-weight: 300;
-      color: #000000;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
+    // .claim-input {
+    //   flex: 1;
+    //   padding: 12px 16px;
+    //   border: 1px solid #E0E0E0;
+    //   font-size: 13px;
+    //   font-weight: 300;
+    //   color: #000000;
+    //   outline: none;
+    //   transition: border-color 0.2s ease;
+    // }
 
-    .claim-input:focus {
-      border-color: #000000;
-    }
+    // .claim-input:focus {
+    //   border-color: #000000;
+    // }
 
-    .claim-input::placeholder {
-      color: rgba(0, 0, 0, 0.38);
-      font-weight: 300;
-    }
+    // .claim-input::placeholder {
+    //   color: rgba(0, 0, 0, 0.38);
+    //   font-weight: 300;
+    // }
 
-    .claim-btn {
-      padding: 12px 24px;
-      background-color: #B8860B;
-      color: #FFFFFF;
-      border: none;
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      white-space: nowrap;
-    }
+    // .claim-btn {
+    //   padding: 12px 24px;
+    //   background-color: #B8860B;
+    //   color: #FFFFFF;
+    //   border: none;
+    //   font-size: 13px;
+    //   font-weight: 600;
+    //   text-transform: uppercase;
+    //   letter-spacing: 0.5px;
+    //   cursor: pointer;
+    //   transition: background-color 0.2s ease;
+    //   white-space: nowrap;
+    // }
 
-    .claim-btn:hover {
-      background-color: #9A7209;
-    }
+    // .claim-btn:hover {
+    //   background-color: #9A7209;
+    // }
 
-    .claim-btn:active {
-      transform: scale(0.98);
-    }
+    // .claim-btn:active {
+    //   transform: scale(0.98);
+    // }
 
-    .claim-btn:disabled {
-      background-color: #E0E0E0;
-      color: rgba(0, 0, 0, 0.38);
-      cursor: not-allowed;
-    }
+    // .claim-btn:disabled {
+    //   background-color: #E0E0E0;
+    //   color: rgba(0, 0, 0, 0.38);
+    //   cursor: not-allowed;
+    // }
 
-    /* Share Button - For free shares */
-    .share-btn {
-      width: 100%;
-      padding: 12px;
-      background-color: #FFFFFF;
-      color: #000000;
-      border: 1px solid #E0E0E0;
-      font-size: 13px;
-      font-weight: 400;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
+    // /* Share Button - For free shares */
+    // .share-btn {
+    //   width: 100%;
+    //   padding: 12px;
+    //   background-color: #FFFFFF;
+    //   color: #000000;
+    //   border: 1px solid #E0E0E0;
+    //   font-size: 13px;
+    //   font-weight: 400;
+    //   cursor: pointer;
+    //   transition: all 0.2s ease;
+    //   display: flex;
+    //   align-items: center;
+    //   justify-content: center;
+    //   gap: 8px;
+    // }
 
-    .share-btn:hover {
-      background-color: #000000;
-      color: #FFFFFF;
-      border-color: #000000;
-    }
+    // .share-btn:hover {
+    //   background-color: #000000;
+    //   color: #FFFFFF;
+    //   border-color: #000000;
+    // }
 
-    .share-btn .material-icons {
-      font-size: 18px;
-    }
+    // .share-btn .material-icons {
+    //   font-size: 18px;
+    // }
 
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: rgba(0, 0, 0, 0.38);
-    }
+    // /* Empty State */
+    // .empty-state {
+    //   text-align: center;
+    //   padding: 60px 20px;
+    //   color: rgba(0, 0, 0, 0.38);
+    // }
 
-    .empty-state .material-icons {
-      font-size: 64px;
-      margin-bottom: 16px;
-      color: rgba(0, 0, 0, 0.12);
-    }
+    // .empty-state .material-icons {
+    //   font-size: 64px;
+    //   margin-bottom: 16px;
+    //   color: rgba(0, 0, 0, 0.12);
+    // }
 
-    .empty-state p {
-      font-size: 14px;
-      font-weight: 300;
-    }
+    // .empty-state p {
+    //   font-size: 14px;
+    //   font-weight: 300;
+    // }
 
-    /* Stats Summary */
-    .stats-summary {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
+    // /* Stats Summary */
+    // .stats-summary {
+    //   display: grid;
+    //   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    //   gap: 16px;
+    //   margin-bottom: 32px;
+    // }
 
-    .stat-card {
-      background-color: #FFFFFF;
-      border: 1px solid #E0E0E0;
-      padding: 20px;
-    }
+    // .stat-card {
+    //   background-color: #FFFFFF;
+    //   border: 1px solid #E0E0E0;
+    //   padding: 20px;
+    // }
 
-    .stat-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(0, 0, 0, 0.54);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
+    // .stat-label {
+    //   font-size: 11px;
+    //   font-weight: 600;
+    //   color: rgba(0, 0, 0, 0.54);
+    //   text-transform: uppercase;
+    //   letter-spacing: 0.5px;
+    //   margin-bottom: 8px;
+    // }
 
-    .stat-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: #000000;
-      letter-spacing: -0.5px;
-    }
+    // .stat-value {
+    //   font-size: 28px;
+    //   font-weight: 700;
+    //   color: #000000;
+    //   letter-spacing: -0.5px;
+    // }
 
-    .stat-value.gold {
-      color: #B8860B;
-    }
+    // .stat-value.gold {
+    //   color: #B8860B;
+    // }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-      .container {
-        padding: 20px 16px;
-      }
+    // /* Responsive */
+    // @media (max-width: 768px) {
+    //   .container {
+    //     padding: 20px 16px;
+    //   }
 
-      .page-title {
-        font-size: 24px;
-      }
+    //   .page-title {
+    //     font-size: 24px;
+    //   }
 
-      .filter-section {
-        padding: 16px;
-      }
+    //   .filter-section {
+    //     padding: 16px;
+    //   }
 
-      .share-item {
-        padding: 16px;
-      }
+    //   .share-item {
+    //     padding: 16px;
+    //   }
 
-      .claim-section {
-        flex-direction: column;
-      }
+    //   .claim-section {
+    //     flex-direction: column;
+    //   }
 
-      .claim-btn {
-        width: 100%;
-      }
+    //   .claim-btn {
+    //     width: 100%;
+    //   }
 
-      .share-header {
-        flex-direction: column;
-        gap: 12px;
-      }
+    //   .share-header {
+    //     flex-direction: column;
+    //     gap: 12px;
+    //   }
 
-      .reward-badge {
-        align-self: flex-start;
-      }
-    }
+    //   .reward-badge {
+    //     align-self: flex-start;
+    //   }
+    // }
+
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+}
+
+// ── CONTAINER ─────────────────────────────────
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  // padding: 48px 40px 80px;
+}
+
+// ── PAGE HEADER ───────────────────────────────
+.page-header {
+  margin-bottom: 36px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  color: black;
+  margin: 0 0 6px;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+// ── STATS SUMMARY ─────────────────────────────
+.stats-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+  animation: fadeUp 0.5s 0.05s ease both;
+}
+
+.stat-card {
+  background: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: var(--border-light); }
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.stat-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  color: black;
+  // color: var(--text-primary);
+
+  &.gold { color: #f5c842; }
+}
+
+// ── FILTER SECTION ────────────────────────────
+.filter-section {
+  margin-bottom: 32px;
+  animation: fadeUp 0.5s 0.1s ease both;
+}
+
+.filter-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.filter-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 7px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: #444;
+    color: black
+  }
+
+  &.active {
+    // background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+// ── SHARES LIST (grid) ────────────────────────
+.shares-list {
+  padding-top: 2%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  animation: fadeUp 0.5s 0.15s ease both;
+}
+
+// ── SHARE ITEM ────────────────────────────────
+.share-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+  }
+}
+
+// ── SHARE HEADER ──────────────────────────────
+.share-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.share-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.share-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: black;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.share-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+// ── REWARD BADGE ──────────────────────────────
+.reward-badge {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  // color: var(--accent);
+  // background: var(--accent-soft);
+  border: 1px solid rgba(200, 245, 90, 0.15);
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &.free {
+    color: var(--text-muted);
+    background: transparent;
+    border-color: var(--border);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+}
+
+// ── SHARE STATUS ROW ──────────────────────────
+.share-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+
+  &::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.pending {
+    background: rgba(245, 166, 35, 0.1);
+    color: var(--amber);
+    &::before { background: var(--amber); }
+  }
+
+  &.verified {
+    background: rgba(200, 245, 90, 0.1);
+    color: var(--accent);
+    &::before { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 2s infinite; }
+  }
+
+  &.claimed {
+    background: rgba(90, 158, 245, 0.1);
+    color: var(--blue);
+    &::before { background: var(--blue); }
+  }
+
+  &.rejected {
+    background: rgba(255, 79, 79, 0.1);
+    color: var(--red);
+    &::before { background: var(--red); }
+  }
+}
+
+.shares-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+// ── CLAIM SECTION ─────────────────────────────
+.claim-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.claim-input {
+  flex: 1;
+  // background: #0a0a0a;
+  // border: 1px solid var(--border-light);
+  border: none;
+  background-color: var(--text-primary);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 0; // prevent overflow
+
+  &::placeholder { color: var(--text-muted); }
+
+  &:not([disabled]):focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+    color: black;
+  }
+
+  &[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.claim-btn {
+  padding: 10px 20px;
+  border-radius: 100px;
+  border: none;
+  // background: var(--accent-soft);
+  // border: 1px solid var(--accent);
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover:not([disabled]) {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  &[disabled] {
+    background: var(--surface-hover);
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+// ── SHARE BUTTON ──────────────────────────────
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 100px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all 0.2s ease;
+
+  .material-icons { font-size: 16px; }
+
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    border-color: #444;
+  }
+}
+
+// ── EMPTY / LOADING STATE ─────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--text-muted);
+  text-align: center;
+  animation: fadeUp 0.5s ease both;
+
+  .material-icons {
+    font-size: 36px;
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+// ── ANIMATIONS ────────────────────────────────
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.4; }
+}
+
+// ── RESPONSIVE ────────────────────────────────
+@media (max-width: 640px) {
+  .container { padding: 24px 16px 72px; }
+
+  .page-title { font-size: 26px; }
+
+  .stats-summary {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card   { padding: 14px 16px; }
+  .stat-value  { font-size: 20px; }
+  .stat-label  { font-size: 10px; }
+
+  .filter-buttons { gap: 6px; }
+  .filter-btn     { padding: 6px 12px; font-size: 12px; }
+
+  // stack to single column on mobile
+  .shares-list { grid-template-columns: 1fr; gap: 12px; }
+
+  .share-item { padding: 16px; }
+
+  .claim-section { flex-direction: column; align-items: stretch; }
+
+  .claim-btn { text-align: center; }
+
+  .share-btn { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 360px) {
+  .stats-summary { grid-template-columns: 1fr 1fr; }
+  .stat-value    { font-size: 18px; }
+}

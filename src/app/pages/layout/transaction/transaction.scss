@@ -1,0 +1,371 @@
+
+.account-layout {
+  display: grid;
+  grid-template-columns: auto auto; 
+  align-items: start;
+  width: 100%;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+
+    .account-side {
+      order: -1; /* Keeps your preference for sidebar-at-top on mobile */
+    }
+  }
+}
+
+
+:host {
+  --gold: #B8860B;
+  --gold-light: rgba(184, 134, 11, 0.08);
+  --black: #0a0a0a;
+  --grey-dark: #333333;
+  --grey-mid: #666666;
+  --grey-light: #f7f7f7;
+  --divider: #ebebeb;
+  --notice-bg: rgba(184, 134, 11, 0.06);
+  --notice-border: rgba(184, 134, 11, 0.2);
+  --error: #c0392b;
+  --success: #27ae60;
+  --accent-soft: rgba(184, 134, 11, 0.06);
+
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Page ── */
+.page {
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 48px;
+}
+
+.page-header {
+  padding: 28px 0 8px;
+}
+
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--black);
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+
+.page-sub {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--grey-mid);
+  margin: 0;
+}
+
+.copy-btn{
+ 
+  text-transform: uppercase;
+  color: var(--grey-mid);
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  padding: 1px 6px;
+  cursor: pointer;
+}
+
+/* ── Card ── */
+.card {
+  background: #ffffff;
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.inner-divider {
+  height: 1px;
+  background: var(--divider);
+  margin: 22px 0;
+}
+
+/* ── Labels ── */
+.section-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--grey-mid);
+  margin-bottom: 18px;
+}
+
+/* ── Wallet ── */
+.wallet-balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wallet-balance {
+  // font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--black);
+  letter-spacing: -0.02em;
+}
+
+.wallet-tag {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--grey-mid);
+}
+
+.wallet-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ── Notice ── */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--accent-soft);
+  border: 1px solid var(--notice-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.notice-icon {
+  color: var(--gold);
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.notice-text {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--grey-dark);
+  line-height: 1.6;
+
+  strong {
+    font-weight: 500;
+    color: var(--black);
+  }
+}
+
+/* ── Form ── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 420px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-badge {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey-mid);
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  padding: 1px 6px;
+}
+
+.field-hint {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--grey-mid);
+  margin-top: 2px;
+}
+
+.field-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  background: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--black);
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #bbb; }
+  &:focus { border-color: var(--black); }
+
+  &.locked {
+    background: var(--grey-light);
+    color: var(--grey-mid);
+    cursor: not-allowed;
+  }
+
+  &.pin-input {
+    letter-spacing: 0.3em;
+    font-size: 16px;
+  }
+}
+
+.input-prefix-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.prefix {
+  position: absolute;
+  left: 14px;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--grey-mid);
+  pointer-events: none;
+}
+
+.field-input.prefixed { padding-left: 28px; }
+
+/* ── Buttons ── */
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 24px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid transparent; 
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out; 
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.92); 
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98); 
+    filter: brightness(0.85);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.5); 
+  }
+
+  &.full-width { width: 100%; }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 24px;
+  background: transparent;
+  color: var(--black);
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--black);
+    background: var(--grey-light);
+  }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+/* ── Actions card ── */
+.actions-card { padding: 20px 24px; }
+
+/* ── Danger ── */
+.danger-card { border-color: rgba(192, 57, 43, 0.15); }
+
+.danger-label { color: var(--error); }
+
+.danger-text {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--grey-mid);
+  margin: 0 0 18px;
+  line-height: 1.6;
+}
+
+.btn-danger {
+  height: 44px;
+  padding: 0 24px;
+  background: transparent;
+  color: var(--error);
+  border: 1px solid rgba(192, 57, 43, 0.3);
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+
+  &:hover {
+    background: rgba(192, 57, 43, 0.05);
+    border-color: var(--error);
+  }
+}
+
+.error-msg {
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--error);
+}

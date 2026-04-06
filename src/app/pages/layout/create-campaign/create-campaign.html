@@ -1,13 +1,16 @@
 <div class="layout">
   <main class="main">
-
-
     <div class="top-bar">
       <div class="top-steps">
-        <button *ngFor="let step of steps; let i = index" class="step-btn" [class.active]="i === currentStep"
-          [class.done]="i < currentStep" (click)="goTo(i)">
+        <button
+          *ngFor="let step of steps; let i = index"
+          class="step-btn"
+          [class.active]="i === currentStep"
+          [class.done]="i < currentStep"
+          (click)="goTo(i)"
+        >
           <span class="step-num">{{ i < currentStep ? '✓' : i + 1 }}</span>
-              <span class="step-name">{{ step.label }}</span>
+          <span class="step-name">{{ step.label }}</span>
         </button>
       </div>
 
@@ -22,13 +25,24 @@
         <div class="card">
           <div class="field">
             <label>Campaign Name <span class="req">*</span></label>
-            <input type="text" [(ngModel)]="campaignTitle" placeholder="e.g. Summer Sale 2024" maxlength="80">
+            <input
+              type="text"
+              [(ngModel)]="campaignTitle"
+              placeholder="e.g. Summer Sale 2024"
+              maxlength="80"
+            />
             <div class="char-count">{{ campaignTitle.length }}/80</div>
           </div>
-          <div class="field" style="margin-bottom:0">
-            <label>Description <span class="req">*</span> <span class="hint">What's this campaign about?</span></label>
-            <textarea [(ngModel)]="campaignDescription"
-              placeholder="Tell sharers what they're promoting and why it matters..." maxlength="300"></textarea>
+          <div class="field" style="margin-bottom: 0">
+            <label
+              >Description <span class="req">*</span>
+              <span class="hint">What's this campaign about?</span></label
+            >
+            <textarea
+              [(ngModel)]="campaignDescription"
+              placeholder="Tell sharers what they're promoting and why it matters..."
+              maxlength="300"
+            ></textarea>
             <label> <span class="hint">This can be rewritten</span></label>
 
             <div class="char-count">{{ campaignDescription.length }}/300</div>
@@ -45,12 +59,12 @@
               <div class="toggle-desc">We write the copy so sharers can post immediately</div>
             </div>
             <label class="toggle">
-              <input type="checkbox" [(ngModel)]="auto_generate_captions">
+              <input type="checkbox" [(ngModel)]="auto_generate_captions" />
               <span class="toggle-track"></span>
             </label>
           </div>
 
-          <div class="field" style="margin-top:12px;margin-bottom:0">
+          <div class="field" style="margin-top: 12px; margin-bottom: 0">
             <label>Trending Hashtags <span class="hint">Up to 4</span></label>
             <div class="topics-wrap">
               <div class="topic-tag" *ngFor="let t of hash_tags(); let i = index">
@@ -59,8 +73,12 @@
               </div>
             </div>
             <div class="topic-row">
-              <input type="text" [(ngModel)]="topicInput" placeholder="#SummerSale"
-                (keydown)="onTopicKeydown($event)" />
+              <input
+                type="text"
+                [(ngModel)]="topicInput"
+                placeholder="#SummerSale"
+                (keydown)="onTopicKeydown($event)"
+              />
               <button class="btn-add" (click)="addTopic()">+ Add</button>
             </div>
           </div>
@@ -71,41 +89,51 @@
         <div class="section-title">Schedule</div>
         <div class="card">
           <div class="grid-2">
-            <div class="field" style="margin-bottom:0">
+            <div class="field" style="margin-bottom: 0">
               <label>Start Date <span class="req">*</span></label>
-              <input type="date" [(ngModel)]="start_date">
+              <input type="date" [(ngModel)]="start_date" />
             </div>
-            <div class="field" style="margin-bottom:0">
+            <div class="field" style="margin-bottom: 0">
               <label>End Date <span class="req">*</span></label>
-              <input type="date" [(ngModel)]="end_date">
+              <input type="date" [(ngModel)]="end_date" />
             </div>
           </div>
         </div>
       </div>
-
     </div>
 
-    <!-- ── PAGE 2: CONTENT ── -->
     <div class="page-content" *ngIf="currentStep === 1">
-
       <div class="section">
         <div class="section-title">Campaign Media</div>
         <div class="card">
-          <div class="upload-zone" [class.dragover]="isDragging" (dragover)="onDragOver($event)"
-            (dragleave)="onDragLeave()" (drop)="onDrop($event)" (click)="fileInput.click()">
-            <input #fileInput type="file" multiple accept="image/*,video/*,.pdf" style="display:none"
-              (change)="onFilesSelected($event)">
+          <div
+            class="upload-zone"
+            [class.dragover]="isDragging"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave()"
+            (drop)="onDrop($event)"
+            (click)="fileInput.click()"
+          >
+            <input
+              #fileInput
+              type="file"
+              multiple
+              accept="image/*,video/*,.pdf"
+              style="display: none"
+              (change)="onFilesSelected($event)"
+            />
             <div class="upload-icon">📂</div>
             <div class="upload-title">Drop files or click to browse</div>
             <div class="upload-sub">
-              Supports <strong>JPG, PNG, MP4, PDF</strong> · Max <strong>50MB</strong> · Up to <strong>10 files</strong>
+              Supports <strong>JPG, PNG, MP4, PDF</strong> · Max <strong>50MB</strong> · Up to
+              <strong>10 files</strong>
             </div>
           </div>
 
           <div class="file-list" *ngIf="selectedImages().length > 0">
             <div class="file-item" *ngFor="let f of selectedImages(); let i = index">
               <div class="file-thumb">
-                <img *ngIf="f.preview" [src]="f.preview" [alt]="f.file.name">
+                <img *ngIf="f.preview" [src]="f.preview" [alt]="f.file.name" />
                 <span *ngIf="!f.preview">{{ f.icon }}</span>
               </div>
               <div class="file-info">
@@ -123,7 +151,7 @@
         <div class="card">
           <div class="platform-grid">
             <div class="platform-item" *ngFor="let p of platforms">
-              <input type="checkbox" [id]="'p-' + p.id" [(ngModel)]="p.selected">
+              <input type="checkbox" [id]="'p-' + p.id" [(ngModel)]="p.selected" />
               <label class="platform-label" [for]="'p-' + p.id">
                 <span class="platform-emoji">{{ p.emoji }}</span>
                 <span class="platform-name">{{ p.name }}</span>
@@ -132,19 +160,20 @@
           </div>
         </div>
       </div>
-
-
     </div>
-
-    <!-- ── PAGE 3: PLAN & ACCESS ── -->
     <div class="page-content" *ngIf="currentStep === 2">
-
       <div class="section">
         <div class="section-title">Who Can Join</div>
         <div class="card">
           <div class="access-grid">
             <div class="access-item" *ngFor="let ac of accessTypes">
-              <input type="radio" [id]="'ac-' + ac.value" name="access" [value]="ac.value" [(ngModel)]="selectedAccess">
+              <input
+                type="radio"
+                [id]="'ac-' + ac.value"
+                name="access"
+                [value]="ac.value"
+                [(ngModel)]="selectedAccess"
+              />
               <label class="access-label" [for]="'ac-' + ac.value">
                 <div class="access-icon">{{ ac.icon }}</div>
                 <div class="access-title">{{ ac.title }}</div>
@@ -152,296 +181,283 @@
               </label>
             </div>
           </div>
-          <div style="margin-top:11px">
-            <div class="toggle-row" style="margin-bottom:0">
+          <div style="margin-top: 11px">
+            <div class="toggle-row" style="margin-bottom: 0">
               <div class="toggle-info">
                 <div class="toggle-name">Auto-assign tier by follower count</div>
-                <div class="toggle-desc">System detects followers and sets payout tier automatically</div>
+                <div class="toggle-desc">
+                  System detects followers and sets payout tier automatically
+                </div>
               </div>
               <label class="toggle">
-                <input type="checkbox" [(ngModel)]="autoAssignTier">
+                <input type="checkbox" [(ngModel)]="autoAssignTier" />
                 <span class="toggle-track"></span>
               </label>
             </div>
           </div>
         </div>
       </div>
-
-
-      @if(selectedAccess === 'open'){
-      <div class="section">
-        <div class="section-title">
-          Payout Tiers
-          <span class="tier-info-label">— info only</span>
-        </div>
-        <div class="tier-grid">
-          <div class="tier-row" *ngFor="let tier of tiers" (click)="selectTier()">
-            <div class="tier-dot" [style.background]="tier.color"></div>
-            <div class="tier-main">
-              <div class="tier-name">{{ tier.name }}</div>
-              <div class="tier-range">{{ tier.range }}</div>
+      @if (selectedAccess === 'open') {
+        <div class="section">
+          <div class="section-title">
+            Payout Tiers
+            <span class="tier-info-label">— info only</span>
+          </div>
+          <div class="tier-grid">
+            <div class="tier-row" *ngFor="let tier of tiers" (click)="selectTier()">
+              <div class="tier-dot" [style.background]="tier.color"></div>
+              <div class="tier-main">
+                <div class="tier-name">{{ tier.name }}</div>
+                <div class="tier-range">{{ tier.range }}</div>
+              </div>
+              <div class="tier-amt">{{ tier.amount }}<span class="tier-unit">/ post</span></div>
             </div>
-            <div class="tier-amt">{{ tier.amount }}<span class="tier-unit">/ post</span></div>
           </div>
         </div>
-      </div>
+      }
+      @if (selectedAccess === 'invite_only') {
+        <div class="batch-container">
+          <div class="search-section">
+            <input
+              type="text"
+              [value]="searchQuery()"
+              (input)="searchQuery.set($any($event.target).value)"
+              placeholder="Search member to add..."
+              class="search-bar"
+            />
+
+            @if (searchResults().length > 0) {
+              <ul class="dropdown">
+                @for (m of searchResults(); track m.id) {
+                  <li (click)="addMember(m)" class="dropdown-item">
+                    <strong>{{ m.name }}</strong>
+                    <span>{{ m.trendor_id }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+
+          <div class="table-wrapper">
+            <table class="member-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Trendor ID</th>
+                  <th>Status</th>
+                  <th>Profile</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (inv of selectedMembers(); track inv.id) {
+                  <tr>
+                    <td>
+                      <strong>{{
+                        inv.user?.name || inv.user?.user_name || inv.user_name || 'N/A'
+                      }}</strong>
+                    </td>
+                    <td>
+                      <code>{{ inv.user?.trendors_id || inv.user?.trendor_id || 'N/A' }}</code>
+                    </td>
+                    <td>
+                      <span class="status-badge">
+                        {{ inv.status || 'Pending' }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="profile-badge"> View Profile </span>
+                    </td>
+                    <td>
+                      <div>
+                        <button (click)="addMember(inv.id)" class="btn-delete">Accept</button>
+                        <button (click)="removeMember(inv.id)" class="btn-delete">Remove</button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="empty-msg">No members added to this batch yet.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       }
 
-      @if (selectedAccess === 'invite_only') {
-
-      <div class="batch-container">
-        <div class="search-section">
-          <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)"
-            placeholder="Search member to add..." class="search-bar" />
-
-          @if (searchResults().length > 0) {
-          <ul class="dropdown">
-            @for (m of searchResults(); track m.id) {
-            <li (click)="addMember(m)" class="dropdown-item">
-              <strong>{{ m.name }}</strong>
-              <span>{{ m.hospital_number }}</span>
-            </li>
-            }
-          </ul>
-          }
+      @if (selectedAccess === 'application') {
+        <div class="page-header">
+          <div>
+            <p>Review applicants and manage active members</p>
+          </div>
+          <div class="badge-row">
+            <span class="badge-count badge-pending"
+              >{{ (pendingApplicants$ | async)?.length || 0 }} pending</span
+            >
+            <span class="badge-count badge-active"
+              >{{ (activeMembers$ | async)?.length || 0 }} active</span
+            >
+          </div>
         </div>
-
-        <div class="table-wrapper">
-          <table class="member-table">
+        <div class="section-label">
+          <h2>Applicants</h2>
+          <div class="line"></div>
+        </div>
+        <div class="table-wrap">
+          <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Hospital ID</th>
-                <th>Status</th>
-                <th></th>
-                <th>Action</th>
+                <th>Applicant</th>
+                <th>Platforms</th>
+                <th class="hide-mobile">Status</th>
+                <th class="align-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              @for (m of selectedMembers(); track m.id) {
-              <tr>
-                <td><strong>{{ m.name }}</strong></td>
-                <td><code>{{ m.hospital_number }}</code></td>
-                <td>
-                  <span class="status-badge" [class.active]="m.status === 'ACTIVE'">
-                    {{ m.status }}
-                  </span>
-                </td>
-                <td>
-                  <span class="profile-badge">
-                    View Profile
-                  </span>
-                </td>
-                <td>
-                  <button (click)="removeMember(m.id)" class="btn-delete">Remove</button>
-                </td>
-              </tr>
-              } @empty {
-              <tr>
-                <td colspan="4" class="empty-msg">No members added to this batch yet.</td>
-              </tr>
+              @if ((pendingApplicants$ | async)?.length === 0) {
+                <tr class="empty-row">
+                  <td colspan="4">
+                    <span class="empty-icon">📭</span>
+                    No pending applicants
+                  </td>
+                </tr>
+              }
+              @for (a of pendingApplicants$ | async; track a.id) {
+                <tr>
+                  <td>
+                    <div class="cell-name">
+                      <div class="avatar">{{ initials(a.user.name || 'NA') }}</div>
+                      <div>
+                        <div class="name-text">{{ a.user.name || a.name }}</div>
+                        <div class="id-text">#{{ a.user.trendor_id || a.campaign.id || a.id }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="platforms">
+                      @for (
+                        p of a.user?.influencerProfile?.platforms || a['platforms'] || [];
+                        track p.name
+                      ) {
+                        <span class="plat-chip">
+                          {{ p.name }} <span class="followers">{{ p.followers }}</span>
+                        </span>
+                      }
+                    </div>
+                  </td>
+                  <td class="hide-mobile">
+                    <span class="status-dot status-pending">{{ a.status }}</span>
+                  </td>
+                  <td>
+                    <div class="actions align-right">
+                      <button class="btn btn-profile" (click)="showProfile(a)">↗</button>
+                      <button class="btn btn-decline" (click)="declineApplicant(a)">Decline</button>
+                      <button class="btn btn-accept" (click)="acceptApplicant(a)">Accept</button>
+                    </div>
+                  </td>
+                </tr>
               }
             </tbody>
           </table>
         </div>
-      </div>
-      }
-
-
-      @if (selectedAccess === 'application') {
-
-
-
-      <div class="page-header">
-        <div>
-          <p>Review applicants and manage active members</p>
+        <div class="section-label">
+          <h2>Active Members</h2>
+          <div class="line"></div>
         </div>
-        <div class="badge-row">
-          <span class="badge-count badge-pending">{{ applicants().length }} pending</span>
-          <span class="badge-count badge-active">{{ selectedMembers().length }} active</span>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Platforms</th>
+                <th class="hide-mobile">Status</th>
+                <th class="align-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if ((activeMembers$ | async)?.length === 0) {
+                <tr class="empty-row">
+                  <td colspan="4">
+                    <span class="empty-icon">👥</span>
+                    No active members yet
+                  </td>
+                </tr>
+              }
+              @for (m of activeMembers$ | async; track m.id) {
+                <tr>
+                  <td>
+                    <div class="cell-name">
+                      <div class="avatar avatar-active">{{ initials(m.user.name || 'NA') }}</div>
+                      <div>
+                        <div class="name-text">{{ m.user.name || 'NA' }}</div>
+                        <div class="id-text">#{{ m.user.trendor_id }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="platforms">
+                      @for (
+                        p of m.user?.influencerProfile?.platforms || m['platforms'] || [];
+                        track p.name
+                      ) {
+                        <span class="plat-chip">
+                          {{ p.name }} <span class="followers">{{ p.followers }}</span>
+                        </span>
+                      }
+                    </div>
+                  </td>
+                  <td class="hide-mobile">
+                    <span class="status-dot status-active">{{ m.status }}</span>
+                  </td>
+                  <td>
+                    <div class="actions align-right">
+                      <button class="btn btn-profile" (click)="showProfile(m)">↗</button>
+                      <button class="btn btn-remove" (click)="removeActiveMember(m)">Remove</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
-      </div>
-
-      <!-- Applicants -->
-      <div class="section-label">
-        <h2>Applicants</h2>
-        <div class="line"></div>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Applicant</th>
-              <th>Platforms</th>
-              <th class="hide-mobile">Status</th>
-              <th class="align-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (applicants().length === 0) {
-            <tr class="empty-row">
-              <td colspan="4">
-                <span class="empty-icon">📭</span>
-                No pending applicants
-              </td>
-            </tr>
-            }
-            @for (a of applicants(); track a.id) {
-            <tr>
-              <td>
-                <div class="cell-name">
-                  <div class="avatar">{{ initials(a.name) }}</div>
-                  <div>
-                    <div class="name-text">{{ a.name }}</div>
-                    <div class="id-text">#{{ a.id }}</div>
+        @if (viewingProfile()) {
+          <div class="modal-overlay" (click)="onOverlayClick($event)">
+            <div class="modal">
+              <div class="modal-head">
+                <h3>Profile</h3>
+                <button class="btn-close" (click)="viewingProfile.set(null)">✕</button>
+              </div>
+              <div class="modal-avatar">
+                {{ initials(viewingProfile()!.user.name || viewingProfile()!.name || '') }}
+              </div>
+              <div class="modal-name">
+                {{ viewingProfile()!.user?.name || viewingProfile()!.name }}
+              </div>
+              <div class="modal-id">
+                ID: {{ viewingProfile()!.id }} · {{ viewingProfile()!.status }}
+              </div>
+              <div class="modal-divider"></div>
+              <div class="modal-section-title">Social Platforms</div>
+              <div class="modal-platforms">
+                @for (
+                  p of viewingProfile()!.user?.influencerProfile?.platforms ||
+                    viewingProfile()!['platforms'] ||
+                    [];
+                  track p.name
+                ) {
+                  <div class="modal-plat-row">
+                    <span class="modal-plat-name">{{ p.name }}</span>
+                    <span class="modal-plat-followers">{{ p.followers }}</span>
                   </div>
-                </div>
-              </td>
-              <td>
-                <div class="platforms">
-                  @for (p of a.platforms; track p.name) {
-                  <span class="plat-chip">
-                    {{ p.name }} <span class="followers">{{ p.followers }}</span>
-                  </span>
-                  }
-                </div>
-              </td>
-              <td class="hide-mobile">
-                <span class="status-dot status-pending">{{ a.status }}</span>
-              </td>
-              <td>
-                <div class="actions align-right">
-                  <button class="btn btn-profile" (click)="showProfile(a)">↗</button>
-                  <button class="btn btn-decline" (click)="declineApplicant(a.id)">Decline</button>
-                  <button class="btn btn-accept" (click)="acceptApplicant(a)">Accept</button>
-                </div>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Members -->
-      <div class="section-label">
-        <h2>Active Members</h2>
-        <div class="line"></div>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Member</th>
-              <th>Platforms</th>
-              <th class="hide-mobile">Status</th>
-              <th class="align-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (selectedMembers().length === 0) {
-            <tr class="empty-row">
-              <td colspan="4">
-                <span class="empty-icon">👥</span>
-                No active members yet
-              </td>
-            </tr>
-            }
-            @for (m of selectedMembers(); track m.id; let i = $index) {
-            <tr>
-              <td>
-                <div class="cell-name">
-                  <div class="avatar avatar-active">{{ initials(m.name) }}</div>
-                  <div>
-                    <div class="name-text">{{ m.name }}</div>
-                    <div class="id-text">#{{ m.id }}</div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <div class="platforms">
-                  @for (p of m.platforms; track p.name) {
-                  <span class="plat-chip">
-                    {{ p.name }} <span class="followers">{{ p.followers }}</span>
-                  </span>
-                  }
-                </div>
-              </td>
-              <td class="hide-mobile">
-                <span class="status-dot status-active">{{ m.status }}</span>
-              </td>
-              <td>
-                <div class="actions align-right">
-                  <button class="btn btn-profile" (click)="showProfile(m)">↗</button>
-                  <button class="btn btn-remove" (click)="removeMember(i)">Remove</button>
-                </div>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Profile Modal -->
-      @if (viewingProfile()) {
-      <div class="modal-overlay" (click)="onOverlayClick($event)">
-        <div class="modal">
-          <div class="modal-head">
-            <h3>Profile</h3>
-            <button class="btn-close" (click)="viewingProfile.set(null)">✕</button>
-          </div>
-          <div class="modal-avatar">{{ initials(viewingProfile()!.name) }}</div>
-          <div class="modal-name">{{ viewingProfile()!.name }}</div>
-          <div class="modal-id">ID: {{ viewingProfile()!.id }} · {{ viewingProfile()!.status }}</div>
-          <div class="modal-divider"></div>
-          <div class="modal-section-title">Social Platforms</div>
-          <div class="modal-platforms">
-            @for (p of viewingProfile()!.platforms; track p.name) {
-            <div class="modal-plat-row">
-              <span class="modal-plat-name">{{ p.name }}</span>
-              <span class="modal-plat-followers">{{ p.followers }}</span>
+                }
+              </div>
             </div>
-            }
           </div>
-        </div>
-      </div>
+        }
       }
-
-
-      }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     </div>
-    <!-- ── PAGE 4: REVIEW ── -->
     <div class="page-content" *ngIf="currentStep === 3">
-
-
-      <!-- Plan highlight bar -->
       <div class="review-plan-bar">
         <div>
           <div class="rpb-name">{{ activePlan.value }} Plan</div>
@@ -451,8 +467,6 @@
           {{ activePlan.price }}<span *ngIf="activePlan.value !== 'Enterprise'">/mo</span>
         </div>
       </div>
-
-      <!-- Basics -->
       <div class="rv-section">
         <div class="rv-head">
           Campaign Basics
@@ -465,7 +479,9 @@
           </div>
           <div class="rv-row">
             <div class="rv-key">Description</div>
-            <div class="rv-val" [class.empty]="!description" style="max-width:300px">{{ campaignDescription() || '—' }}</div>
+            <div class="rv-val" [class.empty]="!description" style="max-width: 300px">
+              {{ campaignDescription() || '—' }}
+            </div>
           </div>
           <div class="rv-row">
             <div class="rv-key">Link</div>
@@ -481,8 +497,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Content -->
       <div class="rv-section">
         <div class="rv-head">
           Content
@@ -514,13 +528,15 @@
           <div class="rv-row">
             <div class="rv-key">Files</div>
             <div class="rv-val" [class.empty]="files.length === 0">
-              {{ files.length > 0 ? files.length + ' file' + (files.length > 1 ? 's' : '') + ' uploaded' : 'No files uploaded' }}
+              {{
+                files.length > 0
+                  ? files.length + ' file' + (files.length > 1 ? 's' : '') + ' uploaded'
+                  : 'No files uploaded'
+              }}
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Plan & Access -->
       <div class="rv-section">
         <div class="rv-head">
           Plan & Access
@@ -535,69 +551,51 @@
             <div class="rv-key">Access Type</div>
             <div class="rv-val">{{ selectedAccess }}</div>
           </div>
-          <!-- <div class="rv-row">
-            <div class="rv-key">Payout Tiers</div>
-            <div class="rv-val">
-              <div class="rv-tags">
-                <span class="rv-tag" *ngFor="let tier of tiers">{{ tier.name }} {{ tier.amount }}</span>
-              </div>
-            </div>
-          </div> -->
         </div>
       </div>
-
-      <!-- Note & Launch -->
       <div class="rv-note">
         <span class="rv-note-icon">ℹ️</span>
-        <span>By launching, you agree to our terms. Your campaign will be reviewed within a few minutes before going
-          live. You can pause or edit it at any time from your dashboard.</span>
+        <span
+          >By launching, you agree to our terms. Your campaign will be reviewed within a few minutes
+          before going live. You can pause or edit it at any time from your dashboard.</span
+        >
       </div>
     </div>
     <div>
-
-
-        <div class="form-demo">
- 
-
-    <!-- FULL WIDTH NAVIGATION — PREV · icon · NEXT / SAVE -->
-    <nav class="nav-bar" aria-label="form navigation">
-      
-      <!-- left group: previous button (always visible) -->
-      <div class="nav-left">
-        <button class="nav-btn prev" aria-label="previous page" (click)="prev()">
-          <svg viewBox="0 0 24 24">
-            <path d="M15 18l-6-6 6-6"/>
-          </svg>
-          <span>Previous</span>
-        </button>
+      <div class="form-demo">
+        <nav class="nav-bar" aria-label="form navigation">
+          <div class="nav-left">
+            <button class="nav-btn prev" aria-label="previous page" (click)="prev()">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              <span>Previous</span>
+            </button>
+          </div>
+          <div class="nav-right">
+            <button class="nav-btn next" aria-label="next page" (click)="next()">
+              <span>Next</span>
+              <svg viewBox="0 0 24 24">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+            <button
+              class="nav-btn save"
+              aria-label="save form"
+              (click)="createCampaign()"
+              [disabled]="currentStep < 3"
+            >
+              @if (isSubmitting() === true) {
+                <app-alert></app-alert>
+              }
+              <span>Save</span>
+            </button>
+          </div>
+        </nav>
       </div>
-
-      <!-- center icon — ring with calm blue accent (loader dna) -->
-      <!-- <div class="center-icon" aria-hidden="true">
-        <div class="center-dot"></div>
-      </div> -->
-
-      <!-- <app-alert></app-alert> -->
-
-      <!-- right group: next + save (save appears as primary on last page) -->
-      <div class="nav-right">
-        <!-- next button (visible on early pages) -->
-        <button class="nav-btn next" aria-label="next page" (click)="next()">
-          <span>Next</span>
-          <svg viewBox="0 0 24 24">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </button>
-
-        <button class="nav-btn save" aria-label="save form"  (click)="createCampaign()" [disabled]="currentStep < 3">
-          @if (isSubmitting() === true) {
-            <app-alert></app-alert> 
-          }
-          <span >Save</span>
-        </button>
-      </div>
-    </nav>
-  </div>
     </div>
   </main>
+    <aside class="user-sidebar right">
+    <app-user-info-card></app-user-info-card>
+  </aside>
 </div>

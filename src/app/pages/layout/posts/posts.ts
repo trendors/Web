@@ -28,6 +28,7 @@ import { ShareSheet } from '../../../components/share-sheet/share-sheet';
 import { Router, RouterLink } from '@angular/router';
 import { ButtomNav } from "../../../components/buttom-nav/buttom-nav";
 import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter";
+import { UserInfoCard } from "../../../components/user-info-card/user-info-card";
 
 @Component({
   selector: 'app-home',
@@ -41,6 +42,7 @@ import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter"
     AsyncPipe,
     SlicePipe,
     TopNavFilter,
+    UserInfoCard, UserInfoCard
 ],
  standalone: true,
   templateUrl: './posts.html',

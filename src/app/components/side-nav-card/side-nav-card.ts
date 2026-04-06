@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { take } from 'rxjs';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
@@ -10,7 +10,7 @@ import { AsyncPipe } from '@angular/common';
 @Component({
   selector: 'app-side-nav-card',
   standalone: true,
-  imports: [AsyncPipe],
+  imports: [AsyncPipe, RouterLink, RouterLinkActive],
   templateUrl: './side-nav-card.html',
   styleUrl: './side-nav-card.scss',
 })
@@ -32,8 +32,13 @@ export class SideNavCard implements OnInit {
   }
 
   routeTo(path: string) {
-    // Implement your routing logic here, e.g. using Angular's Router
     this.router.navigate([path]);
     console.log(`Navigating to: ${path}`);
+  }
+
+  logout() {
+    this.router.navigate(['/login']);
+    localStorage.setItem('token', "");
+    localStorage.setItem('user', "");
   }
 }

@@ -1,0 +1,91 @@
+<div class="account-layout">
+
+  <div class="account-main">
+    <div class="page">
+
+
+      <!-- Filter Card -->
+
+      <form [formGroup]="filterForm" class="form">
+        <div class="field">
+          <select formControlName="transaction_type" class="field-input">
+            <option [value]="TransactionType.ALL">All Activity</option>
+            <option [value]="TransactionType.CREDIT">Credits</option>
+            <option [value]="TransactionType.DEBIT">Debits</option>
+          </select>
+        </div>
+      </form>
+
+        <div class="section-label">Transactions</div>
+
+        @if (loading$ | async) {
+        <div class="notice">
+          <span class="notice-text">Loading transactions...</span>
+        </div>
+        }
+
+        @if (transactions$ | async; as transactions) {
+        <div class="form">
+
+          @for (tx of transactions; track tx.id) {
+          <div class="card" (click)="openTransactionDialog(tx)" >
+
+            <div class="wallet-balance-row">
+
+              <!-- Left -->
+              <div class="wallet-info">
+                <span class="section-label">
+                  {{ tx.description }}
+                </span>
+
+                <span class="wallet-tag">
+                  {{ tx.createdAt | date: 'MMM d, y' }} • {{ tx.status | lowercase }}
+                </span>
+              </div>
+
+              <!-- Right -->
+              <div class="wallet-actions">
+                <span class="wallet-balance section-label"
+                  [style.color]="tx.type === TransactionType.CREDIT ? 'var(--success)' : 'var(--error)'">
+                  {{ tx.type === TransactionType.CREDIT ? '+' : '−' }}
+                  {{ tx.amount }}
+                  <small>{{ tx.currency }}</small>
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+          }
+
+        </div>
+        }
+
+      <!-- Pagination -->
+      <div class="card actions-card">
+        <div class="wallet-balance-row">
+
+          <button class="btn-outline" (click)="previousPage()" [disabled]="(filterForm.get('page')?.value ?? 1) <= 1">
+            Prev
+          </button>
+
+          <span class="wallet-tag">
+            {{ filterForm.get('page')?.value }}
+            /
+            {{ (totalPages$ | async) ?? 1 }}
+          </span>
+
+          <button class="btn-outline" (click)="nextPage()"
+            [disabled]="(filterForm.get('page')?.value ?? 1) >= ((totalPages$ | async) || 1)">
+            Next
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+    <aside class="sidebar right">
+    <app-user-info-card></app-user-info-card>
+  </aside>
+</div>

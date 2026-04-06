@@ -1,7 +1,41 @@
-
 @use '@angular/material' as mat;
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
+// Complete setup for your luxury minimalist app
+
+:root {
+  --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;  // Headers
+  --font-body: 'Inter', -apple-system, sans-serif;                 // Body text
+}
+
+* {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, .title, .heading {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+body, p, span {
+  font-family: var(--font-body);
+  font-weight: 400;
+  letter-spacing: -0.1px;
+}
+
+.subtitle, .secondary, .date, .time {
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: 0.2px;
+}
+
+.category, .badge, .label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
 *,
 *::before,
 *::after {
@@ -16,6 +50,7 @@
   --border: #e4e4ec;
   --border-hover: #c4c4d8;
   --accent: #ff6b35;
+  --accent-dark: #ff4f1a;
   --accent-soft: rgba(255, 107, 53, 0.07);
   --purple: #7c5cbf;
   --purple-soft: rgba(124, 92, 191, 0.07);
@@ -23,6 +58,22 @@
   --text2: #4a4a6a;
   --muted: #9898b8;
   --success: #16a34a;
+  // --surface: #111111;
+  --surface-hover: #161616;
+  // --border: #1e1e1e;
+  --border-light: #2a2a2a;
+  --text-primary: #f0f0f0;
+  --text-secondary: #888;
+  --text-muted: #444;
+  // --accent: #c8f55a;
+  --accent-dim: rgba(200, 245, 90, 0.08);
+  --red: #ff4f4f;
+  --amber: #f5a623;
+  --blue: #5a9ef5;
+  --radius: 16px;
+  --radius-sm: 8px;
+  --text-black: #111111;
+
 }
 
 body {
@@ -35,14 +86,12 @@ body {
 }
 
 html {
-  @include mat.theme((
-    color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+  @include mat.theme((color: (primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    ));
 }
 
 
@@ -55,7 +104,15 @@ body {
   font: var(--mat-sys-body-medium);
   margin: 0;
 }
+
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}

@@ -1,0 +1,473 @@
+// ── OVERLAY ───────────────────────────────────
+.modal-overlay {
+    //   position: fixed;
+    //   inset: 0;
+    //   background: rgba(0, 0, 0, 0.7);
+    //   backdrop-filter: blur(8px);
+    //   z-index: 200;
+    //   display: flex;
+    //   align-items: center;
+    //   justify-content: center;
+    //   padding: 24px;
+    //   opacity: 0;
+    //   pointer-events: none;
+    //   transition: opacity 0.25s ease;
+
+    //   &.open {
+    //     opacity: 1;
+    //     pointer-events: all;
+
+    //     .modal {
+    //       transform: translateY(0) scale(1);
+    //     }
+    //   }
+}
+
+// ── MODAL BOX ─────────────────────────────────
+.modal {
+    background: var(--surface);
+    //   border: 1px solid var(--border-light);
+    //   border-radius: 20px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 88vh;
+    //   overflow-y: auto;
+    overflow-y: scroll;
+
+    /* Hide for Firefox */
+    scrollbar-width: none;
+
+    /* Hide for IE and Edge */
+    -ms-overflow-style: none;
+    transform: translateY(20px) scale(0.98);
+    transition: transform 0.25s ease;
+
+    // custom scrollbar
+    //   scrollbar-width: thin;
+    //   scrollbar-color: var(--border-light) transparent;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--border-light);
+        border-radius: 4px;
+    }
+}
+
+// ── DRAG HANDLE (mobile) ──────────────────────
+.modal-handle {
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border-light);
+    margin: 14px auto 0;
+    display: none; // shown only on mobile via media query
+}
+
+// ── HEADER ────────────────────────────────────
+.modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 28px 0;
+}
+
+.modal-header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.modal-campaign-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(200, 245, 90, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    line-height: 1.2;
+    margin: 6px 0 4px;
+}
+
+.modal-created {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: var(--surface-hover);
+        color: var(--text-primary);
+    }
+}
+
+// ── BODY ──────────────────────────────────────
+.modal-body {
+    padding: 20px 28px 28px;
+}
+
+// ── SECTIONS ──────────────────────────────────
+.modal-section {
+    margin-top: 24px;
+
+    &:first-child {
+        margin-top: 0;
+    }
+}
+
+.modal-section-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+}
+
+.modal-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+}
+
+.modal-empty-value {
+    font-size: 13.5px;
+    color: var(--text-muted);
+}
+
+// ── PLATFORMS ─────────────────────────────────
+.modal-platforms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.platform-tag {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    text-transform: capitalize;
+}
+
+// ── METRICS GRID ──────────────────────────────
+.modal-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.modal-metric {
+    // background: #0a0a0a;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.2s;
+
+    &:hover {
+        border-color: var(--border-light);
+    }
+}
+
+.modal-metric-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+}
+
+.modal-metric-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 5px;
+}
+
+// ── LINK ──────────────────────────────────────
+.modal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    color: var(--accent);
+    word-break: break-all;
+    text-decoration: none;
+    transition: opacity 0.15s;
+
+    &:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+
+    svg {
+        flex-shrink: 0;
+    }
+}
+
+// ── MEDIA GRID ────────────────────────────────
+.modal-media-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.modal-media-item {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--border);
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+        display: block;
+    }
+
+    &:hover img {
+        transform: scale(1.05);
+    }
+}
+
+// ── TIMELINE ──────────────────────────────────
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+}
+
+.timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border-light);
+    flex-shrink: 0;
+    transition: background 0.2s;
+
+    &.done {
+        background: var(--accent);
+        box-shadow: 0 0 6px rgba(200, 245, 90, 0.4);
+    }
+}
+
+// ── STATUS BADGES ─────────────────────────────
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+
+    &::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    &.status-active {
+        background: rgba(200, 245, 90, 0.1);
+        color: var(--accent);
+
+        &::before {
+            background: var(--accent);
+            box-shadow: 0 0 6px var(--accent);
+            animation: pulse 2s infinite;
+        }
+    }
+
+    &.status-paused {
+        background: rgba(245, 166, 35, 0.1);
+        color: var(--amber);
+
+        &::before {
+            background: var(--amber);
+        }
+    }
+
+    &.status-ended {
+        background: rgba(255, 79, 79, 0.1);
+        color: var(--red);
+
+        &::before {
+            background: var(--red);
+        }
+    }
+
+    &.status-draft {
+        background: rgba(136, 136, 136, 0.1);
+        color: var(--text-secondary);
+
+        &::before {
+            background: var(--text-secondary);
+        }
+    }
+}
+
+// ── FOOTER ────────────────────────────────────
+.modal-footer {
+    display: flex;
+    gap: 10px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    margin-top: 28px;
+}
+
+// ── BUTTONS ───────────────────────────────────
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-primary {
+    flex: 1;
+    background: var(--accent-soft);
+    color: #0a0a0a;
+    font-weight: 600;
+    border: 2px solid rgba(255, 107, 53, 0.3);
+
+    &:hover {
+        background: var(--accent);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(200, 245, 90, 0.25);
+    }
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+
+    &:hover {
+        background: var(--surface-hover);
+        color: var(--text-primary);
+    }
+}
+
+// ── ANIMATIONS ────────────────────────────────
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+// ── RESPONSIVE ────────────────────────────────
+@media (max-width: 640px) {
+    .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .modal {
+        border-radius: 20px 20px 0 0;
+        max-height: 92vh;
+        max-width: 100%;
+    }
+
+    .modal-handle {
+        display: block;
+    }
+
+    // show drag handle on mobile
+
+    .modal-header {
+        padding: 16px 20px 0;
+    }
+
+    .modal-body {
+        padding: 16px 20px 32px;
+    }
+
+    .modal-title {
+        font-size: 17px;
+    }
+
+    .modal-campaign-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 17px;
+    }
+
+    .modal-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-media-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-footer {
+        flex-direction: column;
+
+        .btn {
+            width: 100%;
+        }
+    }
+}

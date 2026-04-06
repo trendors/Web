@@ -1,0 +1,162 @@
+<div class="modal-overlay1">
+    <div class="modal">
+
+        <!-- Drag handle (mobile) -->
+        <div class="modal-handle" (click)="closeDialog()"></div>
+
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <div class="modal-campaign-icon">
+                    {{ data.name.charAt(0).toUpperCase() }}
+                </div>
+                <div>
+                    <!-- <span class="status-badge" >
+              {{ capitalize(data.access) }}
+            </span> -->
+                    <div class="modal-title">{{ data.name }}</div>
+                    <div class="modal-created">
+                        Created {{ data.createdAt | date:'MMM d, y' }}
+                    </div>
+                </div>
+            </div>
+            <button class="modal-close" (click)="closeDialog()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+
+            <!-- Description -->
+            <div class="modal-section">
+                <div class="modal-section-label">Description</div>
+                <div class="modal-desc">
+                    {{ data.description || 'No description provided.' }}
+                </div>
+            </div>
+
+            <!-- Platforms -->
+            <div class="modal-section">
+                <div class="modal-section-label">Platforms</div>
+                <div class="modal-platforms">
+                    @for (platform of getPlatforms(data.platforms); track platform) {
+                    <span class="platform-tag">{{ platform }}</span>
+                    }
+                    @if (getPlatforms(data.platforms).length === 0) {
+                    <span class="modal-empty-value">No platforms set</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Details grid -->
+            <div class="modal-section">
+                <div class="modal-section-label">Details</div>
+                <div class="modal-metrics-grid">
+                    <div class="modal-metric">
+                        <div class="modal-metric-val">
+                            {{ data.start_date ? (data.start_date | date:'MMM d, y') : '—' }}
+                        </div>
+                        <div class="modal-metric-label">Start Date</div>
+                    </div>
+                    <div class="modal-metric">
+                        <div class="modal-metric-val">
+                            {{ data.end_date ? (data.end_date | date:'MMM d, y') : '—' }}
+                        </div>
+                        <div class="modal-metric-label">End Date</div>
+                    </div>
+                    <div class="modal-metric">
+                        <div class="modal-metric-val">{{ data.invitations.length }}</div>
+                        <div class="modal-metric-label">Invitations</div>
+                    </div>
+                    <div class="modal-metric">
+                        <div class="modal-metric-val">{{ data.files.length }}</div>
+                        <div class="modal-metric-label">Files</div>
+                    </div>
+                    <div class="modal-metric">
+                        <div class="modal-metric-val">
+                            {{ data.auto_generate_captions ? 'Yes' : 'No' }}
+                        </div>
+                        <div class="modal-metric-label">Auto Captions</div>
+                    </div>
+                    <div class="modal-metric">
+                        <div class="modal-metric-val">
+                            {{ data.generate_post ? 'Yes' : 'No' }}
+                        </div>
+                        <div class="modal-metric-label">Auto Post</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hashtags -->
+            @if (data.hash_tags) {
+            <div class="modal-section">
+                <div class="modal-section-label">Hashtags</div>
+                <div class="modal-desc">{{ data.hash_tags }}</div>
+            </div>
+            }
+
+            <!-- Campaign link -->
+            @if (data.link) {
+            <div class="modal-section">
+                <div class="modal-section-label">Campaign Link</div>
+                <a [href]="data.link" target="_blank" class="modal-link">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                    {{ data.link }}
+                </a>
+            </div>
+            }
+
+            <!-- Media files -->
+            @if (data.files.length > 0) {
+            <div class="modal-section">
+                <div class="modal-section-label">Media</div>
+                <div class="modal-media-grid">
+                    @for (file of data.files; track file) {
+                    <div class="modal-media-item">
+                        <img [src]="file" [alt]="data.name" />
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- Timeline -->
+            <div class="modal-section">
+                <div class="modal-section-label">Timeline</div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot done"></div>
+                        <span>Campaign created — {{ data.createdAt | date:'MMM d, y' }}</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot" [class.done]="!!data.start_date"></div>
+                        <span>
+                            Start date —
+                            {{ data.start_date ? (data.start_date | date:'MMM d, y') : 'Not set' }}
+                        </span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot" [class.done]="!!data.end_date"></div>
+                        <span>
+                            End date —
+                            {{ data.end_date ? (data.end_date | date:'MMM d, y') : 'Not set' }}
+                        </span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot" [class.done]="data.invitations.length > 0"></div>
+                        <span>{{ data.invitations.length }} creator(s) invited</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary">Manage Campaign</button>
+                <button class="btn btn-ghost" (click)="closeDialog()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

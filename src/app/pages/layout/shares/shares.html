@@ -1,7 +1,9 @@
 
 
 <div class="container">
-  <!-- Header -->
+
+  <div class="card">
+ <!-- Header -->
   <div class="page-header">
     <h1 class="page-title">My Shares</h1>
     <p class="page-subtitle">Share campaigns and earn rewards</p>
@@ -11,7 +13,7 @@
   <div class="stats-summary">
     <div class="stat-card">
       <div class="stat-label">Total Earned</div>
-      <div class="stat-value gold">₦{{ (totals$ | async)?.totalEarned | number: '1.2-2' }}</div>
+      <div class="stat-value ">₦{{ (totals$ | async)?.totalEarned | number: '1.2-2' }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Pending Claims</div>
@@ -59,6 +61,8 @@
       </button>
     </div>
   </div>
+  </div>
+ 
 
   <!-- Loading State -->
   @if (loading$ | async) {
@@ -113,7 +117,6 @@
                   class="claim-input" 
                   placeholder="Paste your tweet URL here"
                   [value]="share.external_post_url || ''"
-                  disabled
                 />
                 <button class="claim-btn">Claim ₦{{ share.rewardAmount | number: '1.2-2' }}</button>
               </div>

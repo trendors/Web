@@ -1,134 +1,37 @@
-<!-- <div class="notifications-page">
-  <h2>Notifications</h2>
-
-  @if (loading$ | async) {
-    <div class="loading">Loading...</div>
-  }
-
-  @let notifs = (notifications$ | async) || [];
-  @let user = user$ | async;
-
-  <mat-nav-list class="notifications-list">
-    @for (n of notifs; track n.id) {
-      <mat-list-item class="notification-item" [class.unread]="!n.isRead">
-        <div matListItemTitle class="message">
-          {{ n.message }}
-        </div>
-
-        <div matListItemLine class="meta">{{ n.type }} • {{ n.createdAt | date: 'short' }}</div>
-
-        <div matListItemMeta>
-          @if (!n.isRead && user?.id) {
-            <button mat-stroked-button color="primary" (click)="markRead(n.id, user!.id)">
-              Mark read
-            </button>
-          }
-        </div>
-      </mat-list-item>
-    }
-
+<div class="layout">
+  <div class="notifications-list">
+    @if (notifications$ | async; as notifs) {
     @if (notifs.length === 0) {
-      <div class="empty">No notifications.</div>
-    }
-  </mat-nav-list>
-</div> -->
-
-
-
-<div class="page">
-
-  <!-- Header -->
-  <div class="page-header">
-    <div class="header-left">
-      <h1 class="page-title">Notifications</h1>
-      <span class="notif-count" *ngIf="(unreadCount$ | async) as count">
-        {{ count }} unread
-      </span>
+    <div class="state-container empty-state">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+      <p>No notifications yet</p>
     </div>
-    <button
-      class="btn-mark-all"
-      type="button"
-      (click)="markAllRead()"
-      *ngIf="(unreadCount$ | async)! > 0">
-      Mark all read
-    </button>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- Loading -->
-  @if (loading$ | async) {
-    <div class="skeleton-list">
-      @for (i of [1,2,3,4]; track i) {
-        <div class="skeleton-item">
-          <div class="skeleton-icon"></div>
-          <div class="skeleton-body">
-            <div class="skeleton-line wide"></div>
-            <div class="skeleton-line narrow"></div>
+    } @else {
+    <div class="notifications-holder">
+      @for (notification of notifs; track notification.id) {
+      <div class="notification-card" (click)="onNotificationClick(notification)">
+        <div class="card-row">
+          <div class="card-content">
+            <div class="card-title">
+              <span> {{ typeIcons[notification.type] || '◆' }} {{ notification.type }}
+              </span>
+              <span class="timestamp">{{ notification.createdAt | date:'short' }}</span>
+            </div>
+            <div class="card-message">
+              {{ notification.message }}
+            </div>
           </div>
         </div>
+      </div>
       }
     </div>
-  }
-
-  @let notifs = (notifications$ | async) || [];
-  @let user = user$ | async;
-
-  <!-- List -->
-  @if (!(loading$ | async)) {
-
-    @if (notifs.length === 0) {
-      <div class="empty-state">
-        <div class="empty-icon">◈</div>
-        <p class="empty-title">You're all caught up</p>
-        <p class="empty-sub">New notifications will appear here</p>
-      </div>
     }
-
-    @if (notifs.length > 0) {
-      <ul class="notif-list">
-        @for (n of notifs; track n.id) {
-          <li class="notif-item" [class.unread]="!n.isRead">
-
-            <!-- Unread Dot -->
-            <div class="unread-dot-wrap">
-              <span class="unread-dot" *ngIf="!n.isRead"></span>
-            </div>
-
-            <!-- Icon -->
-            <div class="notif-icon" [ngClass]="'icon-' + n.type">
-              {{ typeIcons[n.type] ?? '◈' }}
-            </div>
-
-            <!-- Body -->
-            <div class="notif-body">
-              <p class="notif-message">{{ n.message }}</p>
-              <div class="notif-meta">
-                <span class="notif-type">{{ n.type }}</span>
-                <span class="meta-dot">·</span>
-                <span class="notif-time">{{ n.createdAt | date: 'MMM d, h:mm a' }}</span>
-              </div>
-            </div>
-
-            <!-- Action -->
-            <div class="notif-action">
-              @if (!n.isRead && user?.id) {
-                <button
-                  class="btn-read"
-                  type="button"
-                  (click)="markRead(n.id, user!.trendors_id)">
-                  Done
-                </button>
-              } @else {
-                <span class="read-indicator">✓</span>
-              }
-            </div>
-
-          </li>
-          <div class="item-divider"></div>
-        }
-      </ul>
     }
-  }
-
+  </div>
+  <aside class="sidebar right">
+    <app-user-info-card></app-user-info-card>
+  </aside>
 </div>

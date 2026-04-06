@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import {
   ChangePasswordDto,
   ChangePasswordResponse,
@@ -11,6 +11,8 @@ import {
   RegisterDto,
   RegisterResponse,
   ResetPasswordDto,
+  User,
+  ApiResponse,
 } from '../../models/users/user.model';
 import { environment } from '../../../../environments/environment';
 
@@ -39,10 +41,10 @@ export class AuthService {
   }
 
   login(emailOrPhone: string, password: string): Observable<LoginResponse> {
-    console.log(this.apiUrl);
+    let body = { emailOrPhone, password };
     const params = new HttpParams().set('emailOrPhone', emailOrPhone).set('password', password);
     return this.http
-      .post<LoginResponse>(`${this.apiUrl}/login`, {}, { params })
+      .post<LoginResponse>(`${this.apiUrl}/login`, body)
       .pipe(catchError(this.handleError));
   }
 
@@ -69,4 +71,13 @@ export class AuthService {
       .post<PasswordResetResponse>(`${this.apiUrl}/reset-password`, data)
       .pipe(catchError(this.handleError));
   }
+
+  getUserById(userId: number): Observable<User | undefined> {
+  return this.http
+    .get<ApiResponse<User>>(`${this.apiUrl}/${userId}`)
+    .pipe(
+      catchError(this.handleError),
+      map((res) => res.data)
+    );
+}
 }

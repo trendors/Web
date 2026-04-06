@@ -126,5 +126,11 @@ export const authReducer = createReducer(
     error: error || 'Change password failed',
   })),
 
-  on(updateCurrentUser, (state, { user }) => ({ ...state, user })),
+ on(updateCurrentUser, (state, { user }) => ({
+  ...state,
+  user: {
+    ...state.user,
+    ...user, 
+  },
+}))
 );

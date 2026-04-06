@@ -1,85 +1,283 @@
-<div class="view-campaign-wrapper">
-  <header class="page-header">
-    <div class="header-content">
-      <div>
-        <h1 class="page-title">My Campaigns</h1>
-        <p class="page-subtitle">Manage and track your active product campaigns</p>
+
+<div class="page ">
+
+  <div class="card">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <!-- <small>Overview</small> -->
+        Campaigns
       </div>
-      <button class="btn-primary" (click)="createNew()">
-        <span class="material-icons">add</span> New Campaign
+      <button class="btn btn-primary" (click)="openNewCampaign()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span>New Campaign</span>
       </button>
     </div>
-  </header>
-
-  <div class="content-container">
-    @if (isLoading$ | async) {
-      <div class="state-container">
-        <div class="loader"></div>
-        <p>Loading your campaigns...</p>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card" *ngFor="let stat of stats">
+        <div class="stat-label">{{ stat.label }}</div>
+        <div class="stat-value" [ngClass]="stat.valueClass">{{ stat.value }}</div>
+        <div class="stat-change" [ngClass]="stat.changeClass">{{ stat.change }}</div>
       </div>
-    }
+    </div>
 
-    @if (error$ | async; as err) {
-      <div class="state-container error-state">
-        <span class="material-icons error-icon">error_outline</span>
-        <p>{{ err }}</p>
-        <button class="btn-secondary" (click)="ngOnInit()">Try Again</button>
+    <!-- Filters -->
+    <div class="filters">
+      <button *ngFor="let f of filters" class="filter-pill" [class.active]="activeFilter === f.value"
+        (click)="setFilter(f.value)">
+        {{ f.label }}
+      </button>
+
+      <div class="filter-divider"></div>
+
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input class="search-input" placeholder="Search campaigns…" [(ngModel)]="searchQuery" />
       </div>
-    }
+    </div>
+  </div>
 
-    @if ((isLoading$ | async) === false && (error$ | async) === null) {
-      @if ((campaigns$ | async)?.length === 0) {
-        <div class="state-container empty-state">
-          <span class="material-icons empty-icon">campaign</span>
-          <h3>No Campaigns Yet</h3>
-          <p>You haven't created any campaigns. Share your product to reach more people!</p>
-          <button class="btn-primary" (click)="createNew()">Create Your First Campaign</button>
+
+  <!-- <pre>{{ campaigns$ | async | json }}</pre> -->
+
+
+
+  <!-- Cards Grid -->
+  <div class="campaigns-grid">
+
+    @if ((campaigns$ | async)?.length ?? 0 > 0) {
+
+
+    @for (campaign of (campaigns$ | async) ?? []; track campaign.id; let i = $index) {
+    <div class="campaign-card" [style.animation-delay]="(i * 0.05 + 0.2) + 's'" (click)="openModal(campaign)">
+      <!-- Top row: icon + status -->
+      <div class="card-top">
+        <div class="card-icon">
+          {{ campaign.name.charAt(0).toUpperCase() }}
         </div>
-      }
+        <span class="status-badge" [ngClass]="statusClass(campaign.access)">
+          {{ capitalize(campaign.access) }}
+        </span>
+      </div>
 
-      @if ((campaigns$ | async)?.length ?? 0 > 0) {
-        <div class="campaign-grid">
-          @for (campaign of (campaigns$ | async) ?? []; track campaign.id) {
-            <article class="campaign-card">
-              <div class="card-image">
-                @if (campaign.files && campaign.files.length > 0) {
-                  <img [src]="campaign.files[0]" [alt]="campaign.name" />
-                } @else {
-                  <div class="image-placeholder">
-                    <span class="material-icons">image_not_supported</span>
-                  </div>
-                }
-                <span class="type-badge" [ngClass]="getBadgedClass(campaign.package)">
-                  {{ campaign.package | titlecase }}
-                </span>
-              </div>
+      <!-- Name + description -->
+      <div>
+        <div class="card-title">{{ campaign.name }}</div>
+        <div class="card-desc">{{ campaign.description }}</div>
+      </div>
 
-              <div class="card-content">
-                <h3 class="campaign-title">{{ campaign.name }}</h3>
-                <p class="campaign-desc">{{ campaign.description }}</p>
+      <!-- Platforms -->
+      <div class="card-platforms">
+        @for (platform of getPlatforms(campaign.platforms); track platform) {
+        <span class="platform-tag">{{ platform }}</span>
+        }
+      </div>
 
-                <div class="card-meta">
-                  <div class="meta-item">
-                    <span class="material-icons meta-icon">calendar_today</span>
-                    <span>{{ campaign.createdAt | date: 'mediumDate' }}</span>
-                  </div>
-                  @if (campaign.link) {
-                    <div class="meta-item">
-                      <span class="material-icons meta-icon">link</span>
-                      <a [href]="campaign.link" target="_blank" class="campaign-link">View Link</a>
-                    </div>
-                  }
-                </div>
-              </div>
+      <!-- Dates -->
+      <div class="card-metrics">
+        <div class="metric">
+          <span class="metric-value">{{ campaign.start_date ? (campaign.start_date | date:'MMM d') : '—' }}</span>
+          <span class="metric-label">Start</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ campaign.end_date ? (campaign.end_date | date:'MMM d') : '—' }}</span>
+          <span class="metric-label">End</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ campaign.invitations.length }}</span>
+          <span class="metric-label">Invites</span>
+        </div>
+      </div>
 
-              <div class="card-actions">
-                <button class="btn-text">View Details</button>
-                <button class="btn-icon"><span class="material-icons">more_vert</span></button>
-              </div>
-            </article>
+      <!-- Footer -->
+      <div class="card-footer">
+        <span class="card-date">Created {{ campaign.createdAt | date:'MMM d, y' }}</span>
+        <span class="card-cta">View more →</span>
+      </div>
+    </div>
+    }
+
+    }
+
+
+
+
+
+
+
+
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="filteredCampaigns.length === 0">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">No campaigns found</div>
+      <div class="empty-desc">Try a different filter or search term</div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+<!-- MODAL -->
+@if (selectedCampaign) {
+<div class="modal-overlay" [class.open]="isModalOpen" (click)="closeModalOutside($event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div style="margin-bottom: 10px">
+          <span class="status-badge" [ngClass]="statusClass(selectedCampaign.access)">
+            {{ capitalize(selectedCampaign.access) }}
+          </span>
+        </div>
+        <div class="modal-title">{{ selectedCampaign.name }}</div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Description -->
+      <div class="modal-section">
+        <div class="modal-section-label">Description</div>
+        <div class="modal-desc">
+          {{ selectedCampaign.description || 'No description provided.' }}
+        </div>
+      </div>
+
+      <!-- Platforms -->
+      <div class="modal-section">
+        <div class="modal-section-label">Platforms</div>
+        <div class="card-platforms">
+          @for (platform of getPlatforms(selectedCampaign.platforms); track platform) {
+          <span class="platform-tag">{{ platform }}</span>
           }
         </div>
+      </div>
+
+      <!-- Campaign Details -->
+      <div class="modal-section">
+        <div class="modal-section-label">Details</div>
+        <div class="modal-metrics-grid">
+          <div class="modal-metric">
+            <div class="modal-metric-val">
+              {{ selectedCampaign.start_date ? (selectedCampaign.start_date | date:'MMM d, y') : '—' }}
+            </div>
+            <div class="modal-metric-label">Start Date</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">
+              {{ selectedCampaign.end_date ? (selectedCampaign.end_date | date:'MMM d, y') : '—' }}
+            </div>
+            <div class="modal-metric-label">End Date</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">{{ selectedCampaign.invitations.length }}</div>
+            <div class="modal-metric-label">Invitations</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">{{ selectedCampaign.files.length }}</div>
+            <div class="modal-metric-label">Files</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">{{ selectedCampaign.auto_generate_captions ? 'Yes' : 'No' }}</div>
+            <div class="modal-metric-label">Auto Captions</div>
+          </div>
+          <div class="modal-metric">
+            <div class="modal-metric-val">{{ selectedCampaign.generate_post ? 'Yes' : 'No' }}</div>
+            <div class="modal-metric-label">Auto Post</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hashtags -->
+      @if (selectedCampaign.hash_tags) {
+      <div class="modal-section">
+        <div class="modal-section-label">Hashtags</div>
+        <div class="modal-desc">{{ selectedCampaign.hash_tags }}</div>
+      </div>
       }
-    }
+
+      <!-- Campaign Link -->
+      @if (selectedCampaign.link) {
+      <div class="modal-section">
+        <div class="modal-section-label">Campaign Link</div>
+        <a [href]="selectedCampaign.link" target="_blank" class="modal-link">
+          {{ selectedCampaign.link }}
+        </a>
+      </div>
+      }
+
+      <!-- Media Files -->
+      @if (selectedCampaign.files.length > 0) {
+      <div class="modal-section">
+        <div class="modal-section-label">Media</div>
+        <div class="modal-media-grid">
+          @for (file of selectedCampaign.files; track file) {
+          <div class="modal-media-item">
+            <img [src]="file" [alt]="selectedCampaign.name" />
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Timeline -->
+      <div class="modal-section">
+        <div class="modal-section-label">Timeline</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot done"></div>
+            <span>Campaign created — {{ selectedCampaign.createdAt | date:'MMM d, y' }}</span>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" [class.done]="!!selectedCampaign.start_date"></div>
+            <span>
+              Start date —
+              {{ selectedCampaign.start_date ? (selectedCampaign.start_date | date:'MMM d, y') : 'Not set' }}
+            </span>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" [class.done]="!!selectedCampaign.end_date"></div>
+            <span>
+              End date —
+              {{ selectedCampaign.end_date ? (selectedCampaign.end_date | date:'MMM d, y') : 'Not set' }}
+            </span>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" [class.done]="selectedCampaign.invitations.length > 0"></div>
+            <span>{{ selectedCampaign.invitations.length }} creator(s) invited</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary" style="flex: 1">Manage Campaign</button>
+        <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+      </div>
+
+    </div>
   </div>
 </div>
+}
