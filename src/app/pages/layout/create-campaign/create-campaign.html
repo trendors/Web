@@ -102,7 +102,6 @@
       </div>
     </div>
 
-    <!-- ── PAGE 2: CONTENT ── -->
     <div class="page-content" *ngIf="currentStep === 1">
       <div class="section">
         <div class="section-title">Campaign Media</div>
@@ -162,8 +161,6 @@
         </div>
       </div>
     </div>
-
-    <!-- ── PAGE 3: PLAN & ACCESS ── -->
     <div class="page-content" *ngIf="currentStep === 2">
       <div class="section">
         <div class="section-title">Who Can Join</div>
@@ -200,7 +197,6 @@
           </div>
         </div>
       </div>
-
       @if (selectedAccess === 'open') {
         <div class="section">
           <div class="section-title">
@@ -219,7 +215,6 @@
           </div>
         </div>
       }
-
       @if (selectedAccess === 'invite_only') {
         <div class="batch-container">
           <div class="search-section">
@@ -305,13 +300,10 @@
             >
           </div>
         </div>
-
-        <!-- Applicants -->
         <div class="section-label">
           <h2>Applicants</h2>
           <div class="line"></div>
         </div>
-
         <div class="table-wrap">
           <table>
             <thead>
@@ -369,13 +361,10 @@
             </tbody>
           </table>
         </div>
-
-        <!-- Members -->
         <div class="section-label">
           <h2>Active Members</h2>
           <div class="line"></div>
         </div>
-
         <div class="table-wrap">
           <table>
             <thead>
@@ -432,8 +421,6 @@
             </tbody>
           </table>
         </div>
-
-        <!-- Profile Modal -->
         @if (viewingProfile()) {
           <div class="modal-overlay" (click)="onOverlayClick($event)">
             <div class="modal">
@@ -470,9 +457,7 @@
         }
       }
     </div>
-    <!-- ── PAGE 4: REVIEW ── -->
     <div class="page-content" *ngIf="currentStep === 3">
-      <!-- Plan highlight bar -->
       <div class="review-plan-bar">
         <div>
           <div class="rpb-name">{{ activePlan.value }} Plan</div>
@@ -482,8 +467,6 @@
           {{ activePlan.price }}<span *ngIf="activePlan.value !== 'Enterprise'">/mo</span>
         </div>
       </div>
-
-      <!-- Basics -->
       <div class="rv-section">
         <div class="rv-head">
           Campaign Basics
@@ -514,8 +497,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Content -->
       <div class="rv-section">
         <div class="rv-head">
           Content
@@ -556,8 +537,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Plan & Access -->
       <div class="rv-section">
         <div class="rv-head">
           Plan & Access
@@ -572,18 +551,8 @@
             <div class="rv-key">Access Type</div>
             <div class="rv-val">{{ selectedAccess }}</div>
           </div>
-          <!-- <div class="rv-row">
-            <div class="rv-key">Payout Tiers</div>
-            <div class="rv-val">
-              <div class="rv-tags">
-                <span class="rv-tag" *ngFor="let tier of tiers">{{ tier.name }} {{ tier.amount }}</span>
-              </div>
-            </div>
-          </div> -->
         </div>
       </div>
-
-      <!-- Note & Launch -->
       <div class="rv-note">
         <span class="rv-note-icon">ℹ️</span>
         <span
@@ -594,9 +563,7 @@
     </div>
     <div>
       <div class="form-demo">
-        <!-- FULL WIDTH NAVIGATION — PREV · icon · NEXT / SAVE -->
         <nav class="nav-bar" aria-label="form navigation">
-          <!-- left group: previous button (always visible) -->
           <div class="nav-left">
             <button class="nav-btn prev" aria-label="previous page" (click)="prev()">
               <svg viewBox="0 0 24 24">
@@ -605,24 +572,13 @@
               <span>Previous</span>
             </button>
           </div>
-
-          <!-- center icon — ring with calm blue accent (loader dna) -->
-          <!-- <div class="center-icon" aria-hidden="true">
-        <div class="center-dot"></div>
-      </div> -->
-
-          <!-- <app-alert></app-alert> -->
-
-          <!-- right group: next + save (save appears as primary on last page) -->
           <div class="nav-right">
-            <!-- next button (visible on early pages) -->
             <button class="nav-btn next" aria-label="next page" (click)="next()">
               <span>Next</span>
               <svg viewBox="0 0 24 24">
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </button>
-
             <button
               class="nav-btn save"
               aria-label="save form"
@@ -639,7 +595,6 @@
       </div>
     </div>
   </main>
-
     <aside class="user-sidebar right">
     <app-user-info-card></app-user-info-card>
   </aside>

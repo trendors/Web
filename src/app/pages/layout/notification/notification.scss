@@ -1,27 +1,8 @@
-// ============================================
-// LUXURY MINIMALIST DESIGN SYSTEM
-// ============================================
-
-// Color Variables
-$bg-primary: black;
-$text-primary: #141420;
-$text-secondary: #333333;
-$text-tertiary: #808080;
-$text-light: #b3b3b3;
-$accent-gold: #B8860B;
-$accent-gold-hover: #9d7409;
-$border-color: #e8e8e8;
-$divider-color: #f0f0f0;
-$error-color: #dc2626;
-$status-bg: #f9f9f9;
-
-// ============================================
-// NOTIFICATIONS CONTAINER
-// ============================================
-.layout {
+  .layout {
   display: grid;
   grid-template-columns: auto auto; 
   align-items: start;
+  width: 100%;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
@@ -33,466 +14,96 @@ $status-bg: #f9f9f9;
   }
 }
 
-.notifications-container {
-  
-  margin: 0 auto;
-  padding: 2.5rem 1.5rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  // background: $bg-primary;
-}
-
-/* ============================================
-   HEADER SECTION
-   ============================================ */
-
-.notifications-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.75rem;
-  border-bottom: 1px solid $divider-color;
-  gap: 1rem;
-
-  h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin: 0;
-    letter-spacing: -0.3px;
-  }
-}
-
-.btn-mark-read {
-  padding: 0.65rem 1.35rem;
-  border: 1px solid $accent-gold;
-  border-radius: 4px;
-  background: transparent;
-  color: $accent-gold;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  letter-spacing: -0.1px;
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  &:hover {
-    background: $accent-gold;
-    color: $bg-primary;
-  }
-
-  &:active {
-    background: $accent-gold-hover;
-    border-color: $accent-gold-hover;
-  }
-}
-
-/* ============================================
-   STATE CONTAINERS
-   ============================================ */
-
-.state-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-  min-height: 300px;
-
-  .icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-bottom: 1rem;
-    color: $text-light;
-    stroke-width: 1.5;
-  }
-
-  p {
-    font-size: 0.9rem;
-    color: $text-tertiary;
-    margin: 0;
-    font-weight: 300;
-  }
-}
-
-.loading-state {
-  .spinner {
-    width: 32px;
-    height: 32px;
-    border: 2px solid $divider-color;
-    border-top-color: $accent-gold;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 1rem;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
+    .notifications-holder {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;       
+      width: 100%;
+      max-width: 500px;    
+      margin: 0 auto;
     }
-  }
-}
 
-.error-state {
-  color: $error-color;
-
-  .icon {
-    color: $error-color;
-  }
-}
-
-.empty-state {
-  color: $text-tertiary;
-
-  .icon {
-    color: $text-light;
-  }
-}
-
-/* ============================================
-   NOTIFICATIONS LIST
-   ============================================ */
-
-.notifications-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.notification-item {
-  padding: 1rem 0;
-  border-bottom: 1px solid $divider-color;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  position: relative;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: rgba(184, 134, 11, 0.04);
-    padding: 1rem 0.75rem;
-    margin: 0 -0.75rem;
-    border-radius: 4px;
-
-    .chevron {
-      color: $accent-gold;
-      transform: translateX(4px);
+    .notification-card {
+      cursor: pointer;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+      border: 1px solid #e9edf2;
+      transition: all 0.1s ease;
     }
-  }
 
-  &.unread {
-    background: rgba(184, 134, 11, 0.02);
+    .card-row {
+      display: flex;
+      gap: 0.875rem;
+      align-items: flex-start;
+    }
 
-    .notification-text {
+    .card-icon {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      background: #f0f4f9;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2c6e9e;
       font-weight: 500;
-      color: $text-primary;
+      font-size: 1.2rem;
     }
 
-    .user-name {
-      font-weight: 700;
-      color: $text-primary;
-    }
-  }
-}
-
-/* Notification Icon (Type-based) */
-.notification-icon {
-  width: 2rem;
-  height: 2rem;
-  min-width: 2rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  font-weight: 600;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-
-  &[data-type='campaign'] {
-    background: rgba(184, 134, 11, 0.1);
-    color: #B8860B;
-  }
-
-  &[data-type='payment'] {
-    background: rgba(5, 150, 105, 0.1);
-    color: #059669;
-  }
-
-  &[data-type='system'] {
-    background: rgba(107, 114, 128, 0.1);
-    color: #4b5563;
-  }
-
-  &[data-type='warning'] {
-    background: rgba(220, 38, 38, 0.1);
-    color: #dc2626;
-  }
-}
-
-/* Content */
-.notification-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.notification-text {
-  font-size: 0.9rem;
-  font-weight: 400;
-  margin: 0 0 0.4rem 0;
-  color: $text-secondary;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
-.user-name {
-  font-weight: 600;
-  color: $text-primary;
-  letter-spacing: -0.1px;
-}
-
-.notification-time {
-  display: block;
-  font-size: 0.75rem;
-  color: $text-light;
-  font-weight: 300;
-  letter-spacing: 0.2px;
-}
-
-/* Unread Indicator */
-.unread-indicator {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: $accent-gold;
-  flex-shrink: 0;
-  margin-top: 0.5rem;
-  box-shadow: 0 0 0 2px rgba(184, 134, 11, 0.2);
-}
-
-/* Chevron Icon */
-.chevron {
-  width: 0.9rem;
-  height: 0.9rem;
-  color: $text-light;
-  flex-shrink: 0;
-  transition: transform 0.25s ease, color 0.25s ease;
-  stroke-width: 2.5;
-  margin-top: 0.1rem;
-}
-
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
-
-/* Unread Count Badge */
-.unread-count-badge {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: $accent-gold;
-  color: white;
-  padding: 0.75rem 1.25rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
-  animation: slideUp 0.3s ease;
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @media (max-width: 768px) {
-    bottom: 1.5rem;
-    right: 1.5rem;
-    padding: 0.65rem 1.1rem;
-    font-size: 0.8rem;
-  }
-}
-
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
-
-@media (max-width: 768px) {
-  .notifications-container {
-    padding: 1.5rem 1rem;
-    max-width: 100%;
-  }
-
-  .notifications-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1.75rem;
-    padding-bottom: 1.25rem;
-
-    h1 {
-      font-size: 1.5rem;
-    }
-  }
-
-  .btn-mark-read {
-    align-self: flex-end;
-  }
-
-  .notification-item {
-    padding: 0.85rem 0;
-    gap: 0.65rem;
-
-    &:hover {
-      padding: 0.85rem 0.5rem;
-      margin: 0 -0.5rem;
-    }
-  }
-
-  .notification-icon {
-    width: 2rem;
-    height: 2rem;
-    min-width: 2rem;
-    font-size: 0.9rem;
-  }
-
-  .notification-text {
-    font-size: 0.85rem;
-  }
-
-  .notification-time {
-    font-size: 0.7rem;
-  }
-
-  .chevron {
-    width: 0.8rem;
-    height: 0.8rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .notifications-container {
-    padding: 1rem 0.75rem;
-  }
-
-  .notifications-header {
-    gap: 0.75rem;
-
-    h1 {
-      font-size: 1.35rem;
-    }
-  }
-
-  .btn-mark-read {
-    padding: 0.55rem 1rem;
-    font-size: 0.8rem;
-  }
-
-  .notification-item {
-    padding: 0.75rem 0;
-    gap: 0.5rem;
-
-    &:hover {
-      padding: 0.75rem 0.35rem;
-    }
-  }
-
-  .notification-icon {
-    width: 1.85rem;
-    height: 1.85rem;
-    min-width: 1.85rem;
-    font-size: 0.85rem;
-  }
-
-  .notification-text {
-    font-size: 0.8rem;
-  }
-
-  .unread-count-badge {
-    bottom: 1rem;
-    right: 1rem;
-    padding: 0.6rem 1rem;
-    font-size: 0.75rem;
-  }
-}
-
-/* ============================================
-   DARK MODE (Optional)
-   ============================================ */
-
-@media (prefers-color-scheme: dark) {
-  .notifications-container {
-    // background: #0a0a0a;
-  }
-
-  .notifications-header {
-    border-bottom-color: #1a1a1a;
-
-    h1 {
-      // color: #ffffff;
-    }
-  }
-
-  .btn-mark-read {
-    border-color: $accent-gold;
-    color: $accent-gold;
-
-    &:hover {
-      background: $accent-gold;
-      color: #0a0a0a;
-    }
-  }
-
-  .notification-item {
-    border-bottom-color: #1a1a1a;
-
-    &:hover {
-      background: rgba(184, 134, 11, 0.1);
+    .card-content {
+      flex: 1;
     }
 
-    &.unread {
-      background: rgba(184, 134, 11, 0.08);
-    }
-  }
-
-  .notification-text {
-    color: #e8e8e8;
-  }
-
-  .user-name {
-    color: #ffffff;
-  }
-
-  .notification-time {
-    color: #808080;
-  }
-
-  .state-container {
-    .icon {
-      color: #606060;
+    .card-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #1a2c3e;
+      margin-bottom: 0.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.5rem;
     }
 
-    p {
-      color: #808080;
+    .card-title span:first-child {
+      letter-spacing: -0.2px;
     }
-  }
 
-  .loading-state .spinner {
-    border-color: #1a1a1a;
-  }
+    .timestamp {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: #8a99aa;
+      background: #f8fafc;
+      padding: 0.2rem 0.5rem;
+      border-radius: 30px;
+      white-space: nowrap;
+    }
 
-  .chevron {
-    color: #606060;
-  }
-}
+    .card-message {
+      font-size: 0.85rem;
+      color: #2c3e4e;
+      line-height: 1.4;
+      margin-top: 0.2rem;
+    }
+
+    @media (max-width: 480px) {
+      .notifications-holder {
+        max-width: 96%;
+      }
+      .card-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+      }
+      .notification-card {
+        padding: 0.9rem 1rem;
+      }
+      .timestamp {
+        font-size: 0.65rem;
+        white-space: normal;
+      }
+    }

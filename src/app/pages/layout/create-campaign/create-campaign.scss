@@ -1,62 +1,4 @@
-.topnav {
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
-  padding: 0 40px;
-  height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
 
-  .nav-logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 17px;
-    color: var(--text);
-    letter-spacing: -0.02em;
-
-    span {
-      color: var(--accent);
-    }
-  }
-
-  /* Sidebar behavior */
-  .user-sidebar {
-    position: sticky;
-    top: 24px;
-    height: fit-content;
-  }
-
-  .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .nav-saved {
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  .nav-exit {
-    padding: 6px 15px;
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    color: var(--text2);
-    cursor: pointer;
-    transition: all 0.15s;
-
-    &:hover {
-      border-color: var(--border-hover);
-      color: var(--text);
-    }
-  }
-}
 
 .home-container {
   // display: grid;
@@ -756,11 +698,6 @@ select {
   }
 }
 
-.plans-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 11px;
-}
 
 .plan-item {
   position: relative;
@@ -1319,7 +1256,6 @@ select {
   padding: 40px !important;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
 // :host {
 //   --bg:        #0a0a0c;
@@ -1918,7 +1854,6 @@ td {
   box-shadow: 0 12px 22px -10px rgba(30, 76, 122, 0.4);
 }
 
-/* icon styles — super thin, precise */
 .nav-btn svg {
   width: 20px;
   height: 20px;
@@ -1952,23 +1887,6 @@ td {
   transform: translateX(3px);
 }
 
-/* center icon — ring homage, now with a touch of the calm blue */
-.center-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg,
-      #1e4c7a 0deg 60deg,
-      transparent 60deg 300deg,
-      #1e4c7a 300deg 360deg);
-  mask: radial-gradient(circle, transparent 68%, black 69%);
-  -webkit-mask: radial-gradient(circle, transparent 68%, black 69%);
-  opacity: 0.75;
-  transition: opacity 0.2s;
-}
 
 .center-dot {
   width: 6px;
