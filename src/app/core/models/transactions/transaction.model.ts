@@ -31,7 +31,7 @@ export enum TransactionStatus {
 }
 
 export interface FindTransactionsDto {
-  trendor_id: string;
+  trendors_id: string;
   transaction_type?: TransactionType;
   searchQuery?: string;
   limit?: number;
