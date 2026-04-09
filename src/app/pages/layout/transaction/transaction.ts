@@ -91,7 +91,7 @@ export class Transaction implements OnInit {
 
     const query = {
       ...this.filterForm.value,
-      trendor_id: this.currentUserId,
+      trendors_id: this.currentUserId,
     };
 
     this.store.dispatch(TransactionsActions.loadTransactions({ query }));
