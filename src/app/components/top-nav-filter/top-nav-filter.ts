@@ -13,7 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class TopNavFilter {
    // 1. Data Source
-  categories: string[] = ['Design', 'Technology', 'Marketing', 'Business', 'Lifestyle', 'Coding', 'Art', 'Health', 'Travel', 'Food'];
+  categories: string[] = [];
 
   // 2. Filter States
   onlyPaid: boolean = false;

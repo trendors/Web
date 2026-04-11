@@ -1,13 +1,8 @@
-<div class="home-container">
-  <main class="feed">
-    <div style="">
       <div class="search-bar">
         <mat-icon>search</mat-icon>
-        <input type="text" placeholder="Search posts..." />
+        <input type="text" placeholder="Search posts.." />
       </div>
-
-      <app-top-nav-filter></app-top-nav-filter>
-    </div>
+      <!-- <app-top-nav-filter></app-top-nav-filter> -->
 
     <div class="posts-list">
       @for (post of posts$ | async; track post.id) {
@@ -57,9 +52,7 @@
       </article>
       }
     </div>
-  </main>
 
-  <aside class="sidebar right">
-    <app-user-info-card></app-user-info-card>
-  </aside>
-</div>
+    <div class="buttom">
+
+    </div>

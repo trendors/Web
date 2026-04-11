@@ -1,26 +1,18 @@
-<!-- <div class="page-header">
-    <h1 class="page-title">Account</h1>
-    <p class="page-sub">Manage your profile and wallet</p>
-</div> -->
-
 
 
 <div class="card social-card">
     <div class="section-label">Connected Accounts</div>
-   
-
-
-
+  
   <!-- Value Prop -->
-  <div class="connect-value">
+  <!-- <div class="connect-value">
     <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
       <path d="M13 2L3 14h9l-1 10 10-12h-9l1-10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <span>Connected accounts display your follower count, making it easier for businesses to find and partner with you.</span>
-  </div>
+  </div> -->
 
   <!-- Connection Summary -->
-  <div class="connect-summary">
+  <!-- <div class="connect-summary">
     <div class="summary-pill connected">
       <span class="dot connected-dot"></span>
       {{ connectedCount }} Connected
@@ -29,7 +21,7 @@
       <span class="dot pending-dot"></span>
       {{ 3 - connectedCount }} Not Connected
     </div>
-  </div>
+  </div> -->
 
   <!-- Platform List -->
   <div class="platform-list">
@@ -44,7 +36,7 @@
         </div>
         <div class="platform-meta">
           <div class="platform-name-row">
-            <span class="platform-name">Twitter / X</span>
+            <!-- <span class="platform-name">Twitter / X</span> -->
             <span class="status-chip connected-chip" *ngIf="twitter.verified">Connected</span>
             <span class="status-chip pending-chip" *ngIf="!twitter.verified">Not Connected</span>
           </div>
@@ -72,7 +64,7 @@
         </div>
         <div class="platform-meta">
           <div class="platform-name-row">
-            <span class="platform-name">Instagram</span>
+            <!-- <span class="platform-name">Instagram</span> -->
             <span class="status-chip connected-chip" *ngIf="instagram.verified">Connected</span>
             <span class="status-chip pending-chip" *ngIf="!instagram.verified">Not Connected</span>
           </div>
@@ -100,7 +92,7 @@
         </div>
         <div class="platform-meta">
           <div class="platform-name-row">
-            <span class="platform-name">TikTok</span>
+            <!-- <span class="platform-name">TikTok</span> -->
             <span class="status-chip connected-chip" *ngIf="tiktok.verified">Connected</span>
             <span class="status-chip pending-chip" *ngIf="!tiktok.verified">Not Connected</span>
           </div>

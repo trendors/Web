@@ -1,11 +1,18 @@
-<div class="home-container">
-    <aside class="sidebar">
+<div class="container">
+    <div class="sidebar">
         <app-side-nav-card></app-side-nav-card>
-    </aside>
-    <main class="feed">
+    </div>
+    <div class="feed">
         <router-outlet></router-outlet>
-    </main>
-
-    <app-buttom-nav class="mobile-nav"></app-buttom-nav>
+    </div>
+    <div class="sidebar-right sidebar">
+        @if ( url !== '/home/profile') {
+        <app-user-info-card></app-user-info-card>
+        }
+        @if(url === '/home/profile') {
+        <app-social-verify />
+        }
+    </div>
+                <app-footer></app-footer>
 
 </div>
