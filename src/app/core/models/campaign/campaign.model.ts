@@ -19,8 +19,8 @@ export interface Campaign {
   generate_post: boolean;
   files: string[];
   invitations: any[];
-  total_reach?: number;
-  avg_engagement?: number;
+  total_reach?: number; // add in the backend campaign entity
+  avg_engagement?: number; // add in the backend campaign entity
 }
 // view campaign related interfaces
 export interface CampaignStats {
