@@ -24,13 +24,13 @@ export const campaignReducer = createReducer(
     isLoading: false,
     list,
   })),
-  on(CampaignActions.loadCampaignsFailure, (state, { error }) => ({ ...state, error })),
+  on(CampaignActions.loadCampaignsFailure, (state, { error }) => ({ ...state, isLoading: false,error })),
 
   on(CampaignActions.createCampaign, (state) => ({ ...state, isLoading: true, error: null })),
   on(CampaignActions.createCampaignSuccess, (state, { campaign }) => ({
     ...state,
     isLoading: false,
-    campaign,
+    list: [...state.list, campaign],
   })),
   on(CampaignActions.createCampaignFailure, (state, { error }) => ({
     ...state,
