@@ -1,19 +1,5 @@
 
-.account-layout {
-  display: grid;
-  grid-template-columns: auto auto; 
-  align-items: start;
-  width: 100%;
 
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-    gap: 20px;
-
-    .account-side {
-      order: -1; /* Keeps your preference for sidebar-at-top on mobile */
-    }
-  }
-}
 
 
 :host {
@@ -36,11 +22,12 @@
 
 /* ── Page ── */
 .page {
-  max-width: 560px;
+  width: 560px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding-bottom: 48px;
+  
 }
 
 .page-header {

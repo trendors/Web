@@ -1,37 +1,29 @@
-<div class="layout">
-  <div class="notifications-list">
-    @if (notifications$ | async; as notifs) {
-    @if (notifs.length === 0) {
-    <div class="state-container empty-state">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-      </svg>
-      <p>No notifications yet</p>
-    </div>
-    } @else {
-    <div class="notifications-holder">
-      @for (notification of notifs; track notification.id) {
-      <div class="notification-card" (click)="onNotificationClick(notification)">
-        <div class="card-row">
-          <div class="card-content">
-            <div class="card-title">
-              <span> {{ typeIcons[notification.type] || '◆' }} {{ notification.type }}
-              </span>
-              <span class="timestamp">{{ notification.createdAt | date:'short' }}</span>
-            </div>
-            <div class="card-message">
-              {{ notification.message }}
-            </div>
-          </div>
-        </div>
-      </div>
-      }
-    </div>
-    }
-    }
+
+<body>
+  @if (notifications$ | async; as notifs) {
+  @if (notifs.length === 0) {
+  <div class="state-container empty-state">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+    </svg>
+    <p>No notifications yet</p>
   </div>
-  <aside class="sidebar right">
-    <app-user-info-card></app-user-info-card>
-  </aside>
-</div>
+  } @else {
+  @for (notification of notifs; track notification.id) {
+  <div class="notification">
+    <div class="avatar"></div>
+    <div class="content">
+      <div class="header">
+        <div class="title"> POST</div>
+        <div class="time">{{ notification.createdAt | date:'short' }}</div>
+      </div>
+      <div class="text">{{ notification.message }}</div>
+    </div>
+  </div>
+  }
+  }}
+
+
+
+</body>

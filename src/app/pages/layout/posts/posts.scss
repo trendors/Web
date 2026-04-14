@@ -1,38 +1,26 @@
-.home-container {
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-  min-height: 100vh;
-  background-color: #f8f9fa;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
 
 .card {
   background: #fff;
   border-radius: 12px;
-  border: var(--border);
-  padding: 16px;
-  margin-bottom: 16px;
-  max-width: 600px;
+  border: 1px solid #e0e0e0;
+  padding: 14px;
+  margin-bottom: 14px;
   border: 1px solid #e0e0e0;
 }
-
 
 /* Sidebar behavior */
 .sidebar {
   position: sticky;
   top: 24px;
   height: fit-content;
+  width: 240px;
 }
 
 /* Reusable Card Style */
 .navigation-card {
   background: #ffffff;
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px;
   border: 1px solid #e0e0e0;
 }
 
@@ -40,15 +28,15 @@
 .nav-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .nav-item {
   display: block;
-  padding: 12px 16px;
+  padding: 10px 14px;
   text-decoration: none;
   color: #333;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   border-radius: 8px;
   transition: background 0.2s ease;
@@ -59,15 +47,11 @@
 }
 
 /* Main Feed Area */
-.feed {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+
 
 .placeholder-text {
   color: #666;
-  font-size: 14px;
+  font-size: 13px;
   text-align: center;
 }
 
@@ -75,44 +59,44 @@
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px;
   width: 240px;
   position: sticky;
   top: 20px;
   float: right;
-  margin-left: 20px;
+  margin-left: 16px;
 }
 
 .user-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .user-info .name {
   display: block;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   color: #333;
 }
 
 .user-info .label {
-  font-size: 12px;
+  font-size: 11px;
   color: #888;
 }
 
 .divider {
   border: 0;
   border-top: 1px solid #f0f0f0;
-  margin: 12px 0;
+  margin: 10px 0;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .stat-item {
@@ -122,15 +106,16 @@
 
 .stat-value {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--primary, #007bff);
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 10px;
   color: #777;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-top: 2px;
 }
 
 .btn-profile {
@@ -151,10 +136,11 @@
 
 .nav-link {
   display: block;
-  padding: 12px;
+  padding: 10px;
   text-decoration: none;
   color: var(--text-main);
   border-radius: 8px;
+  font-size: 14px;
 }
 
 .nav-link:hover {
@@ -166,10 +152,11 @@
   display: flex;
   align-items: center;
   background: #fff;
-  border: var(--border);
-  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  padding: 10px 14px;
   border-radius: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  font-size: 14px;
 }
 
 .search-bar input {
@@ -177,33 +164,27 @@
   outline: none;
   width: 100%;
   margin-left: 8px;
+  font-size: 14px;
+  font-family: inherit;
 }
 
 /* Create Post */
 .input-area {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .avatar-small {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--primary);
   flex-shrink: 0;
-
-  /* Centering Logic */
   display: flex;
   align-items: center;
-  /* Vertical center */
   justify-content: center;
-  /* Horizontal center */
-
-  /* Text Styling */
   color: white;
-  /* Adjust based on your background */
-  font-size: 14px;
-  /* Size of the initials */
+  font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -219,23 +200,26 @@ textarea {
   resize: none;
   font-family: inherit;
   padding: 8px 0;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .actions {
   display: flex;
   justify-content: space-between;
-  border-top: var(--border);
-  padding-top: 12px;
-  margin-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 10px;
+  margin-top: 10px;
 }
 
 .post-button {
   background: var(--primary);
   color: white;
   border: none;
-  padding: 6px 20px;
+  padding: 6px 18px;
   border-radius: 6px;
   font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -243,12 +227,12 @@ textarea {
 .post-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .post-author {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
 
@@ -257,56 +241,24 @@ textarea {
   color: var(--text-muted);
 }
 
-// .image-gallery.multi {
-//   display: grid;
-//   grid-template-columns: 1fr 1fr;
-//   gap: 4px;
-// }
-
-// .img-wrapper {
-//   position: relative;
-//   height: 200px;
-//   border-radius: 8px;
-//   overflow: hidden;
-// }
-
-// .img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-
 .image-gallery {
   display: grid;
   gap: 4px;
-  /* Small gap between images like Instagram/Twitter */
-  margin-top: 12px;
+  margin-top: 10px;
   width: 100%;
   border-radius: 8px;
   overflow: hidden;
-  /* Clips the images to the gallery corners */
 }
 
-/* If there is more than 1 image, split into 2 columns */
 .image-gallery.multi {
   grid-template-columns: 1fr 1fr;
 }
-
-// .img-wrapper {
-//   position: relative;
-//   aspect-ratio: 1 / 1; 
-//   background: #f0f0f0;
-// }
-
-// .img-wrapper img {
-//   width: 100%;
-//   height: 100%;
-//   object-fit: cover; 
-//   display: block;
-// }
 
 .img-wrapper {
   background: #222;
   display: flex;
   align-items: center;
   aspect-ratio: 1 / 1;
-  /* Ensures a square container */
   justify-content: center;
 }
 
@@ -314,26 +266,6 @@ textarea {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* Shows the WHOLE flyer, no cropping */
-}
-
-/* The "+ More" Overlay */
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  /* Semi-transparent dark */
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  pointer-events: none;
-  /* Allows clicks to pass through if needed */
 }
 
 .overlay {
@@ -344,16 +276,16 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
 }
 
 .post-actions {
   display: flex;
-  gap: 8px;
-  border-top: var(--border);
+  gap: 6px;
+  border-top: 1px solid #e0e0e0;
   padding-top: 8px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .action-btn {
@@ -364,20 +296,87 @@ textarea {
   gap: 4px;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
+  font-size: 13px;
 }
 
 .spacer {
   flex: 1;
 }
 
-/* Responsive */
+.buttom{
+  margin-bottom: 20%;
+}
+
+/* ==================== TABLET (768px - 1000px) ==================== */
 @media (max-width: 1000px) {
   .home-container {
     grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px;
   }
 
   .sidebar {
+    display: none;
+  }
+
+  .mini-dashboard {
+    display: none;
+  }
+
+  .feed {
+    gap: 14px;
+  }
+
+  .card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .nav-item {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .search-bar {
+    padding: 9px 12px;
+    margin-bottom: 14px;
+  }
+
+  .input-area {
+    gap: 9px;
+  }
+
+  .avatar-small {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .post-button {
+    padding: 5px 16px;
+    font-size: 12px;
+  }
+
+  .action-btn {
+    padding: 5px;
+    font-size: 12px;
+  }
+}
+
+/* ==================== MOBILE (max 640px) ==================== */
+@media (max-width: 640px) {
+  .home-container {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .mini-dashboard {
     display: none;
   }
 
@@ -388,9 +387,165 @@ textarea {
     left: 0;
     right: 0;
     background: #fff;
-    border-top: var(--border);
+    border-top: 1px solid #e0e0e0;
     justify-content: space-around;
+    padding: 8px;
+    z-index: 100;
+  }
+
+  .card {
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .navigation-card {
+    padding: 12px;
+  }
+
+  .search-bar {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    border-radius: 18px;
+    font-size: 13px;
+  }
+
+  .search-bar input {
+    font-size: 13px;
+  }
+
+  .input-area {
+    gap: 8px;
+  }
+
+  .avatar-small {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  textarea {
+    font-size: 14px;
+    padding: 6px 0;
+  }
+
+  .post-button {
+    padding: 5px 14px;
+    font-size: 12px;
+  }
+
+  .actions {
+    padding-top: 8px;
+    margin-top: 8px;
+    gap: 6px;
+  }
+
+  .user-header {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .user-info .name {
+    font-size: 12px;
+  }
+
+  .user-info .label {
+    font-size: 10px;
+  }
+
+  .stat-value {
+    font-size: 14px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .placeholder-text {
+    font-size: 12px;
+  }
+
+  .post-author {
+    gap: 8px;
+  }
+
+  .sub-text {
+    font-size: 11px;
+  }
+
+  .post-actions {
+    gap: 4px;
+    padding-top: 6px;
+    margin-top: 8px;
+  }
+
+  .action-btn {
+    padding: 4px;
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .image-gallery {
+    margin-top: 8px;
+  }
+
+  .overlay {
+    font-size: 16px;
+  }
+}
+
+/* ==================== SMALL MOBILE (max 375px) ==================== */
+@media (max-width: 375px) {
+  .home-container {
     padding: 10px;
+    gap: 10px;
+  }
+
+  .card {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .nav-item {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  .search-bar {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  .avatar-small {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  textarea {
+    font-size: 13px;
+  }
+
+  .post-button {
+    padding: 4px 12px;
+    font-size: 11px;
+  }
+
+  .input-area {
+    gap: 6px;
+  }
+
+  .stat-value {
+    font-size: 13px;
+  }
+
+  .user-info .name {
+    font-size: 11px;
   }
 }
 
