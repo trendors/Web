@@ -1,33 +1,30 @@
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogContent, MatDialogActions, MatDialogRef } from '@angular/material/dialog';
-import { FilterOption, PageStat } from '../view-campaign/view-campaign';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogContent,
+  MatDialogActions,
+  MatDialogRef,
+} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-campaign-summary',
-  imports: [TitleCasePipe,
-    DatePipe, MatDialogContent, MatDialogActions],
+  imports: [TitleCasePipe, DatePipe, MatDialogContent, MatDialogActions],
   templateUrl: './campaign-summary.html',
   styleUrl: './campaign-summary.scss',
 })
 export class CampaignSummary {
   data = inject(MAT_DIALOG_DATA);
 
-constructor(private dialogRef: MatDialogRef<CampaignSummary>) {}
-
-
+  constructor(private dialogRef: MatDialogRef<CampaignSummary>) {}
 
   getPlatforms(raw: string[]): string[] {
     try {
-      return raw.flatMap(p => JSON.parse(p));
+      return raw.flatMap((p) => JSON.parse(p));
     } catch {
       return raw;
     }
   }
-
-
-
-
 
   openNewCampaign(): void {
     // TODO: navigate to new campaign creation route
