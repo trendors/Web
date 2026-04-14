@@ -1,4 +1,3 @@
-
 export type CampaignStatus = 'open' | 'invite_only' | 'application'; // adjust to your actual status values
 
 export interface Campaign {
@@ -7,7 +6,7 @@ export interface Campaign {
   updatedAt: string;
   deletedAt: string | null;
   name: string;
-  platforms: string[];         // comes as ["[\"twitter\"]"] — needs parsing
+  platforms: string[]; // comes as ["[\"twitter\"]"] — needs parsing
   access: string;
   creator_id: number;
   link: string | null;
@@ -20,10 +19,31 @@ export interface Campaign {
   generate_post: boolean;
   files: string[];
   invitations: any[];
+  total_reach?: number;
+  avg_engagement?: number;
+}
+// view campaign related interfaces
+export interface CampaignStats {
+  totalCampaigns: number;
+  activeNow: number;
+  endedCampaigns: number;
+  totalReach: number;
+  avgEngagement: number;
 }
 
+export interface PageStat {
+  label: string;
+  value: string;
+  valueClass: string;
+  change: string;
+  changeClass: string;
+}
+ 
+export type FilterOption = 'all' | CampaignStatus;
+
+// ends view campaign related interfaces
 export interface ApiResponse<T = null> {
-    message: string;
-    error: boolean;
-    data?: T;
+  message: string;
+  error: boolean;
+  data?: T;
 }
