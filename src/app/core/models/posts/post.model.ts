@@ -16,7 +16,7 @@ export interface LoadMoreOptions {
   id: number;
 }
 export interface GenericFilter {
-  filter?: Record<string, any>;
+  filter?: Record<string, string | number | boolean | string[]>;
   searchString?: string;
   loadMoreOptions?: LoadMoreOptions;
   limit?: number;
@@ -122,8 +122,22 @@ export interface CreatePostDto {
   maxIncentiveShares?: number;
 }
 
+export interface CreateCommentDto {
+  text: string;
+  postId: number;
+  userId: number;
+  trendorsId: string;
+}
+
+export interface CommentResponse {
+  error: boolean;
+  status?: string;
+  message: string;
+  data: Comment;
+}
+
 export interface AirewriterPost {
-  text:string
+  text: string;
 }
 
 export type FetchPostDto = GenericFilter;
@@ -139,13 +153,14 @@ export interface LikePostDto {
 export interface ApiResponse<T> {
   status: 'SUCCESS' | 'FAILED';
   message: string;
-  data?: T;
+  data: T;
   error?: { code: string; message: string };
 }
 
 export type FetchPostsResponse = ApiResponse<PagedListData<Post>>;
 export type FetchPostResponse = ApiResponse<Post>;
 export type CreateResponse = ApiResponse<Post>;
+export interface FindOnePostResponse extends ApiResponse<Post> {}
 
 export interface SaveOneResponse {
   id: number;
@@ -155,6 +170,12 @@ export interface SaveOneResponse {
 
 export interface LikeResponse {
   error: boolean;
+  status?: string;
   message: string;
-  data: LikePost;
+  data: {
+    action: 'liked' | 'unliked';
+    like?: LikePost; // Only sent if action === 'liked'
+    postId?: number; // Only sent if action === 'unliked'
+    userId?: number; // Only sent if action === 'unliked'
+  };
 }
