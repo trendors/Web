@@ -1,58 +1,132 @@
-      <div class="search-bar">
-        <mat-icon>search</mat-icon>
-        <input type="text" placeholder="Search posts.." />
-      </div>
-      <!-- <app-top-nav-filter></app-top-nav-filter> -->
+<div class="search-bar">
+  <mat-icon>search</mat-icon>
+  <input
+    type="text"
+    placeholder="Search posts.."
+    [formControl]="searchControl"
+    class="search-input"
+  />
+</div>
+<!-- <app-top-nav-filter></app-top-nav-filter> -->
 
-    <div class="posts-list">
-      @for (post of posts$ | async; track post.id) {
+<div class="posts-list">
+  @if (loading$ | async) {
+    <div class="loading-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading posts...</p>
+    </div>
+  }
+
+  @if ((posts$ | async)?.length ?? 0 > 0) {
+    @for (post of posts$ | async; track trackById($index, post)) {
       <article class="card post-card">
         <div class="post-header">
           <div class="post-author">
-            @if (post.userName) {
+            <!-- @if (post.userName) { -->
             <div class="avatar-small gray">
-              {{ post.userName.slice(0, 1).toUpperCase() || 'U' }}
+              {{ (post.userName || 'U').slice(0, 1).toUpperCase() }}
             </div>
-            }
+            <!-- } -->
             <div>
-              <h4>{{ post.userName }}</h4>
+              <h4>{{ post.userName || 'Anonymous' }}</h4>
+              <span class="post-time">@{{ post.userName }}</span>
             </div>
           </div>
         </div>
 
         <div class="post-content">
           <p>{{ post.text }}</p>
+          @if (post.heading) {
+            <h5>{{ post.heading }}</h5>
+          }
 
           @if (post.images?.length) {
-          <div class="image-gallery" [class.multi]="post.images!.length > 1">
-            @for (img of post.images | slice: 0 : 2; track img; let i = $index) {
-            <div class="img-wrapper">
-              <img [src]="img" />
-              @if (i === 1 && post.images!.length > 2) {
-              <div class="overla">+{{ post.images!.length - 2 }}</div>
+            <div class="image-gallery" [class.multi]="post.images!.length > 1">
+              @for (img of post.images | slice: 0 : 2; track img; let i = $index) {
+                <div class="img-wrapper">
+                  <img [src]="img" alt="Post Image" />
+                  @if (i === 1 && post.images!.length > 2) {
+                    <div class="overla">+{{ post.images!.length - 2 }}</div>
+                  }
+                </div>
               }
             </div>
-            }
-          </div>
           }
         </div>
 
         <div class="post-actions">
-          <button class="action-btn">
-            <mat-icon>favorite_border</mat-icon> {{ post.likes?.length }}
+          <button
+            class="action-btn"
+            (click)="onLikePost(post.id)"
+            [class.liked]="isLikedByCurrentUser(post)"
+          >
+            <mat-icon>{{ isLikedByCurrentUser(post) ? 'favorite' : 'favorite_border' }}</mat-icon>
+            <span> {{ post.likes?.length || 0 }} </span>
           </button>
           <button class="action-btn">
-            <mat-icon>chat_bubble_outline</mat-icon> {{ post.comments?.length }}
+            <mat-icon>chat_bubble_outline</mat-icon>
+            <span> {{ post.comments?.length }} </span>
           </button>
           <div class="spacer"></div>
           <button class="action-btn" (click)="openShareMenu(post)">
             <mat-icon>share</mat-icon>
+            <span>{{ post.shares?.length || 0 }}</span>
           </button>
         </div>
+
+        <!-- Comments Section -->
+        @if (post.comments?.length) {
+          <div class="comments-section">
+            <div class="comments-header">
+              <h6>Comments ({{ post.comments!.length }})</h6>
+            </div>
+            <div class="comments-list">
+              @for (comment of post.comments | slice: 0 : 3; track comment.id) {
+                <div class="comment-item">
+                  <div class="comment-author">
+                    <div class="avatar-tiny">
+                      {{ (comment.user?.user_name || 'U').slice(0, 1).toUpperCase() }}
+                    </div>
+                    <div>
+                      <strong>{{ comment.user?.user_name || 'Anonymous' }}</strong>
+                      <span class="comment-time">Now</span>
+                    </div>
+                  </div>
+                  <p class="comment-text">{{ comment.text }}</p>
+                </div>
+              }
+              <div class="add-comment">
+                <input
+                  type="text"
+                  [value]="newCommentTexts[post.id]"
+                  (input)="newCommentTexts[post.id] = $event.target.value"
+                  placeholder="Add a comment..."
+                  (keyup.enter)="submitComment(post.id)"
+                  class="comment-input"
+                />
+                <button (click)="submitComment(post.id)" class="comment-btn">Post</button>
+              </div>
+              @if ((post.comments?.length ?? 0) > 3) {
+                <div class="view-more">
+                  <a href="javascript:void(0)">View all {{ post.comments!.length }} comments</a>
+                </div>
+              }
+            </div>
+          </div>
+        }
       </article>
-      }
+    }
+  } @else {
+    <div class="empty-state">
+      <mat-icon>article</mat-icon>
+      <p>No posts yet. Be the first to create one!</p>
     </div>
+  }
 
-    <div class="buttom">
-
+  @if (loadingMore$ | async) {
+    <div class="loading-more">
+      <mat-spinner diameter="30"></mat-spinner>
+      <p>Loading more...</p>
     </div>
+  }
+</div>
