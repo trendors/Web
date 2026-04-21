@@ -1,10 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, NgModule, OnDestroy, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, CommonModule, SlicePipe, UpperCasePipe } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { PostActions } from '../../../store/posts/post/posts.actions';
@@ -13,22 +13,25 @@ import {
   selectIsLoadingMore,
   selectIsLoadingPosts,
 } from '../../../store/posts/post/posts.selectors';
-import { debounceTime, distinctUntilChanged, take } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, take, takeUntil } from 'rxjs';
 import {
   CreatePostDto,
   Channel,
   LikePostDto,
   LoadType,
   LoadMoreDto,
+  Post,
+  CreateCommentDto,
 } from '../../../core/models/posts/post.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TimeAgoPipe } from '../../../time-ago-pipe';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ShareSheet } from '../../../components/share-sheet/share-sheet';
 import { Router, RouterLink } from '@angular/router';
-import { ButtomNav } from "../../../components/buttom-nav/buttom-nav";
-import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter";
-import { UserInfoCard } from "../../../components/user-info-card/user-info-card";
+import { ButtomNav } from '../../../components/buttom-nav/buttom-nav';
+import { TopNavFilter } from '../../../components/top-nav-filter/top-nav-filter';
+import { UserInfoCard } from '../../../components/user-info-card/user-info-card';
+import { Console } from 'node:console';
 
 @Component({
   selector: 'app-home',
@@ -41,28 +44,31 @@ import { UserInfoCard } from "../../../components/user-info-card/user-info-card"
     MatProgressSpinnerModule,
     AsyncPipe,
     SlicePipe,
-    TopNavFilter,
-    UserInfoCard, UserInfoCard
-],
- standalone: true,
+    CommonModule,
+  ],
+  standalone: true,
   templateUrl: './posts.html',
   styleUrl: './posts.scss',
 })
-export class Posts implements OnInit {
+export class Posts implements OnInit, OnDestroy {
   private store = inject(Store);
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  
-  constructor(private bottomSheet: MatBottomSheet) {}
+  private bottomSheet = inject(MatBottomSheet);
+  private destroy$ = new Subject<void>();
 
   posts$ = this.store.select(selectAllPosts);
   loading$ = this.store.select(selectIsLoadingPosts);
   loadingMore$ = this.store.select(selectIsLoadingMore);
   user$ = this.store.select(selectCurrentUser);
 
-  searchControl = this.fb.control('');
+  searchControl = new FormControl('', { nonNullable: true });
   selectedFile: File | null = null;
   imagePreview: string | null = null;
+  currentUserId: number | undefined;
+  currentTrendorsId: string | undefined;
+
+  newCommentTexts: { [postId: number]: string } = {};
 
   postForm = this.fb.group({
     text: ['', [Validators.required, Validators.minLength(3)]],
@@ -71,22 +77,32 @@ export class Posts implements OnInit {
   ngOnInit() {
     this.loadInitialPosts();
 
+    this.user$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+      this.currentUserId = user?.id;
+      this.currentTrendorsId = user?.trendors_id;
+    });
+
     // Setup Search Listener
     this.searchControl.valueChanges
-      .pipe(debounceTime(500), distinctUntilChanged())
-      .subscribe((val) => {
-        this.loadInitialPosts(val || undefined);
+      .pipe(debounceTime(500), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((searchValue) => {
+        console.log('Search value changed:', searchValue);
+        this.loadInitialPosts(searchValue || undefined);
       });
   }
 
-  openShareMenu(post: any): void {
-    this.bottomSheet.open(ShareSheet, {
-      data: { post: post }, // Pass the post data if needed
-      panelClass: 'custom-share-sheet',
-    });
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  isLikedByCurrentUser(post: Post): boolean {
+    if (!this.currentUserId || !post.likes) return false;
+    return post.likes.some((like) => like.userId === this.currentUserId);
   }
 
   loadInitialPosts(searchString?: string) {
+    console.log('🔍 Loading posts with search:', searchString);
     this.store.dispatch(
       PostActions.findAllPosts({
         query: {
@@ -117,11 +133,12 @@ export class Posts implements OnInit {
     if (this.postForm.invalid) return;
 
     this.user$.pipe(take(1)).subscribe((user) => {
-      console.log('Submitting post', user);
-      if (!user) return;
-
+      if (!user?.id) {
+        console.warn('⚠️ No user found');
+        return;
+      }
       const dto: CreatePostDto = {
-        text: this.postForm.value.text!,
+        text: this.postForm.value.text || '',
         userName: user.user_name || `${user.first_name}_${user.last_name}`,
         userId: user.id,
         channel: Channel.PUBLIC,
@@ -138,6 +155,7 @@ export class Posts implements OnInit {
         maxIncentiveShares: 0,
       };
 
+      console.log('📝 Creating post:', dto);
       this.store.dispatch(PostActions.createPost({ dto, file: this.selectedFile || undefined }));
       this.postForm.reset();
       this.removeSelectedImage();
@@ -146,7 +164,10 @@ export class Posts implements OnInit {
 
   onLikePost(postId: number) {
     this.user$.pipe(take(1)).subscribe((user) => {
-      if (!user) return;
+      if (!user?.id) {
+        console.warn('⚠️ No user found for like action');
+        return;
+      }
 
       const dto: LikePostDto = {
         postId,
@@ -154,6 +175,7 @@ export class Posts implements OnInit {
         trendorsId: user.trendors_id || 'default_id',
       };
 
+      console.log('❤️ Liking post:', dto);
       this.store.dispatch(PostActions.likePost({ dto }));
     });
   }
@@ -176,7 +198,37 @@ export class Posts implements OnInit {
     this.imagePreview = null;
   }
 
+  openShareMenu(post: Post): void {
+    this.bottomSheet.open(ShareSheet, {
+      data: { post },
+      panelClass: 'custom-share-sheet',
+    });
+  }
+
   routeTo(path: string) {
-    this.router.navigate([path]); 
+    this.router.navigate([path]);
+  }
+
+  trackById(_index: number, post: Post) {
+    return post.id;
+  }
+
+  // comment
+
+  submitComment(postId: number) {
+    const text = this.newCommentTexts[postId]?.trim();
+
+    if (!text || !this.currentUserId || !this.currentTrendorsId) return; // Don't submit empty comments
+
+    const dto: CreateCommentDto = {
+      text: text,
+      postId: postId,
+      userId: this.currentUserId,
+      trendorsId: this.currentTrendorsId,
+    };
+
+    this.store.dispatch(PostActions.addComment({ dto }));
+
+    this.newCommentTexts[postId] = '';
   }
 }
