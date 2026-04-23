@@ -14,6 +14,8 @@ import {
   FetchPostResponse,
   CreateCommentDto,
   CommentResponse,
+  DeleteCommentResponse,
+  UpdateCommentDto,
 } from '../../models/posts/post.model';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -55,6 +57,14 @@ export class PostService {
 
   addComment(dto: CreateCommentDto): Observable<CommentResponse> {
     return this.http.post<CommentResponse>(`${environment.apiUrl}/comments`, dto);
+  }
+
+  updateComment(commentId: number, dto: UpdateCommentDto): Observable<CommentResponse> {
+    return this.http.patch<CommentResponse>(`${environment.apiUrl}/comments/${commentId}`, dto);
+  }
+
+  removeComment(commentId: number, userId: number): Observable<DeleteCommentResponse> {
+    return this.http.delete<DeleteCommentResponse>(`${environment.apiUrl}/comments/${commentId}?userId=${userId}`);
   }
 
   uploadImage(postId: number, file: File): Observable<{ url: string }> {
