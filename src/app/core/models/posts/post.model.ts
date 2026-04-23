@@ -127,6 +127,29 @@ export interface CreateCommentDto {
   postId: number;
   userId: number;
   trendorsId: string;
+  userName: string;
+}
+
+export interface UpdateCommentDto {
+  text: string;
+}
+
+export interface EditCommentPayload {
+  commentId: number;
+  postId: number;
+  dto: UpdateCommentDto;
+}
+
+export interface DeleteCommentPayload {
+  commentId: number;
+  postId: number;
+  userId: number;
+}
+
+export interface DeleteCommentResponse {
+  error: boolean;
+  status: string;
+  message: string;
 }
 
 export interface CommentResponse {
