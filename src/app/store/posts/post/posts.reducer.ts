@@ -140,4 +140,36 @@ export const postsReducer = createReducer(
 
     return { ...state, list: updatedList };
   }),
+
+  on(PostActions.editCommentSuccess, (state, { response }) => {
+    const updatedComment = response.data;
+    
+    const updatedList = state.list.map((post) => {
+      if (post.id === updatedComment.postId) {
+        return {
+          ...post,
+          comments: post.comments?.map((c) => 
+            c.id === updatedComment.id ? updatedComment : c
+          )
+        };
+      }
+      return post;
+    });
+
+    return { ...state, list: updatedList };
+  }),
+
+  on(PostActions.deleteCommentSuccess, (state, { commentId, postId }) => {
+    const updatedList = state.list.map((post) => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          comments: post.comments?.filter((c) => c.id !== commentId)
+        };
+      }
+      return post;
+    });
+
+    return { ...state, list: updatedList };
+  }),
 );

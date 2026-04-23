@@ -63,9 +63,9 @@
             <mat-icon>{{ isLikedByCurrentUser(post) ? 'favorite' : 'favorite_border' }}</mat-icon>
             <span> {{ post.likes?.length || 0 }} </span>
           </button>
-          <button class="action-btn">
+          <button class="action-btn" (click)="toggleComments(post.id)">
             <mat-icon>chat_bubble_outline</mat-icon>
-            <span> {{ post.comments?.length }} </span>
+            <span> {{ post.comments?.length || 0 }} </span>
           </button>
           <div class="spacer"></div>
           <button class="action-btn" (click)="openShareMenu(post)">
@@ -76,42 +76,81 @@
 
         <!-- Comments Section -->
         @if (post.comments?.length) {
-          <div class="comments-section">
-            <div class="comments-header">
-              <h6>Comments ({{ post.comments!.length }})</h6>
-            </div>
-            <div class="comments-list">
-              @for (comment of post.comments | slice: 0 : 3; track comment.id) {
-                <div class="comment-item">
-                  <div class="comment-author">
-                    <div class="avatar-tiny">
-                      {{ (comment.user?.user_name || 'U').slice(0, 1).toUpperCase() }}
+          <div class="comments-list">
+            @for (comment of post.comments | slice: 0 : 3; track comment.id) {
+              <div class="comment-item">
+                <div class="comment-author">
+                  <div class="avatar-tiny">
+                    {{ (comment.user?.user_name || 'U').slice(0, 1).toUpperCase() }}
+                  </div>
+                  <div class="comment-header-info">
+                    <strong>{{ comment.user?.user_name || 'Anonymous' }}</strong>
+                    <span class="comment-time">Now</span>
+                  </div>
+
+                  @if (isCommentOwner(comment.userId)) {
+                    <div class="comment-actions-menu">
+                      <button
+                        class="icon-btn-small"
+                        (click)="startEditComment(comment)"
+                        title="Edit"
+                      >
+                        <mat-icon style="font-size: 16px; width: 16px; height: 16px">edit</mat-icon>
+                      </button>
+                      <button
+                        class="icon-btn-small delete-btn"
+                        (click)="onDeleteComment(comment.id, post.id)"
+                        title="Delete"
+                      >
+                        <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #f44336"
+                          >delete</mat-icon
+                        >
+                      </button>
                     </div>
-                    <div>
-                      <strong>{{ comment.user?.user_name || 'Anonymous' }}</strong>
-                      <span class="comment-time">Now</span>
+                  }
+                </div>
+
+                @if (editingCommentId === comment.id) {
+                  <div class="edit-comment-wrapper">
+                    <input
+                      type="text"
+                      class="comment-input"
+                      [(ngModel)]="editCommentText"
+                      (keyup.enter)="submitEditComment(post.id)"
+                      (keyup.escape)="cancelEditComment()"
+                      autofocus
+                    />
+                    <div class="edit-actions">
+                      <button class="comment-btn cancel" (click)="cancelEditComment()">
+                        Cancel
+                      </button>
+                      <button class="comment-btn save" (click)="submitEditComment(post.id)">
+                        Save
+                      </button>
                     </div>
                   </div>
+                } @else {
                   <p class="comment-text">{{ comment.text }}</p>
-                </div>
-              }
-              <div class="add-comment">
-                <input
-                  type="text"
-                  [value]="newCommentTexts[post.id]"
-                  (input)="newCommentTexts[post.id] = $event.target.value"
-                  placeholder="Add a comment..."
-                  (keyup.enter)="submitComment(post.id)"
-                  class="comment-input"
-                />
-                <button (click)="submitComment(post.id)" class="comment-btn">Post</button>
+                }
               </div>
-              @if ((post.comments?.length ?? 0) > 3) {
-                <div class="view-more">
-                  <a href="javascript:void(0)">View all {{ post.comments!.length }} comments</a>
-                </div>
-              }
+            }
+
+            <div class="add-comment">
+              <input
+                type="text"
+                [(ngModel)]="newCommentTexts[post.id]"
+                placeholder="Add a comment..."
+                (keyup.enter)="submitComment(post.id)"
+                class="comment-input"
+              />
+              <button (click)="submitComment(post.id)" class="comment-btn">Post</button>
             </div>
+
+            @if ((post.comments?.length ?? 0) > 3) {
+              <div class="view-more">
+                <a href="javascript:void(0)">View all {{ post.comments!.length }} comments</a>
+              </div>
+            }
           </div>
         }
       </article>
@@ -120,13 +159,6 @@
     <div class="empty-state">
       <mat-icon>article</mat-icon>
       <p>No posts yet. Be the first to create one!</p>
-    </div>
-  }
-
-  @if (loadingMore$ | async) {
-    <div class="loading-more">
-      <mat-spinner diameter="30"></mat-spinner>
-      <p>Loading more...</p>
     </div>
   }
 </div>

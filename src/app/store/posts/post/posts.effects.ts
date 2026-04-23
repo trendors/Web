@@ -132,6 +132,48 @@ export class PostsEffects {
     ),
   );
 
+  editComment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(PostActions.editComment),
+      mergeMap(({ payload }) =>
+        this.postsService.updateComment(payload.commentId, payload.dto).pipe(
+          map((response) => {
+            if (response.error || response.status === 'FAILED') {
+              return PostActions.editCommentFailure({ error: response.message });
+            }
+            return PostActions.editCommentSuccess({ response });
+          }),
+          catchError((error) =>
+            of(PostActions.editCommentFailure({ error: error.message || 'Error editing comment' }))
+          )
+        )
+      )
+    )
+  );
+
+  deleteComment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(PostActions.deleteComment),
+      mergeMap(({ payload }) =>
+        this.postsService.removeComment(payload.commentId, payload.userId).pipe(
+          map((response) => {
+            if (response.error || response.status === 'FAILED') {
+              return PostActions.deleteCommentFailure({ error: response.message });
+            }
+            // Pass back the IDs so the reducer knows which comment to remove
+            return PostActions.deleteCommentSuccess({ 
+              commentId: payload.commentId, 
+              postId: payload.postId 
+            });
+          }),
+          catchError((error) =>
+            of(PostActions.deleteCommentFailure({ error: error.message || 'Error deleting comment' }))
+          )
+        )
+      )
+    )
+  );
+
   refreshAfterCreate$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PostActions.createPostSuccess),

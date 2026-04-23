@@ -3,6 +3,8 @@ import {
   CommentResponse,
   CreateCommentDto,
   CreatePostDto,
+  DeleteCommentPayload,
+  EditCommentPayload,
   FetchPostDto,
   LikePost,
   LikePostDto,
@@ -38,5 +40,13 @@ export const PostActions = createActionGroup({
     'Add Comment': props<{ dto: CreateCommentDto }>(),
     'Add Comment Success': props<{ response: CommentResponse }>(),
     'Add Comment Failure': props<{ error: string }>(),
+
+    'Edit Comment': props<{ payload: EditCommentPayload }>(),
+    'Edit Comment Success': props<{ response: CommentResponse }>(),
+    'Edit Comment Failure': props<{ error: string }>(),
+
+    'Delete Comment': props<{ payload: DeleteCommentPayload }>(),
+    'Delete Comment Success': props<{ commentId: number; postId: number }>(),
+    'Delete Comment Failure': props<{ error: string }>(),
   },
 });
