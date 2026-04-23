@@ -4,7 +4,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, CommonModule, SlicePipe, UpperCasePipe } from '@angular/common';
-import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { PostActions } from '../../../store/posts/post/posts.actions';
@@ -22,6 +28,9 @@ import {
   LoadMoreDto,
   Post,
   CreateCommentDto,
+  DeleteCommentPayload,
+  EditCommentPayload,
+  Comment,
 } from '../../../core/models/posts/post.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TimeAgoPipe } from '../../../time-ago-pipe';
@@ -45,6 +54,7 @@ import { Console } from 'node:console';
     AsyncPipe,
     SlicePipe,
     CommonModule,
+    FormsModule,
   ],
   standalone: true,
   templateUrl: './posts.html',
@@ -67,8 +77,13 @@ export class Posts implements OnInit, OnDestroy {
   imagePreview: string | null = null;
   currentUserId: number | undefined;
   currentTrendorsId: string | undefined;
+  currentUserName: string | undefined;
+  editingCommentId: number | null = null;
+  editCommentText: string = '';
 
   newCommentTexts: { [postId: number]: string } = {};
+
+  expandedComments: { [postId: number]: boolean } = {};
 
   postForm = this.fb.group({
     text: ['', [Validators.required, Validators.minLength(3)]],
@@ -80,6 +95,7 @@ export class Posts implements OnInit, OnDestroy {
     this.user$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       this.currentUserId = user?.id;
       this.currentTrendorsId = user?.trendors_id;
+      this.currentUserName = user?.user_name || `${user?.first_name}_${user?.last_name}`;
     });
 
     // Setup Search Listener
@@ -215,16 +231,64 @@ export class Posts implements OnInit, OnDestroy {
 
   // comment
 
+  isCommentOwner(commentUserId: number): boolean {
+    return this.currentUserId === commentUserId;
+  }
+
+  // Starts the inline edit mode
+  startEditComment(comment: Comment) {
+    this.editingCommentId = comment.id;
+    this.editCommentText = comment.text;
+  }
+
+  cancelEditComment() {
+    this.editingCommentId = null;
+    this.editCommentText = '';
+  }
+
+  submitEditComment(postId: number) {
+    if (!this.editingCommentId || !this.editCommentText.trim()) return;
+
+    const payload: EditCommentPayload = {
+      commentId: this.editingCommentId,
+      postId: postId,
+      dto: { text: this.editCommentText.trim() },
+    };
+
+    this.store.dispatch(PostActions.editComment({ payload }));
+    this.cancelEditComment(); // Instantly close the edit box
+  }
+
+  onDeleteComment(commentId: number, postId: number) {
+    if (!this.currentUserId) return;
+
+    // Optional: Add a simple browser confirm dialog here if you want
+    if (confirm('Are you sure you want to delete this comment?')) {
+      const payload: DeleteCommentPayload = {
+        commentId,
+        postId,
+        userId: this.currentUserId,
+      };
+
+      this.store.dispatch(PostActions.deleteComment({ payload }));
+    }
+  }
+
+  toggleComments(postId: number) {
+    this.expandedComments[postId] = !this.expandedComments[postId];
+  }
+
   submitComment(postId: number) {
     const text = this.newCommentTexts[postId]?.trim();
 
-    if (!text || !this.currentUserId || !this.currentTrendorsId) return; // Don't submit empty comments
+    if (!text || !this.currentUserId || !this.currentTrendorsId || !this.currentUserName) return; // Don't submit empty comments
 
     const dto: CreateCommentDto = {
       text: text,
       postId: postId,
       userId: this.currentUserId,
       trendorsId: this.currentTrendorsId,
+      userName: this.currentUserName,
     };
 
     this.store.dispatch(PostActions.addComment({ dto }));
