@@ -85,6 +85,8 @@ export class Posts implements OnInit, OnDestroy {
 
   expandedComments: { [postId: number]: boolean } = {};
 
+  visibleCommentsCount: { [postId: number]: number } = {};
+
   postForm = this.fb.group({
     text: ['', [Validators.required, Validators.minLength(3)]],
   });
@@ -276,6 +278,12 @@ export class Posts implements OnInit, OnDestroy {
 
   toggleComments(postId: number) {
     this.expandedComments[postId] = !this.expandedComments[postId];
+  }
+
+  toggleShowAllComments(postId: number, totalCount: number) {
+    const current = this.visibleCommentsCount[postId] || 3;
+    // If already expanded, collapse back to 3; otherwise show all
+    this.visibleCommentsCount[postId] = current <= 3 ? totalCount : 3;
   }
 
   submitComment(postId: number) {
