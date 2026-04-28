@@ -1,9 +1,9 @@
-import { Component, inject, NgModule, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, CommonModule, SlicePipe, UpperCasePipe } from '@angular/common';
+import { AsyncPipe, CommonModule, SlicePipe } from '@angular/common';
 import {
   FormBuilder,
   FormControl,
@@ -19,7 +19,17 @@ import {
   selectIsLoadingMore,
   selectIsLoadingPosts,
 } from '../../../store/posts/post/posts.selectors';
-import { debounceTime, distinctUntilChanged, Subject, take, takeUntil } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  Observable,
+  Subject,
+  take,
+  takeUntil,
+} from 'rxjs';
 import {
   CreatePostDto,
   Channel,
@@ -33,14 +43,9 @@ import {
   Comment,
 } from '../../../core/models/posts/post.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { TimeAgoPipe } from '../../../time-ago-pipe';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ShareSheet } from '../../../components/share-sheet/share-sheet';
-import { Router, RouterLink } from '@angular/router';
-import { ButtomNav } from '../../../components/buttom-nav/buttom-nav';
-import { TopNavFilter } from '../../../components/top-nav-filter/top-nav-filter';
-import { UserInfoCard } from '../../../components/user-info-card/user-info-card';
-import { Console } from 'node:console';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -72,7 +77,11 @@ export class Posts implements OnInit, OnDestroy {
   loadingMore$ = this.store.select(selectIsLoadingMore);
   user$ = this.store.select(selectCurrentUser);
 
+  filteredPosts$: Observable<Post[]> = new Observable<Post[]>();
+
   searchControl = new FormControl('', { nonNullable: true });
+  private searchQuery$ = new BehaviorSubject<string>('');
+
   selectedFile: File | null = null;
   imagePreview: string | null = null;
   currentUserId: number | undefined;
@@ -82,14 +91,19 @@ export class Posts implements OnInit, OnDestroy {
   editCommentText: string = '';
 
   newCommentTexts: { [postId: number]: string } = {};
-
   expandedComments: { [postId: number]: boolean } = {};
-
   visibleCommentsCount: { [postId: number]: number } = {};
 
   postForm = this.fb.group({
     text: ['', [Validators.required, Validators.minLength(3)]],
   });
+
+  constructor() {
+    // Initialize filtered posts combining posts$ with search query
+    this.filteredPosts$ = combineLatest([this.posts$, this.searchQuery$]).pipe(
+      map(([posts, searchQuery]) => this.filterPosts(posts, searchQuery)),
+    );
+  }
 
   ngOnInit() {
     this.loadInitialPosts();
@@ -100,18 +114,38 @@ export class Posts implements OnInit, OnDestroy {
       this.currentUserName = user?.user_name || `${user?.first_name}_${user?.last_name}`;
     });
 
-    // Setup Search Listener
+    // Setup Search Listener with debounce
     this.searchControl.valueChanges
-      .pipe(debounceTime(500), distinctUntilChanged(), takeUntil(this.destroy$))
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((searchValue) => {
-        console.log('Search value changed:', searchValue);
-        this.loadInitialPosts(searchValue || undefined);
+        console.log('🔍 Search value changed:', searchValue);
+        this.onSearchChange(searchValue);
       });
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  onSearchChange(value: string): void {
+    this.searchQuery$.next(value);
+  }
+
+  private filterPosts(posts: Post[], searchQuery: string): Post[] {
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return posts; // Return all posts if search is empty
+    }
+
+    return posts.filter((post) => {
+      const matchesText = post.text.toLowerCase().includes(normalizedSearch);
+      const matchesHeading = post.heading?.toLowerCase().includes(normalizedSearch) ?? false;
+      const matchesUserName = post.userName?.toLowerCase().includes(normalizedSearch) ?? false;
+
+      return matchesText || matchesHeading || matchesUserName;
+    });
   }
 
   isLikedByCurrentUser(post: Post): boolean {

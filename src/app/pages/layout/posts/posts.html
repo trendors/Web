@@ -16,8 +16,8 @@
     </div>
   }
 
-  @if ((posts$ | async)?.length ?? 0 > 0) {
-    @for (post of posts$ | async; track trackById($index, post)) {
+  @if ((filteredPosts$ | async)?.length ?? 0 > 0) {
+    @for (post of filteredPosts$ | async; track trackById($index, post)) {
       <article class="card post-card">
         <!-- ── POST HEADER ── -->
         <div class="post-header">
