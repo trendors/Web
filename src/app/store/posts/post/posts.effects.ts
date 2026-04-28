@@ -2,7 +2,15 @@ import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { PostService } from '../../../core/services/posts/post.service';
 import { of } from 'rxjs';
-import { mergeMap, map, catchError, switchMap } from 'rxjs/operators';
+import {
+  mergeMap,
+  map,
+  catchError,
+  switchMap,
+  concatMap,
+  exhaustMap,
+  groupBy,
+} from 'rxjs/operators';
 import { PostActions } from './posts.actions';
 import { Post } from '../../../core/models/posts/post.model';
 
@@ -14,7 +22,7 @@ export class PostsEffects {
   findAll$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PostActions.findAllPosts),
-      mergeMap(({ query }) =>
+      switchMap(({ query }) =>
         this.postsService.findAll(query).pipe(
           map((response) => {
             if (response.status !== 'SUCCESS') {
@@ -36,7 +44,7 @@ export class PostsEffects {
   loadMore$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PostActions.loadMorePosts),
-      mergeMap(({ query }) =>
+      concatMap(({ query }) =>
         this.postsService.loadMore(query).pipe(
           map((response) => {
             if (response.status !== 'SUCCESS') {
@@ -85,26 +93,30 @@ export class PostsEffects {
   likePost$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PostActions.likePost),
-      mergeMap(({ dto }) =>
-        this.postsService.likePost(dto).pipe(
-          map((response) => {
-            // Check for our custom error or FAILED status
-            if (response.error || response.status === 'FAILED') {
-              return PostActions.likePostFailure({
-                error: response.message,
-                postId: dto.postId!,
-                userId: dto.userId!,
-              });
-            }
-            return PostActions.likePostSuccess({ response });
-          }),
-          catchError((error) =>
-            of(
-              PostActions.likePostFailure({
-                error: error?.message || 'error liking',
-                postId: dto.postId!,
-                userId: dto.userId!,
+      groupBy((action) => action.dto.postId),
+      mergeMap((postGroup$) =>
+        postGroup$.pipe(
+          switchMap(({ dto }) =>
+            this.postsService.likePost(dto).pipe(
+              map((response) => {
+                if (response.error || response.status === 'FAILED') {
+                  return PostActions.likePostFailure({
+                    error: response.message,
+                    postId: dto.postId!,
+                    userId: dto.userId!,
+                  });
+                }
+                return PostActions.likePostSuccess({ response });
               }),
+              catchError((error) =>
+                of(
+                  PostActions.likePostFailure({
+                    error: error?.message || 'error liking',
+                    postId: dto.postId!,
+                    userId: dto.userId!,
+                  }),
+                ),
+              ),
             ),
           ),
         ),
@@ -115,7 +127,7 @@ export class PostsEffects {
   addComment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PostActions.addComment),
-      mergeMap(({ dto }) =>
+      concatMap(({ dto }) =>
         this.postsService.addComment(dto).pipe(
           map((response) => {
             if (response.error || response.status === 'FAILED') {
@@ -144,11 +156,11 @@ export class PostsEffects {
             return PostActions.editCommentSuccess({ response });
           }),
           catchError((error) =>
-            of(PostActions.editCommentFailure({ error: error.message || 'Error editing comment' }))
-          )
-        )
-      )
-    )
+            of(PostActions.editCommentFailure({ error: error.message || 'Error editing comment' })),
+          ),
+        ),
+      ),
+    ),
   );
 
   deleteComment$ = createEffect(() =>
@@ -161,17 +173,21 @@ export class PostsEffects {
               return PostActions.deleteCommentFailure({ error: response.message });
             }
             // Pass back the IDs so the reducer knows which comment to remove
-            return PostActions.deleteCommentSuccess({ 
-              commentId: payload.commentId, 
-              postId: payload.postId 
+            return PostActions.deleteCommentSuccess({
+              commentId: payload.commentId,
+              postId: payload.postId,
             });
           }),
           catchError((error) =>
-            of(PostActions.deleteCommentFailure({ error: error.message || 'Error deleting comment' }))
-          )
-        )
-      )
-    )
+            of(
+              PostActions.deleteCommentFailure({
+                error: error.message || 'Error deleting comment',
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
 
   refreshAfterCreate$ = createEffect(() =>
