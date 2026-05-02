@@ -12,6 +12,10 @@ import {
   SaveOneResponse,
   LikeResponse,
   FetchPostResponse,
+  CreateCommentDto,
+  CommentResponse,
+  DeleteCommentResponse,
+  UpdateCommentDto,
 } from '../../models/posts/post.model';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -51,9 +55,21 @@ export class PostService {
     return this.http.post<LikeResponse>(`${this.apiUrl}/like`, dto);
   }
 
-  uploadImage(postId: number, file: File): Observable<any> {
+  addComment(dto: CreateCommentDto): Observable<CommentResponse> {
+    return this.http.post<CommentResponse>(`${environment.apiUrl}/comments`, dto);
+  }
+
+  updateComment(commentId: number, dto: UpdateCommentDto): Observable<CommentResponse> {
+    return this.http.patch<CommentResponse>(`${environment.apiUrl}/comments/${commentId}`, dto);
+  }
+
+  removeComment(commentId: number, userId: number): Observable<DeleteCommentResponse> {
+    return this.http.delete<DeleteCommentResponse>(`${environment.apiUrl}/comments/${commentId}?userId=${userId}`);
+  }
+
+  uploadImage(postId: number, file: File): Observable<{ url: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.patch(`${this.apiUrl}/${postId}/upload`, formData);
+    return this.http.patch<{ url: string }>(`${this.apiUrl}/${postId}/upload`, formData);
   }
 }

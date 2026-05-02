@@ -1,66 +1,237 @@
 <div class="search-bar">
   <mat-icon>search</mat-icon>
-  <input type="text" placeholder="Search posts.." />
+  <input
+    type="text"
+    placeholder="Search posts.."
+    [formControl]="searchControl"
+    class="search-input"
+  />
 </div>
-<!-- <app-top-nav-filter></app-top-nav-filter> -->
- @if(loading$ | async) { 
-  <app-loader></app-loader>  
- }
 
-@if (newPostsAvailable == true) {
-<div class="notifier-holder">
-  <app-new-posts-notifier class="notifier" (click)="refreshPosts()" [pendingPosts]="pendingPosts"></app-new-posts-notifier>
-</div>
+@if (loading$ | async) {
+  <app-loader></app-loader>
+}
+
+@if (newPostsAvailable) {
+  <div class="notifier-holder">
+    <app-new-posts-notifier
+      class="notifier"
+      (click)="refreshPosts()"
+      [pendingPosts]="pendingPosts"
+    ></app-new-posts-notifier>
+  </div>
 }
 
 <div>
   <app-fab class="fab"></app-fab>
 </div>
+
 <div class="posts-list">
-  @for (post of posts$ | async; track post.id) {
-  <article class="card post-card">
-    <div class="post-header">
-      <div class="post-author">
-        @if (post.userName) {
-        <div class="avatar-small gray">
-          {{ post.userName.slice(0, 1).toUpperCase() || 'U' }}
-        </div>
-        }
-        <div>
-          <h4>{{ post.userName }}</h4>
-        </div>
-      </div>
-    </div>
+  @if ((filteredPosts$ | async)?.length ?? 0 > 0) {
+    @for (post of filteredPosts$ | async; track trackById($index, post)) {
+      <article class="card post-card">
 
-    <div class="post-content">
-      <p>{{ post.text }}</p>
+        <!-- ── POST HEADER ── -->
+        <div class="post-header">
+          <div class="post-author">
+            <div class="avatar-small gray">
+              {{ (post.userName || 'U').slice(0, 1).toUpperCase() }}
+            </div>
+            <div class="author-details">
+              <h4>{{ post.userName || 'Anonymous' }}</h4>
+              <span class="post-time">&#64;{{ post.userName }}</span>
+            </div>
+          </div>
+        </div>
 
-      @if (post.images?.length) {
-      <div class="image-gallery" [class.multi]="post.images!.length > 1">
-        @for (img of post.images | slice: 0 : 2; track img; let i = $index) {
-        <div class="img-wrapper">
-          <img [src]="img" />
-          @if (i === 1 && post.images!.length > 2) {
-          <div class="overla">+{{ post.images!.length - 2 }}</div>
+        <!-- ── POST CONTENT ── -->
+        <div class="post-content">
+          @if (post.heading) {
+            <h5 class="post-heading">{{ post.heading }}</h5>
+          }
+          <p class="post-text">{{ post.text }}</p>
+
+          @if (post.images?.length) {
+            <div class="image-gallery" [class.multi]="post.images!.length > 1">
+              @for (img of post.images | slice: 0 : 2; track img; let i = $index) {
+                <div class="img-wrapper">
+                  <img [src]="img" alt="Post image" loading="lazy" />
+                  @if (i === 1 && post.images!.length > 2) {
+                    <div class="overlay">+{{ post.images!.length - 2 }}</div>
+                  }
+                </div>
+              }
+            </div>
           }
         </div>
-        }
-      </div>
-      }
-    </div>
 
-    <div class="post-actions">
-      <button class="action-btn">
-        <mat-icon>favorite_border</mat-icon> {{ post.likes?.length }}
-      </button>
-      <button class="action-btn">
-        <mat-icon>chat_bubble_outline</mat-icon> {{ post.comments?.length }}
-      </button>
-      <div class="spacer"></div>
-      <button class="action-btn" (click)="openShareMenu(post)">
-        <mat-icon>share</mat-icon>
-      </button>
+        <!-- ── ACTION BAR ── -->
+        <div class="post-actions">
+          <!-- Like -->
+          <button
+            class="action-btn"
+            [class.liked]="isLikedByCurrentUser(post)"
+            (click)="onLikePost(post.id)"
+            [attr.aria-label]="isLikedByCurrentUser(post) ? 'Unlike post' : 'Like post'"
+          >
+            <mat-icon>{{ isLikedByCurrentUser(post) ? 'favorite' : 'favorite_border' }}</mat-icon>
+            <span class="action-count">{{ post.likes?.length || 0 }}</span>
+          </button>
+
+          <!-- Comment – toggles the section open/closed -->
+          <button
+            class="action-btn"
+            [class.active]="expandedComments[post.id]"
+            (click)="toggleComments(post.id)"
+            aria-label="Toggle comments"
+          >
+            <mat-icon>{{
+              expandedComments[post.id] ? 'chat_bubble' : 'chat_bubble_outline'
+            }}</mat-icon>
+            <span class="action-count">{{ post.comments?.length || 0 }}</span>
+          </button>
+
+          <div class="spacer"></div>
+
+          <!-- Share -->
+          <button class="action-btn" (click)="openShareMenu(post)" aria-label="Share post">
+            <mat-icon>send</mat-icon>
+            <span class="action-count">{{ post.shares?.length || 0 }}</span>
+          </button>
+        </div>
+
+        <!-- ── COMMENTS PANEL (toggle) ── -->
+        @if (expandedComments[post.id]) {
+          <div class="comments-panel">
+
+            <!-- Existing comments list -->
+            @if (post.comments?.length) {
+              <div class="comments-list">
+                @for (
+                  comment of post.comments | slice: 0 : visibleCommentsCount[post.id] || 3;
+                  track comment.id
+                ) {
+                  <div class="comment-item">
+                    <div class="avatar-tiny">
+                      {{
+                        (comment.user?.user_name || comment.userName || 'U')
+                          .slice(0, 1)
+                          .toUpperCase()
+                      }}
+                    </div>
+
+                    <div class="comment-body">
+                      <div class="comment-bubble">
+                        <span class="comment-author-name">
+                          {{ comment.user?.user_name || comment.userName || 'Anonymous' }}
+                        </span>
+
+                        @if (editingCommentId === comment.id) {
+                          <!-- Inline edit mode -->
+                          <div class="inline-edit">
+                            <input
+                              type="text"
+                              class="edit-input"
+                              [(ngModel)]="editCommentText"
+                              (keyup.enter)="submitEditComment(post.id)"
+                              (keyup.escape)="cancelEditComment()"
+                              autofocus
+                            />
+                            <div class="edit-actions">
+                              <button class="edit-btn cancel" (click)="cancelEditComment()">
+                                Cancel
+                              </button>
+                              <button class="edit-btn save" (click)="submitEditComment(post.id)">
+                                Save
+                              </button>
+                            </div>
+                          </div>
+                        } @else {
+                          <p class="comment-text">{{ comment.text }}</p>
+                        }
+                      </div>
+
+                      <!-- Comment meta row -->
+                      <div class="comment-meta">
+                        <span class="comment-time">just now</span>
+
+                        @if (isCommentOwner(comment.userId)) {
+                          <button class="meta-action" (click)="startEditComment(comment)">
+                            Edit
+                          </button>
+                          <span class="meta-sep">·</span>
+                          <button
+                            class="meta-action danger"
+                            (click)="onDeleteComment(comment.id, post.id)"
+                          >
+                            Delete
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <!-- View more / collapse -->
+                @if ((post.comments?.length ?? 0) > 3) {
+                  <button
+                    class="view-more-btn"
+                    (click)="toggleShowAllComments(post.id, post.comments!.length)"
+                  >
+                    @if (!visibleCommentsCount[post.id] || visibleCommentsCount[post.id] <= 3) {
+                      View all {{ post.comments!.length }} comments
+                    } @else {
+                      Hide comments
+                    }
+                  </button>
+                }
+              </div>
+            } @else {
+              <p class="no-comments">No comments yet. Be the first!</p>
+            }
+
+            <!-- Add comment input — always shown when panel is open -->
+            <div class="add-comment-row">
+              <div class="avatar-tiny self">
+                {{ (currentUserName || 'U').slice(0, 1).toUpperCase() }}
+              </div>
+              <div class="comment-input-wrapper">
+                <input
+                  type="text"
+                  [(ngModel)]="newCommentTexts[post.id]"
+                  placeholder="Add a comment…"
+                  (keyup.enter)="submitComment(post.id)"
+                  class="comment-input"
+                />
+                <button
+                  class="send-btn"
+                  (click)="submitComment(post.id)"
+                  [disabled]="!newCommentTexts[post.id]?.trim()"
+                  aria-label="Post comment"
+                >
+                  <mat-icon>send</mat-icon>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        }
+
+      </article>
+    }
+
+    <!-- Load more trigger -->
+    @if (loadingMore$ | async) {
+      <div class="loading-more">
+        <mat-spinner diameter="24"></mat-spinner>
+        <p>Loading more…</p>
+      </div>
+    }
+
+  } @else if (!(loading$ | async)) {
+    <div class="empty-state">
+      <mat-icon>article</mat-icon>
+      <p>No posts yet. Be the first to create one!</p>
     </div>
-  </article>
   }
 </div>
