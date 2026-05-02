@@ -1,4 +1,11 @@
-
+.notifier-holder {
+  display: flex;
+  justify-content: center;
+}
+.notifier {
+   width: 50%;    
+  // margin: 0 auto; 
+}
 .card {
   background: #fff;
   border-radius: 12px;

@@ -31,9 +31,11 @@ import {
   transactionReducer,
 } from './store/transactions/transaction.reducer';
 import { TransactionsEffects } from './store/transactions/transaction.effects';
+import { SocketService } from './socket.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    SocketService, // Add it here
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),

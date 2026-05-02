@@ -1,58 +1,66 @@
-      <div class="search-bar">
-        <mat-icon>search</mat-icon>
-        <input type="text" placeholder="Search posts.." />
-      </div>
-      <!-- <app-top-nav-filter></app-top-nav-filter> -->
+<div class="search-bar">
+  <mat-icon>search</mat-icon>
+  <input type="text" placeholder="Search posts.." />
+</div>
+<!-- <app-top-nav-filter></app-top-nav-filter> -->
+ @if(loading$ | async) { 
+  <app-loader></app-loader>  
+ }
 
-    <div class="posts-list">
-      @for (post of posts$ | async; track post.id) {
-      <article class="card post-card">
-        <div class="post-header">
-          <div class="post-author">
-            @if (post.userName) {
-            <div class="avatar-small gray">
-              {{ post.userName.slice(0, 1).toUpperCase() || 'U' }}
-            </div>
-            }
-            <div>
-              <h4>{{ post.userName }}</h4>
-            </div>
-          </div>
+@if (newPostsAvailable == true) {
+<div class="notifier-holder">
+  <app-new-posts-notifier class="notifier" (click)="refreshPosts()" [pendingPosts]="pendingPosts"></app-new-posts-notifier>
+</div>
+}
+
+<div>
+  <app-fab class="fab"></app-fab>
+</div>
+<div class="posts-list">
+  @for (post of posts$ | async; track post.id) {
+  <article class="card post-card">
+    <div class="post-header">
+      <div class="post-author">
+        @if (post.userName) {
+        <div class="avatar-small gray">
+          {{ post.userName.slice(0, 1).toUpperCase() || 'U' }}
         </div>
+        }
+        <div>
+          <h4>{{ post.userName }}</h4>
+        </div>
+      </div>
+    </div>
 
-        <div class="post-content">
-          <p>{{ post.text }}</p>
+    <div class="post-content">
+      <p>{{ post.text }}</p>
 
-          @if (post.images?.length) {
-          <div class="image-gallery" [class.multi]="post.images!.length > 1">
-            @for (img of post.images | slice: 0 : 2; track img; let i = $index) {
-            <div class="img-wrapper">
-              <img [src]="img" />
-              @if (i === 1 && post.images!.length > 2) {
-              <div class="overla">+{{ post.images!.length - 2 }}</div>
-              }
-            </div>
-            }
-          </div>
+      @if (post.images?.length) {
+      <div class="image-gallery" [class.multi]="post.images!.length > 1">
+        @for (img of post.images | slice: 0 : 2; track img; let i = $index) {
+        <div class="img-wrapper">
+          <img [src]="img" />
+          @if (i === 1 && post.images!.length > 2) {
+          <div class="overla">+{{ post.images!.length - 2 }}</div>
           }
         </div>
-
-        <div class="post-actions">
-          <button class="action-btn">
-            <mat-icon>favorite_border</mat-icon> {{ post.likes?.length }}
-          </button>
-          <button class="action-btn">
-            <mat-icon>chat_bubble_outline</mat-icon> {{ post.comments?.length }}
-          </button>
-          <div class="spacer"></div>
-          <button class="action-btn" (click)="openShareMenu(post)">
-            <mat-icon>share</mat-icon>
-          </button>
-        </div>
-      </article>
+        }
+      </div>
       }
     </div>
 
-    <div class="buttom">
-
+    <div class="post-actions">
+      <button class="action-btn">
+        <mat-icon>favorite_border</mat-icon> {{ post.likes?.length }}
+      </button>
+      <button class="action-btn">
+        <mat-icon>chat_bubble_outline</mat-icon> {{ post.comments?.length }}
+      </button>
+      <div class="spacer"></div>
+      <button class="action-btn" (click)="openShareMenu(post)">
+        <mat-icon>share</mat-icon>
+      </button>
     </div>
+  </article>
+  }
+</div>

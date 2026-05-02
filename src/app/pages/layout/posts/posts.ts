@@ -1,9 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, NgZone, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, CommonModule, SlicePipe, UpperCasePipe } from '@angular/common';
+import { AsyncPipe, CommonModule, SlicePipe, UpperCasePipe, ViewportScroller } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
@@ -29,6 +29,10 @@ import { Router, RouterLink } from '@angular/router';
 import { ButtomNav } from "../../../components/buttom-nav/buttom-nav";
 import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter";
 import { UserInfoCard } from "../../../components/user-info-card/user-info-card";
+import { NewPostsNotifier } from "../../../components/new-posts-notifier/new-posts-notifier";
+import { Fab } from "../../../components/fab/fab";
+import { SocketService } from '../../../socket.service';
+import { LoaderComponent } from "../../../components/loader/loader";
 
 @Component({
   selector: 'app-home',
@@ -42,9 +46,12 @@ import { UserInfoCard } from "../../../components/user-info-card/user-info-card"
     AsyncPipe,
     SlicePipe,
     TopNavFilter,
-    UserInfoCard, UserInfoCard
+    UserInfoCard, UserInfoCard,
+    NewPostsNotifier,
+    Fab,
+    LoaderComponent
 ],
- standalone: true,
+  standalone: true,
   templateUrl: './posts.html',
   styleUrl: './posts.scss',
 })
@@ -52,13 +59,17 @@ export class Posts implements OnInit {
   private store = inject(Store);
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  
-  constructor(private bottomSheet: MatBottomSheet) {}
+
+  constructor(private bottomSheet: MatBottomSheet,
+    private socketService: SocketService,
+    private ngZone: NgZone, private cdr: ChangeDetectorRef) { }
 
   posts$ = this.store.select(selectAllPosts);
   loading$ = this.store.select(selectIsLoadingPosts);
   loadingMore$ = this.store.select(selectIsLoadingMore);
   user$ = this.store.select(selectCurrentUser);
+  newPostsAvailable: boolean = true;
+  pendingPosts: any[] = [];
 
   searchControl = this.fb.control('');
   selectedFile: File | null = null;
@@ -70,14 +81,36 @@ export class Posts implements OnInit {
 
   ngOnInit() {
     this.loadInitialPosts();
-
-    // Setup Search Listener
+    this.listenForNewPosts();
     this.searchControl.valueChanges
       .pipe(debounceTime(500), distinctUntilChanged())
       .subscribe((val) => {
         this.loadInitialPosts(val || undefined);
       });
   }
+
+
+  refreshPosts() {
+    this.newPostsAvailable = false;
+    this.loadInitialPosts();
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  listenForNewPosts() {
+    this.socketService.listenToNewPosts().subscribe((post) => {
+      this.ngZone.run(() => {
+
+        this.cdr.markForCheck();
+        this.pendingPosts.push(post);
+        console.log('New post received via socket:', this.pendingPosts);
+
+        this.newPostsAvailable = true;
+      });
+    });
+  }
+
+
 
   openShareMenu(post: any): void {
     this.bottomSheet.open(ShareSheet, {
@@ -177,6 +210,6 @@ export class Posts implements OnInit {
   }
 
   routeTo(path: string) {
-    this.router.navigate([path]); 
+    this.router.navigate([path]);
   }
 }

@@ -1,0 +1,43 @@
+.fab-modern {
+  position: fixed;
+  bottom: 100px;
+  right: 32px;
+  
+  width: 60px;
+  height: 60px;
+  border-radius: 20px; 
+  background: rgba(255, 255, 255, 0.8); 
+  backdrop-filter: blur(10px); 
+  -webkit-backdrop-filter: blur(10px);
+  
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #1a1a1a; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+}
+
+.fab-modern:hover {
+  transform: translateY(-4px); 
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+.fab-modern:active {
+  transform: scale(0.95); 
+}
+
+@keyframes borderGlow {
+  0% { border-color: rgba(255, 255, 255, 0.3); }
+  50% { border-color: rgba(52, 152, 219, 0.3); }
+  100% { border-color: rgba(255, 255, 255, 0.3); }
+}
+
+.fab-modern {
+  animation: borderGlow 4s infinite ease-in-out;
+}

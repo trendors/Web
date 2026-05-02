@@ -1,0 +1,14 @@
+<div class="notification-container">
+    <button class="notification-trigger" >
+
+        <div class="dot-stack">
+            @for (post of pendingPosts | slice:0:3; track $index) {
+            <span class="avatar-frame letter-avatar" [style.--i]="$index">
+                <span class="initial">{{ post.userName.charAt(0).toUpperCase() || '?' }}</span>
+            </span>
+            }
+        </div>
+
+        <span class="notification-text">{{ pendingPosts.length }} New Posts</span>
+    </button>
+</div>
