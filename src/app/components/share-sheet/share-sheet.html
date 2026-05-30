@@ -6,10 +6,21 @@
 
     @let trends = (trends$ | async);
 
+    <div class="text-card selected"  (click)="selectVersion(this.data.post.text)">
+
+      <div class="card-content">
+        <p class="preview-text">{{ this.data.post.text }}</p>
+
+        <div class="trending-tags">
+          @for (trnd of trends?.slice(0,4); track $index) {
+          <small> {{ trnd.name }}</small>
+          }
+        </div>
+      </div>
+    </div>
+
     @for (version of (shareVersions$ | async); track $index) {
-    <div class="text-card"
-    [class.selected]="selectedPost === version.text"
-     (click)="selectVersion(version.text)">
+    <div class="text-card" [class.selected]="selectedPost === version.text" (click)="selectVersion(version.text)">
 
       <div class="card-content">
         <p class="preview-text">{{ version.text }}</p>
@@ -21,60 +32,39 @@
         </div>
       </div>
     </div>
-    } @empty {
+    } 
+    <!-- @empty {
     <div class="loading-state">
-      <p>Choose...</p>
+      <p>Generating more tones..</p>
     </div>
-    }
+    } -->
   </div>
 
   @if(selectedPost){
-<div class="share-row">
+  <div class="share-row">
     <div class="share-item" (click)="copyLink(shareVersions$)">
-      <div class="icon-circle link-bg">
-        <mat-icon>link</mat-icon>
-      </div>
+      <i class="fa-solid fa-link"></i>
       <span>Copy Link</span>
     </div>
 
     <div class="share-item" (click)="shareToWhatsApp(shareVersions$)">
-      <div class="icon-circle whatsapp-bg">
-        <mat-icon>phone</mat-icon>
-      </div>
+      <i class="fa-brands fa-whatsapp"></i>
       <span>WhatsApp</span>
     </div>
 
     <div class="share-item" (click)="shareToX()">
-      <div class="icon-circle twitter-bg">
-        <mat-icon>owl</mat-icon>
-      </div>
+      <i class="fa-brands fa-twitter"></i>
       <span>Twitter</span>
     </div>
 
     <div class="share-item" (click)="shareToFacebook(shareVersions$)">
-      <div class="icon-circle facebook-bg">
-        <mat-icon>facebook</mat-icon>
-      </div>
+      <i class="fa-brands fa-facebook"></i>
       <span>Facebook</span>
-    </div>
-
-    <div class="share-item" (click)="shareToLinkedIn(shareVersions$)">
-      <div class="icon-circle linkedin-bg">
-        <mat-icon>link</mat-icon>
-      </div>
-      <span>LinkedIn</span>
-    </div>
-
-    <div class="share-item" (click)="shareToTelegram(shareVersions$)">
-      <div class="icon-circle telegram-bg">
-        <mat-icon>message</mat-icon>
-      </div>
-      <span>Telegram</span>
     </div>
   </div>
 
   }
 
-  
+
   <button class="cancel-btn" (click)="close()">Cancel</button>
 </div>

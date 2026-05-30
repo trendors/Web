@@ -91,12 +91,10 @@ export interface Notification {
 export class NotificationsPage implements OnInit {
   private store = inject(Store);
 
-  // Store selectors - Match your actual selectors
   notifications$ = this.store.select(selectAllNotifications);
   loading$ = this.store.select(selectNotificationsLoading);
   user$ = this.store.select(selectCurrentUser);
 
-  // Type icons - Same as your NotificationsPage
   typeIcons: Record<string, string> = {
     campaign: '◆',
     payment: '₦',
@@ -160,14 +158,45 @@ export class NotificationsPage implements OnInit {
    * Mark single notification as read when clicked
    */
   onNotificationClick(notification: any): void {
+    console.log('Notification clicked:', notification);
     if (!notification.isRead && this.currentTrendorId) {
       this.store.dispatch(
         NotificationActions.markAsRead({
           notificationId: notification.id,
-          trendorId: this.currentTrendorId,
+          trendorId: notification.trendorId,
         })
       );
+       this.loadNotifications();
     }
+  }
+
+   getIconClass(type: string): string {
+    const iconMap: { [key: string]: string } = {
+      'INVITATION RECEIVED': 'ti-user-plus',
+      'NEW INTERACTION': 'ti-heart',
+      'EVENT REMINDER': 'ti-calendar-event',
+      'CONNECTION REQUEST': 'ti-user-plus',
+      'NEW COMMENT': 'ti-message-circle',
+      'POST UPDATE': 'ti-bell'
+    };
+    return iconMap[type] || 'ti-bell';
+  }
+
+  formatTime(date: string): string {
+    const now = new Date();
+    const notifDate = new Date(date);
+    const diffMs = now.getTime() - notifDate.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return notifDate.toLocaleDateString();
   }
 }
 

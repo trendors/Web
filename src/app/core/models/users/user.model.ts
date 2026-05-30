@@ -12,6 +12,7 @@ export interface User {
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
+  paystackRecipientCode?: string
 }
 
 export interface ApiResponse<T = null> {
@@ -22,10 +23,13 @@ export interface ApiResponse<T = null> {
 }
 
 export type LoginResponse = {
-  token: string;
-  user: User | null;
-  message: string;
+  data: {
+    token: string;
+    user: User | null;
+    message: string;
   error: boolean;
+  };
+  
 };
 
 export type RegisterResponse = ApiResponse<{

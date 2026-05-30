@@ -96,6 +96,13 @@
   margin-bottom: 18px;
 }
 
+.security-note {
+  margin: -4px 0 16px;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--grey-mid);
+}
+
 /* ── Wallet ── */
 .wallet-balance-row {
   display: flex;

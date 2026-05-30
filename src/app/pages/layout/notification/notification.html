@@ -1,29 +1,45 @@
-
 <body>
-  @if (notifications$ | async; as notifs) {
-  @if (notifs.length === 0) {
-  <div class="state-container empty-state">
-    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-    </svg>
-    <p>No notifications yet</p>
+  <div class="notifications-container">
+    @if (notifications$ | async; as notifs) {
+      @if (notifs.length === 0) {
+        <div class="empty-state">
+          <i class="ti ti-inbox" aria-hidden="true"></i>
+          <p>No notifications yet</p>
+        </div>
+      } @else {
+        @for (notification of notifs; track notification.id) {
+          <div class="notification-item" 
+               [ngClass]="notification.isRead ? 'read' : 'unread'"
+               (click)="onNotificationClick(notification)">
+            
+            <div class="notification-icon">
+              <i class="ti" [ngClass]="getIconClass(notification.type)" aria-hidden="true"></i>
+            </div>
+
+            <div class="notification-content">
+              <div class="notification-header">
+                <div>
+                  <span class="notification-type">{{ notification.type }}</span>
+                  <span class="badge" [ngClass]="'badge-' + notification.targetType">
+                    {{ notification.targetType }}
+                  </span>
+                </div>
+                <span class="notification-timestamp">
+                  {{ notification.createdAt | date:'short' }}
+                </span>
+              </div>
+              
+              <p class="notification-message">{{ notification.message }}</p>
+              
+              <div class="notification-meta">
+                <span>{{ notification.targetType }} #{{ notification.targetId }}</span>
+              </div>
+            </div>
+
+            <div class="unread-indicator" *ngIf="!notification.isRead"></div>
+          </div>
+        }
+      }
+    }
   </div>
-  } @else {
-  @for (notification of notifs; track notification.id) {
-  <div class="notification">
-    <div class="avatar"></div>
-    <div class="content">
-      <div class="header">
-        <div class="title"> POST</div>
-        <div class="time">{{ notification.createdAt | date:'short' }}</div>
-      </div>
-      <div class="text">{{ notification.message }}</div>
-    </div>
-  </div>
-  }
-  }}
-
-
-
 </body>

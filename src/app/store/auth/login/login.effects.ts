@@ -23,8 +23,8 @@ export class LoginEffects {
       mergeMap(({ email, password }) =>
         this.authService.login(email, password).pipe(
           map((response) => {
-            if (response.error) {
-              return LoginActions.loginFailure({ error: response.message });
+            if (response.data.error) {
+              return LoginActions.loginFailure({ error: response.data.message });
             }
             return LoginActions.loginSuccess({ response });
           }),
@@ -42,11 +42,11 @@ export class LoginEffects {
         ofType(LoginActions.loginSuccess),
         tap(({ response }) => {
           console.log(response, "response from login success effect");
-          if (response?.token) {
-            localStorage.setItem('token', response?.token);
+          if (response?.data?.token) {
+            localStorage.setItem('token', response?.data.token);
           }
-          if (response?.user) {
-            localStorage.setItem('user', JSON.stringify(response.user));
+          if (response?.data?.user) {
+            localStorage.setItem('user', JSON.stringify(response.data.user));
           }
         }),
       ),
@@ -58,9 +58,9 @@ export class LoginEffects {
       this.actions$.pipe(
         ofType(LoginActions.loginSuccess),
         tap(({ response }) => {
-          if (response?.user?.id) {
+          if (response?.data?.user?.id) {
             this.store.dispatch(
-              NotificationActions.loadNotifications({ trendorId: response.user.trendors_id }),
+              NotificationActions.loadNotifications({ trendorId: response.data.user.trendors_id }),
             );
           }
           this.router.navigate(['/home']);
@@ -97,10 +97,12 @@ export class LoginEffects {
 
         return LoginActions.loginSuccess({
           response: {
-              token,
-              user: JSON.parse(userRaw),
-              error: false,
-              message: 'Hydrated from localStorage',
+              data: {
+                token,
+                user: JSON.parse(userRaw),
+                message: 'Hydrated from localStorage',
+                error: false,
+              },
           },
         });
       }),

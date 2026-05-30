@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { first, firstValueFrom, Observable } from 'rxjs';
 import { Share } from '../../../core/models/shares/shares.model';
 import {
   selectFilteredShares,
@@ -32,18 +32,17 @@ export class SharesDashboard {
   totals$ = this.store.select(selectTotals);
   loading$ = this.store.select(selectSharesLoading);
   filter$ = this.store.select(selectSharesFilter);
+  user$!: Observable<any>;
 
   ngOnInit() {
     this.shares$ = this.store.select(selectFilteredShares);
-    this.store.select(selectCurrentUser).subscribe((user) => {
-      console.log(user, "users")
-      if (user?.id) {
-        console.log(user, "select user")
+    this.user$ = this.store.select(selectCurrentUser);
+      this.loadShares();
+  }
 
-        this.store.dispatch(SharesActions.loadShares({ userId: user.id || 7 }));
-      }
-      this.store.dispatch(SharesActions.loadShares({ userId: 7 }));
-    });
+  async loadShares() {
+    let user = await firstValueFrom(this.user$);
+    this.store.dispatch(SharesActions.loadShares({ userId: user.id }));
   }
 
   setFilter(filter: 'all' | 'paid' | 'free' | 'pending' | 'claimed') {

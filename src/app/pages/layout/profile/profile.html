@@ -1,122 +1,197 @@
+<div class="card">
+  <div class="section-label">Wallet</div>
 
+  <div class="wallet-balance-row">
+    <div class="wallet-info">
+      <span class="wallet-balance"> {{ (wallet$ | async)?.balance | currency }}</span>
+      <span class="wallet-tag">Available balance</span>
+    </div>
+    <div class="wallet-actions">
+      <button class="btn-outline" type="button">Withdraw</button>
+      <button class="btn-accent" type="button" (click)="showTopup = true" 500>Top Up</button>
+    </div>
+  </div>
 
-      <div class="card">
-        <div class="section-label">Wallet</div>
+  @if (showTopup) {
+  <app-topup-modal [userEmail]="user?.email || 'sayil@mail.com'" (closed)="showTopup = false"
+    (topupSuccess)="onTopupSuccess($event)" />
+  }
 
-        <div class="wallet-balance-row">
-          <div class="wallet-info">
-            <span class="wallet-balance"> {{ (wallet$ | async)?.balance | currency }}</span>
-            <span class="wallet-tag">Available balance</span>
-          </div>
-          <div class="wallet-actions">
-            <button class="btn-outline" type="button">Withdraw</button>
-            <button class="btn-accent" type="button" (click)="showTopup = true" 500>Top Up</button>
-          </div>
-        </div>
+  @if((wallet$ | async)?.balance < 5000){ <div class="notice">
+    <span class="notice-icon">◈</span>
+    <span class="notice-text">
+      Withdrawals are available once your balance reaches <strong>₦5,000.00</strong>.
+    </span>
+</div>
+}
+<div class="inner-divider"></div>
 
-        @if (showTopup) {
-        <app-topup-modal [userEmail]="user?.email || 'sayil@mail.com'" (closed)="showTopup = false"
-          (topupSuccess)="onTopupSuccess($event)" />
-        }
+<div class="section-label" style="margin-bottom: 14px;">Withdrawal Account</div>
 
-        @if((wallet$ | async)?.balance < 5000){ <div class="notice">
-          <span class="notice-icon">◈</span>
-          <span class="notice-text">
-            Withdrawals are available once your balance reaches <strong>₦5,000.00</strong>.
-          </span>
+@if (savedBankDetails$ | async; as bankInfo) {
+<form [formGroup]="bankForm">
+  <div class="field">
+    <label class="field-label">Account Number</label>
+    <input formControlName="accountNumber" class="field-input locked" type="text" placeholder="0123456789"
+      maxlength="10" />
+  </div>
+
+  <div class="field" style="margin-top: 16px;">
+    <label class="field-label">Account Name</label>
+    <input formControlName="accountName" class="field-input locked" type="text" placeholder="" maxlength="10" />
+  </div>
+
+  <div class="field" style="position: relative; margin-top: 16px;">
+    <label class="field-label">Bank Name</label>
+
+    <input type="text" class="field-input" placeholder="Type to search bank..." [formControl]="bankSearchCtrl"
+      (focus)="showDropdown = true" />
+
+    @if (showDropdown && (banks$ | async); as bankList) {
+    <div class="custom-dropdown-panel"
+      style="position: absolute; width: 100%; max-height: 200px; overflow-y: auto; background: #fff; border: 1px solid #ccc; z-index: 1000;">
+      @for (bank of bankList; track bank.code) {
+      <div class="dropdown-item" style="padding: 10px; cursor: pointer;" (mousedown)="onSelectBank(bank)">
+        {{ bank.name }}
       </div>
+      } @empty {
+      <div style="padding: 10px; color: #999;">No banks found</div>
       }
-      <div class="inner-divider"></div>
+    </div>
+    }
+  </div>
 
-      <div class="section-label" style="margin-bottom: 14px;">Withdrawal Account</div>
+  <div class="field" style="margin-top: 16px;">
+    <label class="field-label">
+      Transaction PIN
+      <span class="field-badge">Required</span>
+    </label>
+    <input class="field-input pin-input" type="password" placeholder="• • • • " maxlength="4" />
+    <span class="field-hint">Enter your 4-digit PIN to confirm account changes</span>
+  </div>
+
+  <button class="btn-accent full-width" style="margin-top: 20px;" type="button" (click)="onSaveBankAccount()">
+    Update Withdrawal Account
+  </button>
+</form>
+}
+
+
+</div>
+
+<div class="card">
+  <div class="section-label">Personal Info</div>
+
+  <div class="section-label danger-label ">Trendors ID : {{ user?.trendors_id }} <span
+      class="field-badge copy-btn">copy</span>
+  </div>
+
+
+  <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="form">
+    <div class="form-row">
+      <div class="field">
+        <label class="field-label">First Name</label>
+        <input class="field-input" formControlName="first_name" type="text" placeholder="John" />
+      </div>
+      <div class="field">
+        <label class="field-label">Last Name</label>
+        <input class="field-input" formControlName="last_name" type="text" placeholder="Doe" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">
+        User Name
+        <span class="field-badge">Locked</span>
+      </label>
+      <input class="field-input locked" formControlName="user_name" type="text" readonly />
+    </div>
+
+    <div class="field">
+      <label class="field-label">
+        Email Address
+        <span class="field-badge">Locked</span>
+      </label>
+      <input class="field-input locked" formControlName="email" type="email" readonly />
+    </div>
+
+    <div class="field">
+      <label class="field-label">Phone Number</label>
+      <input class="field-input" formControlName="phone_number" type="tel" placeholder="+234 000 0000" />
+    </div>
+  </form>
+</div>
+
+<div class="card actions-card">
+  <button class="btn-accent full-width" type="submit" (click)="onSave()"
+    [disabled]="profileForm.invalid || (isLoading$ | async)">
+    {{ (isLoading$ | async) ? 'Saving...' : 'Save Changes' }}
+  </button>
+</div>
+
+<div class="card">
+  <div class="section-label">Security</div>
+  <p class="security-note">Update your password to keep your account safe.</p>
+
+  <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="form">
+    <div class="field">
+      <label class="field-label">Current Password</label>
+      <input class="field-input" formControlName="oldPassword" type="password" placeholder="Enter current password" />
+      @if (passwordForm.get('oldPassword')?.invalid && passwordForm.get('oldPassword')?.touched) {
+      <span class="error-msg">Current password is required.</span>
+      }
+    </div>
+
+    <div class="form-row">
+      <div class="field">
+        <label class="field-label">New Password</label>
+        <input class="field-input" formControlName="newPassword" type="password" placeholder="At least 6 characters" />
+        @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched) {
+        <span class="error-msg">New password is required.</span>
+        }
+        @if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched) {
+        <span class="error-msg">Password must be at least 6 characters.</span>
+        }
+      </div>
 
       <div class="field">
-        <label class="field-label">Account Number</label>
-        <input class="field-input locked" type="text" placeholder="0123456789" maxlength="10" />
+        <label class="field-label">Confirm Password</label>
+        <input class="field-input" formControlName="confirmPassword" type="password"
+          placeholder="Re-enter new password" />
+        @if (passwordForm.get('confirmPassword')?.hasError('required') && passwordForm.get('confirmPassword')?.touched)
+        {
+        <span class="error-msg">Please confirm your new password.</span>
+        }
       </div>
-
-      <div class="field" style="margin-top: 16px;">
-        <label class="field-label">Bank Name</label>
-        <input class="field-input locked" value="First Bank of Nigeria" readonly />
-      </div>
-
-      <div class="field" style="margin-top: 16px;">
-        <label class="field-label">
-          Transaction PIN
-          <span class="field-badge">Required</span>
-        </label>
-        <input class="field-input pin-input" type="password" placeholder="• • • • " maxlength="4" />
-        <span class="field-hint">Enter your 4-digit PIN to confirm account changes</span>
-      </div>
-
-      <button class="btn-accent full-width" style="margin-top: 20px;" type="button">
-        Update Withdrawal Account
-      </button>
     </div>
 
-    <div class="card">
-      <div class="section-label">Personal Info</div>
+    @if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched) {
+    <span class="error-msg">Passwords do not match.</span>
+    }
 
-      <div class="section-label danger-label ">Trendors ID : {{ user?.trendors_id }} <span
-          class="field-badge copy-btn">copy</span>
-      </div>
+    @if (authError$ | async; as authError) {
+    <span class="error-msg">{{ authError }}</span>
+    }
 
+    <button class="btn-accent full-width" type="submit" [disabled]="passwordForm.invalid || (authIsLoading$ | async)">
+      {{ (authIsLoading$ | async) ? 'Updating...' : 'Update Password' }}
+    </button>
+  </form>
+</div>
 
-      <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="form">
-        <div class="form-row">
-          <div class="field">
-            <label class="field-label">First Name</label>
-            <input class="field-input" formControlName="first_name" type="text" placeholder="John" />
-          </div>
-          <div class="field">
-            <label class="field-label">Last Name</label>
-            <input class="field-input" formControlName="last_name" type="text" placeholder="Doe" />
-          </div>
-        </div>
+<div class="card danger-card">
+  <div class="section-label danger-label">Danger Zone</div>
+  <p class="danger-text">Deleting your account is permanent and cannot be undone.</p>
+  <button class="btn-danger" type="button" (click)="onDelete()">Delete Account</button>
 
-        <div class="field">
-          <label class="field-label">
-            User Name
-            <span class="field-badge">Locked</span>
-          </label>
-          <input class="field-input locked" formControlName="user_name" type="text" readonly />
-        </div>
+  @if (userError$ | async) {
+  <p class="error-msg">{{ userError$ | async }}</p>
+  }
+</div>
 
-        <div class="field">
-          <label class="field-label">
-            Email Address
-            <span class="field-badge">Locked</span>
-          </label>
-          <input class="field-input locked" formControlName="email" type="email" readonly />
-        </div>
+<div class="buttom">
 
-        <div class="field">
-          <label class="field-label">Phone Number</label>
-          <input class="field-input" formControlName="phone_number" type="tel" placeholder="+234 000 0000" />
-        </div>
-      </form>
-    </div>
-
-    <div class="card actions-card">
-      <button class="btn-accent full-width" type="submit" (click)="onSave()"
-        [disabled]="profileForm.invalid || (isLoading$ | async)">
-        {{ (isLoading$ | async) ? 'Saving...' : 'Save Changes' }}
-      </button>
-    </div>
-
-    <div class="card danger-card">
-      <div class="section-label danger-label">Danger Zone</div>
-      <p class="danger-text">Deleting your account is permanent and cannot be undone.</p>
-      <button class="btn-danger" type="button" (click)="onDelete()">Delete Account</button>
-
-      @if (userError$ | async) {
-      <p class="error-msg">{{ userError$ | async }}</p>
-      }
-    </div>
-
-    <div class="buttom">
-
-    </div>
+</div>
 
 
-  <!-- <app-social-verify /> -->
+<!-- <app-social-verify /> -->

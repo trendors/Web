@@ -1,7 +1,7 @@
 import { Component, Inject, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { map, Observable } from 'rxjs';
+import { firstValueFrom, map, Observable } from 'rxjs';
 import { UtilService } from '../../core/services/utility/utility.service';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { AsyncPipe } from '@angular/common';
@@ -25,25 +25,25 @@ import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 export class ShareSheet {
   private utilService = inject(UtilService);
 
+
   constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { post: any },
-    private bottomSheetRef: MatBottomSheetRef<ShareSheet>, private seoService: SeoService, private store: Store) { }
+    private store: Store) { }
 
   selectedPost: string | null = null
   shareVersions$!: Observable<any[]>;
   trends$!: Observable<any[]>
+  user$!: Observable<any>;
+
+
 
   ngOnInit() {
-
+    this.user$ = this.store.select(selectCurrentUser);
     this.fetchAireWrite()
     this.fetchXtrends()
 
   }
 
-  getCurrentUser(){
-        this.store.select(selectCurrentUser).subscribe((user) => {
-          console.log(user)
-        })
-  }
+
 
   selectVersion(post: string) {
     this.selectedPost = post
@@ -52,8 +52,7 @@ export class ShareSheet {
 
   fetchAireWrite() {
     let text = this.data.post.text
-    this.shareVersions$ = this.utilService.fetchAiRewrite(text)
-
+    this.shareVersions$ = this.utilService.fetchAiRewrite(text);
   }
 
   fetchXtrends() {
@@ -68,29 +67,30 @@ export class ShareSheet {
 
   shareTo(url?: string) { }
 
- async getIPAddress() {
-  try {
-    const response = await fetch('https://api.ipify.org?format=json');
-    const data = await response.json();
-    console.log("User IP:", data.ip);
-    return data.ip as string;
-  } catch (error) {
-    console.error("Error fetching IP:", error);
-    return ""
+  async getIPAddress() {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      console.log("User IP:", data.ip);
+      return data.ip as string;
+    } catch (error) {
+      console.error("Error fetching IP:", error);
+      return ""
+    }
   }
-}
- getOrCreateDeviceId() {
-  let deviceId = localStorage.getItem('device_id');
-  if (!deviceId) {
-    deviceId = crypto.randomUUID(); 
-    localStorage.setItem('device_id', deviceId);
+  getOrCreateDeviceId() {
+    let deviceId = localStorage.getItem('device_id');
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem('device_id', deviceId);
+    }
+    return deviceId;
   }
-  return deviceId;
-}
 
   close() { }
 
   async shareToX() {
+    const currentUser = await firstValueFrom(this.user$);
     let trendText = this.trends$.pipe(map(trends => trends.slice(0, 4).map((t: any) => `${t.name}`).join(' ')));
     const baseUrl = 'https://twitter.com/intent/tweet';
     const params = new URLSearchParams({
@@ -105,57 +105,105 @@ export class ShareSheet {
 
       let share: CreateShare = {
         postId: this.data.post.id,
-        sharers_trendorsId: "7",
-        sharers_userId: "7",
+        sharers_trendorsId: currentUser?.trendors_id ?? '',
+        sharers_userId: String(currentUser?.id ?? ''),
         deviceId: this.getOrCreateDeviceId(),
         ipAddress: await this.getIPAddress(),
         external_post_url: "string",
         social_media: SocialMedia.X
       }
-      this.store.dispatch(SharesActions.createShares({data: share}))
+      this.store.dispatch(SharesActions.createShares({ data: share }))
     }
   }
 
-  shareToFacebook(post: any) {
+  async shareToFacebook(post: any) {
+    const currentUser = await firstValueFrom(this.user$);
     const baseUrl = 'https://www.facebook.com/sharer/sharer.php';
     const params = new URLSearchParams({
       u: `https://b5267a42e435.ngrok-free.app/post/${post.id}`,
       quote: post.text
     });
-
     const shareUrl = `${baseUrl}?${params.toString()}`;
-    window.open(shareUrl, '_blank', 'width=550,height=420');
+    const win = window.open(shareUrl, '_blank', 'width=550,height=420');
+    if (win && !win.closed) {
+      const share: CreateShare = {
+        postId: post.id,
+        sharers_trendorsId: currentUser?.trendors_id ?? '',
+        sharers_userId: String(currentUser?.id ?? ''),
+        deviceId: this.getOrCreateDeviceId(),
+        ipAddress: await this.getIPAddress(),
+        external_post_url: shareUrl,
+        social_media: SocialMedia.FACEBOOK
+      };
+      this.store.dispatch(SharesActions.createShares({ data: share }));
+    }
   }
 
-  shareToLinkedIn(post: any) {
+  async shareToLinkedIn(post: any) {
+    const currentUser = await firstValueFrom(this.user$);
     const baseUrl = 'https://www.linkedin.com/sharing/share-offsite/';
     const params = new URLSearchParams({
       url: `https://b5267a42e435.ngrok-free.app/post/${post.id}`
     });
-
     const shareUrl = `${baseUrl}?${params.toString()}`;
-    window.open(shareUrl, '_blank', 'width=550,height=420');
+    const win = window.open(shareUrl, '_blank', 'width=550,height=420');
+    if (win && !win.closed) {
+      const share: CreateShare = {
+        postId: post.id,
+        sharers_trendorsId: currentUser?.trendors_id ?? '',
+        sharers_userId: String(currentUser?.id ?? ''),
+        deviceId: this.getOrCreateDeviceId(),
+        ipAddress: await this.getIPAddress(),
+        external_post_url: shareUrl,
+        social_media: SocialMedia.FACEBOOK
+      };
+      this.store.dispatch(SharesActions.createShares({ data: share }));
+    }
   }
 
-  shareToTelegram(post: any) {
+  async shareToTelegram(post: any) {
+    const currentUser = await firstValueFrom(this.user$);
     const baseUrl = 'https://t.me/share/url';
     const params = new URLSearchParams({
       url: `https://b5267a42e435.ngrok-free.app/post/${post.id}`,
       text: post.text
     });
-
     const shareUrl = `${baseUrl}?${params.toString()}`;
-    window.open(shareUrl, '_blank', 'width=550,height=420');
+    const win = window.open(shareUrl, '_blank', 'width=550,height=420');
+    if (win && !win.closed) {
+      const share: CreateShare = {
+        postId: post.id,
+        sharers_trendorsId: currentUser?.trendors_id ?? '',
+        sharers_userId: String(currentUser?.id ?? ''),
+        deviceId: this.getOrCreateDeviceId(),
+        ipAddress: await this.getIPAddress(),
+        external_post_url: shareUrl,
+        social_media: SocialMedia.FACEBOOK
+      };
+      this.store.dispatch(SharesActions.createShares({ data: share }));
+    }
   }
 
-  shareToWhatsApp(post: any) {
+  async shareToWhatsApp(post: any) {
+    const currentUser = await firstValueFrom(this.user$);
     const baseUrl = 'https://api.whatsapp.com/send';
     const params = new URLSearchParams({
       text: `${post.text}\n\nView more: https://b5267a42e435.ngrok-free.app/post/${post.id}`
     });
-
     const shareUrl = `${baseUrl}?${params.toString()}`;
-    window.open(shareUrl, '_blank', 'width=550,height=420');
+    const win = window.open(shareUrl, '_blank', 'width=550,height=420');
+    if (win && !win.closed) {
+      const share: CreateShare = {
+        postId: post.id,
+        sharers_trendorsId: currentUser?.trendors_id ?? '',
+        sharers_userId: String(currentUser?.id ?? ''),
+        deviceId: this.getOrCreateDeviceId(),
+        ipAddress: await this.getIPAddress(),
+        external_post_url: shareUrl,
+        social_media: SocialMedia.WHATSAPP
+      };
+      this.store.dispatch(SharesActions.createShares({ data: share }));
+    }
   }
 
 

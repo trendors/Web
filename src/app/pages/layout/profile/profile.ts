@@ -1,18 +1,30 @@
 import { AsyncPipe, CurrencyPipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormControl,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Store } from '@ngrx/store';
-import { catchError, map, Observable, of, shareReplay, switchMap, take } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, Observable, of, shareReplay, startWith, switchMap, take, tap } from 'rxjs';
 import { User, UpdateUserDto } from '../../../core/models/users/user.model';
 import { UserService } from '../../../core/services/users/user.service';
-import { selectCurrentUser, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
+import {
+  selectAuthError,
+  selectCurrentUser,
+  selectIsLoading,
+} from '../../../store/auth/sharedState/auth.selector';
+import { PasswordChangeActions } from '../../../store/auth/changePassword/change-password.actions';
 import { UserAction } from '../../../store/user/user.action';
 import { selectUserError, selectUserIsLoading } from '../../../store/user/user.selector';
-import { SocialVerify } from '../social-verify/social-verify';
 import { TopupModalComponent } from '../../../components/topup-modal/topup-modal';
 import { WalletService } from '../../../core/services/wallet/wallet.service';
 
@@ -24,7 +36,8 @@ import { WalletService } from '../../../core/services/wallet/wallet.service';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    AsyncPipe, SocialVerify, TopupModalComponent,
+    AsyncPipe,
+    TopupModalComponent,
     CurrencyPipe
   ],
   templateUrl: './profile.html',
@@ -36,9 +49,46 @@ export class Profile implements OnInit {
   private walletService = inject(WalletService);
 
   user$ = this.store.select(selectCurrentUser);
+  savedBankDetails$: Observable<any> | null = null;
   isLoading$ = this.store.select(selectUserIsLoading);
+  authIsLoading$ = this.store.select(selectIsLoading);
+  authError$ = this.store.select(selectAuthError);
   loading: boolean = false;
   userError$ = this.store.select(selectUserError);
+  bankSearchCtrl = new FormControl('');
+  showTopup = false;
+  isSubmitting = false
+  bankCodeCtrl = new FormControl('', Validators.required);
+
+
+  profileForm = this.fb.group({
+    first_name: ['', Validators.required],
+    last_name: ['', Validators.required],
+    email: [{ value: '', disabled: true }],
+    phone_number: [''],
+    user_name: [{ value: '', disabled: true }],
+    trendors_id: [{ value: '', disabled: true }],
+    twitter_handle: [''],
+    instagram_handle: [''],
+    facebook_username: [''],
+  });
+
+  bankForm = this.fb.group({
+    accountNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+    accountName: ['', Validators.required]
+  });
+
+  selectedBankCode?: string
+
+  passwordForm = this.fb.group(
+    {
+      oldPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    // { validators: this.passwordMatchValidator },
+  );
+
 
   ngOnInit(): void {
     this.user$.pipe(take(1)).subscribe((user) => {
@@ -56,12 +106,55 @@ export class Profile implements OnInit {
           facebook_username: user.facebook_username,
         });
 
-        console.log('Current user in Profile component:', user);
+        if (user.paystackRecipientCode) {
+        this.savedBankDetails$ = this.walletService.getAccountDetails(user.paystackRecipientCode).pipe(
+          tap((res) => {
+            console.log("Bank account record retrieved from server:", res);
+            
+            // Populating your UI elements with the real database records
+            if (res && res.success) {
+              this.bankSearchCtrl.setValue(res.bankName);
+              this.bankForm.patchValue({
+                accountNumber: res.accountNumber,
+                accountName: res.accountName
+              });
+            }
+          }),
+          catchError((err) => {
+            console.error("Failed to load saved recipient details:", err);
+            return of(null);
+          })
+        );
+      }
+  
       }
     });
+
   }
 
 
+
+
+
+showDropdown = false;
+
+banks$: Observable<any> = this.bankSearchCtrl.valueChanges.pipe(
+  startWith(''),
+  debounceTime(300),
+  distinctUntilChanged(),
+  switchMap(searchString => 
+    this.walletService.fetchBanks(searchString ?? '').pipe(
+      catchError(() => of([]))
+    )
+  )
+);
+
+onSelectBank(bank: any): void {
+  this.selectedBankCode = bank.code;
+  this.bankSearchCtrl.setValue(bank.name, { emitEvent: false });
+  this.showDropdown = false;
+  console.log("Ready for submission! Code matched:", this.selectedBankCode);
+}
 
   wallet$ = this.user$.pipe(
     take(1),
@@ -78,24 +171,33 @@ export class Profile implements OnInit {
   user: User | null = null;
 
 
-  profileForm = this.fb.group({
-    first_name: ['', Validators.required],
-    last_name: ['', Validators.required],
-    email: [{ value: '', disabled: true }],
-    phone_number: [''],
-    user_name: [{ value: '', disabled: true }],
-    trendors_id: [{ value: '', disabled: true }],
-    twitter_handle: [''],
-    instagram_handle: [''],
-    facebook_username: [''],
-  });
 
-  showTopup = false;
+  private passwordMatchValidator: ValidatorFn = (
+    control: AbstractControl,
+  ): ValidationErrors | null => {
+    const newPassword = control.get('newPassword')?.value;
+    const confirmPassword = control.get('confirmPassword')?.value;
+    if (!newPassword || !confirmPassword) {
+      return null;
+    }
+
+    return newPassword === confirmPassword ? null : { passwordMismatch: true };
+  };
+
+
 
   onTopupSuccess(amount: number): void {
     // this.walletBalance += amount; 
     // your store dispatch here e.g:
     // this.store.dispatch(WalletActions.topupSuccess({ amount }))
+  }
+
+  getAccountDetails(){
+    this.walletService.getAccountDetails(this.user?.paystackRecipientCode).pipe(
+        map((res: any) => {
+          console.log(res.data, "Data")
+        }),
+    )
   }
 
   onSave() {
@@ -110,16 +212,62 @@ export class Profile implements OnInit {
 
     console.log(`Dispatching updateUser with data:`, this.profileForm.value);
     console.log('User:', this.user);
-
-
     this.store.dispatch(UserAction.updateUser({ userId: this.user!.id, updateData }))
-
-
   }
 
   onDelete() {
     if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
       this.store.dispatch(UserAction.deleteUser({ userId: this.user!.id }));
     }
+  }
+
+  onChangePassword() {
+    if (!this.user?.id || this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+
+    this.store.dispatch(
+      PasswordChangeActions.changePasswordRequest({
+        userId: this.user.id,
+        oldPassword: this.passwordForm.value.oldPassword!,
+        newPassword: this.passwordForm.value.newPassword!,
+      }),
+    );
+
+    this.passwordForm.reset();
+  }
+
+  onSaveBankAccount(): void {
+
+    console.log("saving Banks")
+    // if (this.bankForm.invalid) {
+    //   this.bankForm.markAllAsTouched();
+    //   return;
+    // }
+
+
+    const payload = {
+      trendors_id: this.user?.trendors_id,
+      accountNumber: this.bankForm.value.accountNumber,
+      bankCode: this.selectedBankCode,
+      accountName: this.bankForm.value.accountName
+    };
+
+    this.walletService.addBankAccount(payload)
+      .pipe(finalize(() => this.isSubmitting = false))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            console.log('Bank account registered successfully:', res.recipientCode);
+            // Optional: Dispatch an alert or update a local state indicator
+          } else {
+            console.error('Registration API rejected submission:', res.error);
+          }
+        },
+        error: (err) => {
+          console.error('Network dispatch failure on banking submission:', err);
+        }
+      });
   }
 }

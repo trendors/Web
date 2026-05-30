@@ -1,5 +1,5 @@
 import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
-import { Router, ɵEmptyOutletComponent } from '@angular/router';
+import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { AsyncPipe, CommonModule, DatePipe, NgClass, TitleCasePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -47,8 +47,7 @@ export interface CampaignTimeline {
     CommonModule,
     FormsModule,
     MatDialogModule,
-    ɵEmptyOutletComponent
-],
+  ],
   templateUrl: './view-campaign.html',
   styleUrl: './view-campaign.scss',
 })

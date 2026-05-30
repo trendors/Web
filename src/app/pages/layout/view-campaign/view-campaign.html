@@ -88,75 +88,134 @@
 
   <!-- <pre>{{ campaigns$ | async | json }}</pre> -->
 
-  <!-- Cards Grid -->
-  <div class="campaigns-grid">
-    @if (filteredCampaigns$ | async; as campaigns) {
-      @if (campaigns.length > 0) {
-        @for (campaign of campaigns; track campaign.id; let i = $index) {
-          <div
-            class="campaign-card"
-            [style.animation-delay]="i * 0.05 + 0.2 + 's'"
-            (click)="openModal(campaign)"
-          >
-            <!-- Top row: icon + status -->
-            <div class="card-top">
-              <div class="card-icon">
-                {{ campaign.name.charAt(0).toUpperCase() }}
-              </div>
-              <span class="status-badge" [ngClass]="statusClass(campaign.access)">
-                {{ capitalize(campaign.access) }}
-              </span>
-            </div>
-
-            <!-- Name + description -->
-            <div>
-              <div class="card-title">{{ campaign.name }}</div>
-              <div class="card-desc">{{ campaign.description }}</div>
-            </div>
-
-            <!-- Platforms -->
-            <div class="card-platforms">
-              @for (platform of getPlatforms(campaign.platforms); track platform) {
-                <span class="platform-tag">{{ platform }}</span>
+  <div class="section-title">Campaign List</div>
+  <div class="table-card">
+    <div class="table-wrap desktop-only">
+      <table class="campaign-table">
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th>Access</th>
+            <th>Platforms</th>
+            <th>Invites</th>
+            <th class="align-right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filteredCampaigns$ | async; as campaigns) {
+            @if (campaigns.length > 0) {
+              @for (campaign of campaigns; track campaign.id) {
+                <tr class="table-row main-row" (click)="openModal(campaign)">
+                  <td>
+                    <div class="campaign-cell">
+                      <div class="campaign-avatar">{{ campaign.name.charAt(0).toUpperCase() }}</div>
+                      <div>
+                        <div class="campaign-name">{{ campaign.name }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-badge" [ngClass]="statusClass(campaign.access)">
+                      {{ capitalize(campaign.access) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="card-platforms">
+                      @for (platform of getPlatforms(campaign.platforms) | slice: 0 : 2; track platform) {
+                        <span class="platform-tag">{{ platform }}</span>
+                      }
+                      @if (getPlatforms(campaign.platforms).length > 2) {
+                        <span class="platform-tag">+{{ getPlatforms(campaign.platforms).length - 2 }}</span>
+                      }
+                    </div>
+                  </td>
+                  <td>{{ campaign.invitations.length }}</td>
+                  <td class="align-right">
+                    <button class="btn btn-ghost" type="button" (click)="$event.stopPropagation(); openModal(campaign)">
+                      View
+                    </button>
+                  </td>
+                </tr>
+                <tr class="table-row desc-row" (click)="openModal(campaign)">
+                  <td colspan="5">
+                    <div class="campaign-inline-desc">
+                      {{ campaign.description || 'No description provided.' }}
+                    </div>
+                  </td>
+                </tr>
               }
-            </div>
+            } @else {
+              <tr class="empty-row">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <div class="empty-title">No campaigns found</div>
+                    <div class="empty-desc">Try a different filter or search term</div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
 
-            <!-- Dates -->
-            <div class="card-metrics">
-              <div class="metric">
-                <span class="metric-value">{{
-                  campaign.start_date ? (campaign.start_date | date: 'MMM d') : '—'
-                }}</span>
-                <span class="metric-label">Start</span>
-              </div>
-              <div class="metric">
-                <span class="metric-value">{{
-                  campaign.end_date ? (campaign.end_date | date: 'MMM d') : '—'
-                }}</span>
-                <span class="metric-label">End</span>
-              </div>
-              <div class="metric">
-                <span class="metric-value">{{ campaign.invitations.length }}</span>
-                <span class="metric-label">Invites</span>
-              </div>
-            </div>
+    <div class="mobile-only">
+      @if (filteredCampaigns$ | async; as campaigns) {
+        @if (campaigns.length > 0) {
+          <div class="mobile-campaign-list">
+            @for (campaign of campaigns; track campaign.id) {
+              <article class="mobile-campaign-card" (click)="openModal(campaign)">
+                <div class="mobile-campaign-top">
+                  <div class="campaign-cell">
+                    <div class="campaign-avatar">{{ campaign.name.charAt(0).toUpperCase() }}</div>
+                    <div class="campaign-name">{{ campaign.name }}</div>
+                  </div>
+                  <span class="status-badge" [ngClass]="statusClass(campaign.access)">
+                    {{ capitalize(campaign.access) }}
+                  </span>
+                </div>
 
-            <!-- Footer -->
-            <div class="card-footer">
-              <span class="card-date">Created {{ campaign.createdAt | date: 'MMM d, y' }}</span>
-              <span class="card-cta">View more →</span>
-            </div>
+                <div class="mobile-meta-grid">
+                  <div class="mobile-meta-item">
+                    <span class="mobile-meta-label">Platforms</span>
+                    <div class="card-platforms">
+                      @for (platform of getPlatforms(campaign.platforms) | slice: 0 : 2; track platform) {
+                        <span class="platform-tag">{{ platform }}</span>
+                      }
+                      @if (getPlatforms(campaign.platforms).length > 2) {
+                        <span class="platform-tag">+{{ getPlatforms(campaign.platforms).length - 2 }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="mobile-meta-item">
+                    <span class="mobile-meta-label">Invites</span>
+                    <span class="mobile-meta-value">{{ campaign.invitations.length }}</span>
+                  </div>
+                </div>
+
+                <div class="campaign-inline-desc">
+                  {{ campaign.description || 'No description provided.' }}
+                </div>
+
+                <div class="mobile-actions">
+                  <button class="btn btn-ghost" type="button" (click)="$event.stopPropagation(); openModal(campaign)">
+                    View
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">No campaigns found</div>
+            <div class="empty-desc">Try a different filter or search term</div>
           </div>
         }
-      } @else {
-        <!-- Empty state -->
-        <div class="empty-state">
-          <div class="empty-icon">🔍</div>
-          <div class="empty-title">No campaigns found</div>
-          <div class="empty-desc">Try a different filter or search term</div>
-        </div>
       }
-    }
+    </div>
   </div>
 </div>
 

@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, CommonModule, SlicePipe, UpperCasePipe, ViewportScroller } from '@angular/common';
+import { AsyncPipe, SlicePipe } from '@angular/common';
 import {
   FormBuilder,
   FormControl,
@@ -46,8 +46,7 @@ import {
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ShareSheet } from '../../../components/share-sheet/share-sheet';
-import { Router, RouterLink } from '@angular/router';
-import { ButtomNav } from "../../../components/buttom-nav/buttom-nav";
+import { Router } from '@angular/router';
 import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter";
 import { UserInfoCard } from "../../../components/user-info-card/user-info-card";
 import { NewPostsNotifier } from "../../../components/new-posts-notifier/new-posts-notifier";

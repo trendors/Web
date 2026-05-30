@@ -17,7 +17,7 @@ import { Footer } from "../../../components/footer/footer";
 
 @Component({
   selector: 'app-home',
-imports: [
+  imports: [
     RouterModule,
     MatButtonModule,
     MatIconModule,
@@ -35,23 +35,24 @@ imports: [
     ButtomNav,
     UserInfoCard,
     SocialVerify,
-    Footer
-],  templateUrl: './home.html',
+    Footer,
+    RouterModule
+  ], templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home {
-     url = '';
+  url = '';
 
   constructor(private router: Router) {
 
 
 
-  this.router.events.pipe(
-    filter(event => event instanceof NavigationEnd)
-  ).subscribe((event: NavigationEnd) => {
-    this.url = event.url;
-    console.log('Current route:', event.url);
-  });
-}
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.url = event.url;
+      console.log('Current route:', event.url);
+    });
+  }
 
 }
