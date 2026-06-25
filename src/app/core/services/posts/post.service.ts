@@ -34,8 +34,14 @@ export class PostService {
     return this.http.post<FetchPostsResponse>(`${this.apiUrl}/findAll`, payload);
   }
 
-  findOne(id: any): Observable<FetchPostResponse> {
-    return this.http.get<FetchPostResponse>(`${this.apiUrl}/${id}`);
+  findOne(id: any, opts?: { skipAuth?: boolean }): Observable<FetchPostResponse> {
+    const url = `${this.apiUrl}/${id}`;
+    if (opts?.skipAuth) {
+      return this.http.get<FetchPostResponse>(url, {
+        headers: { 'x-skip-auth': 'true' },
+      });
+    }
+    return this.http.get<FetchPostResponse>(url);
   }
 
   loadMore(query: LoadMoreDto): Observable<FetchPostsResponse> {

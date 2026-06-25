@@ -1,12 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, Input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
-import { Observable, take } from 'rxjs';
-import { LoaderComponent } from '../../../components/loader/loader';
+import { Observable, take, firstValueFrom } from 'rxjs';
 import { Alert } from '../../../components/alert/alert';
 import { Actions, ofType } from '@ngrx/effects';
 import { InvitationService } from '../../../core/services/invitation/invitation.service';
@@ -17,7 +15,6 @@ import {
   selectPendingApplicants,
 } from '../../../store/invitation/invitation.selector';
 import { InvitationActions } from '../../../store/invitation/invitation.action';
-import { UserInfoCard } from '../../../components/user-info-card/user-info-card';
 
 interface CampaignFile {
   file: File;
@@ -49,9 +46,9 @@ interface Tier {
 
 @Component({
   selector: 'app-create-campaign',
-  imports: [CommonModule, FormsModule, LoaderComponent, Alert, UserInfoCard],
+  imports: [CommonModule, FormsModule, Alert],
   templateUrl: './create-campaign.html',
-  styleUrl: './create-campaign.scss',
+  styleUrls: ['./create-campaign.scss'],
 })
 export class CreateCampaign {
   platforms = [
@@ -290,29 +287,6 @@ export class CreateCampaign {
       .slice(0, 2);
   }
 
-  // acceptApplicant(applicant: any): void {
-  //   this.selectedMembers.update((list) => [...list, { ...applicant, status: 'ACTIVE' }]);
-  //   this.applicants.update((list) => list.filter((a) => a.id !== applicant.id));
-  // }
-
-  // declineApplicant(id: string): void {
-  //   this.applicants.update((list) => list.filter((a) => a.id !== id));
-  // }
-
-  // removeMember2(index: number): void {
-  //   this.selectedMembers.update((list) => list.filter((_, i) => i !== index));
-  // }
-
-  // showProfile(applicant: any): void {
-  //   this.viewingProfile.set(applicant);
-  // }
-
-  // onOverlayClick(event: MouseEvent): void {
-  //   if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-  //     this.viewingProfile.set(null);
-  //   }
-  // }
-
   selectedAccess = 'open';
   autoAssignTier = true;
   currentStep = 0;
@@ -320,6 +294,15 @@ export class CreateCampaign {
   selectedTier = '';
 
   selectedType = signal<'paid' | 'free' | null>(null);
+  // New campaign payment fields per request
+  campaignType = signal<'open' | 'invite' | 'application'>('open');
+  budget = signal<number | null>(null);
+  ratePerSlot = signal<number | null>(null); // system-set rate for open/application
+  negotiatedAmount = signal<number | null>(null); // invite-only negotiated base
+  maxSlots = signal<number | null>(null);
+  status = signal<'draft' | 'active' | 'paused' | 'closed'>('draft');
+  bonusTiers = signal<any | null>(null); // optional JSON structure for invite-only bonuses
+  bonusTiersInput = '';
   campaignTitle = signal('');
   campaignDescription = signal('');
   campaignCategory = signal('');
@@ -465,6 +448,26 @@ export class CreateCampaign {
     this.selectedAccess = '';
     this.shareCount.set(0);
     this.totalBudget = 0;
+    this.campaignType.set('open');
+    this.budget.set(null);
+    this.ratePerSlot.set(null);
+    this.negotiatedAmount.set(null);
+    this.maxSlots.set(null);
+    this.status.set('draft');
+    this.bonusTiers.set(null);
+    this.bonusTiersInput = '';
+  }
+
+  get computedBudget(): number {
+    const access = this.selectedAccess;
+    const slots = Number(this.maxSlots() ?? 0);
+    if (access === 'open' || access === 'application') {
+      return Number(this.ratePerSlot() ?? 0) * slots;
+    }
+    if (access === 'invite_only') {
+      return Number(this.negotiatedAmount() ?? 0) * slots;
+    }
+    return 0;
   }
   selectTier(): void {
     alert('Tier selection coming soon!');
@@ -474,13 +477,13 @@ export class CreateCampaign {
     this.isSubmitting.set(true);
 
     try {
-      const user = await this.user$.pipe(take(1)).toPromise(); // fetch once
+      const user = await firstValueFrom(this.user$); // fetch once
 
       const formData = new FormData();
       formData.append('title', this.campaignTitle());
       formData.append('description', this.campaignDescription());
       formData.append('category', this.campaignCategory());
-      formData.append('type', this.selectedType()!);
+      formData.append('type', String(this.selectedType() ?? ''));
       formData.append('creator_id', user?.id.toString() || '');
       formData.append('auto_generate_captions', this.auto_generate_captions().toString());
       formData.append('hash_tags', JSON.stringify(this.hash_tags()));
@@ -490,10 +493,45 @@ export class CreateCampaign {
       formData.append('access', this.selectedAccess);
       formData.append('platform', JSON.stringify(this.selectedPlatforms));
 
-      if (this.selectedType() === 'paid') {
-        formData.append('shareCount', this.shareCount().toString());
-        formData.append('totalBudget', this.totalBudget.toString());
+      // Campaign payment model (flat-rate-with-cap)
+      // Determine which payment fields to send based on `campaignType`:
+      // Derive campaign type from selectedAccess radio value
+      const access = this.selectedAccess;
+      const cType = access === 'open' ? 'open' : access === 'invite_only' ? 'invite' : 'application';
+      if (cType === 'open' || cType === 'application') {
+        // system sets the rate; ratePerSlot and maxSlots are required
+        if (!this.ratePerSlot() || !this.maxSlots()) {
+          throw new Error('ratePerSlot and maxSlots must be set for open/application campaigns');
+        }
+        const computedBudget = Number(this.ratePerSlot()) * Number(this.maxSlots());
+        this.budget.set(computedBudget);
+        formData.append('ratePerSlot', String(this.ratePerSlot()));
+        formData.append('maxSlots', String(this.maxSlots()));
+        formData.append('totalBudget', String(computedBudget));
+      } else if (cType === 'invite') {
+        // invite-only: negotiatedAmount (base) agreed 1-on-1; optional bonus tiers (pre-declared cap)
+        if (!this.negotiatedAmount() || !this.maxSlots()) {
+          throw new Error('negotiatedAmount and maxSlots must be set for invite-only campaigns');
+        }
+        const computedBudget = Number(this.negotiatedAmount()) * Number(this.maxSlots());
+        this.budget.set(computedBudget);
+        formData.append('negotiatedAmount', String(this.negotiatedAmount()));
+        formData.append('maxSlots', String(this.maxSlots()));
+        formData.append('totalBudget', String(computedBudget));
+        // if user provided bonus tiers JSON in the UI, parse and include
+        if (this.bonusTiersInput) {
+          try {
+            const parsed = JSON.parse(this.bonusTiersInput);
+            this.bonusTiers.set(parsed);
+            formData.append('bonusTiers', JSON.stringify(parsed));
+          } catch (err) {
+            console.warn('Invalid bonusTiers JSON, ignoring');
+          }
+        } else if (this.bonusTiers()) {
+          formData.append('bonusTiers', JSON.stringify(this.bonusTiers()));
+        }
       }
+
 
       this.selectedImages().forEach((img) => formData.append('files', img.file));
 
@@ -513,3 +551,4 @@ export class CreateCampaign {
     }
   }
 }
+

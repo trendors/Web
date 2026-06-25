@@ -1,36 +1,36 @@
 <div class="home-container">
 
 
-  <div class="card">
+  <div class="card" *ngIf="post$ | async as post">
     <div class="post-header">
       <div class="post-author">
-        <div class="avatar-small">JD</div>
+        <div class="avatar-small">{{ (post.user?.first_name || post.userName || '').slice(0,1).toUpperCase() }}</div>
         <div class="user-info">
-          <span class="name">John Doe</span>
-          <span class="sub-text">2 hours ago</span>
+          <span class="name">{{ post.user?.first_name || post.userName || 'Unknown' }}</span>
+          <span class="sub-text">{{ post.createdAt | date:'short' }}</span>
         </div>
       </div>
     </div>
 
     <div class="post-content">
-      <p>Check out this amazing flyer for our upcoming hospital launch! 🏥 #Healthcare #Innovation</p>
+      <p>{{ post.text }}</p>
 
-      <div class="image-gallery">
-        <div class="img-wrapper">
-          <img src="https://via.placeholder.com/600x400" alt="Post Flyer">
+      <div class="image-gallery" *ngIf="post.images && post.images.length > 0">
+        <div class="img-wrapper" *ngFor="let img of post.images">
+          <img [src]="img" alt="Post image" />
         </div>
       </div>
     </div>
 
     <div class="post-actions">
-      <button class="action-btn">
-        <span>❤️</span> 12 Likes
+      <button class="action-btn" (click)="onLike(post.id)">
+        <span>❤️</span> {{ post.likes?.length || 0 }} Likes
       </button>
       <button class="action-btn">
-        <span>💬</span> 4 Comments
+        <span>💬</span> {{ post.comments?.length || 0 }} Comments
       </button>
       <div class="spacer"></div>
-      <button class="action-btn">
+      <button class="action-btn" (click)="openShareMenu(post)">
         <span>🔗</span> Share
       </button>
     </div>

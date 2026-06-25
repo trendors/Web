@@ -6,8 +6,8 @@
           {{ user.first_name.slice(0, 1).toUpperCase() || 'U' }}
         </div>
         <div class="user-info">
-          <span class="name">{{ user.first_name }} </span>
-          <span class="label">{{ user.last_name }}</span>
+          <span class="name">{{ user.first_name }} {{ user.last_name }} </span>
+          <span class="label">Level 3 sharer</span>
         </div>
       </div>
       }
@@ -16,16 +16,16 @@
       <div class="stats-grid">
 
         <div class="stat-item">
-          <span class="stat-value">0</span>
+          <span class="stat-value">{{ (shares$ | async)?.length || 0 }}</span>
           <span class="stat-label">Shares</span>
         </div>
         <div class="stat-item">
-          <span class="stat-value">0</span>
-          <span class="stat-label"> Campaigns</span>
+          <span class="stat-value">${{ (totals$ | async)?.totalEarned | number:'1.2-2' }}</span>
+          <span class="stat-label"> earned</span>
         </div>
         <div class="stat-item">
           <span class="stat-value">0</span>
-          <span class="stat-label">Claims</span>
+          <span class="stat-label">rate</span>
         </div>
       </div>
 

@@ -14,6 +14,9 @@ import { UserInfoCard } from "../../../components/user-info-card/user-info-card"
 import { SocialVerify } from "../social-verify/social-verify";
 import { filter } from 'rxjs';
 import { Footer } from "../../../components/footer/footer";
+import { TopNavFilter } from '../../../components/top-nav-filter/top-nav-filter';
+import { YourEarnings } from '../../../components/your-earnings/your-earnings';
+import { TrendingAds } from "../../../components/trending-ads/trending-ads";
 
 @Component({
   selector: 'app-home',
@@ -36,8 +39,11 @@ import { Footer } from "../../../components/footer/footer";
     UserInfoCard,
     SocialVerify,
     Footer,
-    RouterModule
-  ], templateUrl: './home.html',
+    RouterModule,
+    TopNavFilter,
+    YourEarnings,
+    TrendingAds
+], templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home {

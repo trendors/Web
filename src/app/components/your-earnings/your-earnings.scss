@@ -1,0 +1,86 @@
+
+    .earnings {
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 16px;
+    }
+ 
+    .earnings__title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #111;
+      margin-bottom: 12px;
+    }
+ 
+    .earnings__title i { font-size: 15px; color: #888; }
+ 
+    .earnings__stat {
+    //   background: #f5f5f5;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+ 
+    .earnings__stat-value {
+      font-size: 22px;
+      font-weight: 500;
+      color: #111;
+    }
+ 
+    .earnings__stat-label {
+      font-size: 11px;
+      color: #888;
+      margin-top: 2px;
+    }
+ 
+    .earnings__progress-bar {
+      height: 5px;
+      background: #e5e5e5;
+      border-radius: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+ 
+    .earnings__progress-fill {
+      height: 100%;
+      background: #1D9E75;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+ 
+    .earnings__hint {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 6px;
+      margin-bottom: 12px;
+    }
+ 
+    .earnings__divider {
+      height: 1px;
+      background: #e5e5e5;
+      margin: 12px 0;
+    }
+ 
+    .earnings__withdraw-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #111;
+      background: transparent;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+ 
+    .earnings__withdraw-btn:hover { background: #f5f5f5; }
+    .earnings__withdraw-btn i { font-size: 15px; }

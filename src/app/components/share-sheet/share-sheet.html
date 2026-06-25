@@ -2,7 +2,14 @@
   <div class="sheet-handle"></div>
 
   <div class="version-list">
-    <p class="section-label">Select text style</p>
+    <p class="section-label">Select text style</p> 
+
+    @if (isAiLoading) {
+    <div class="loading-container">
+<app-loader></app-loader>
+      <p class="section-label">Generating versions...</p>
+    </div>
+    }
 
     @let trends = (trends$ | async);
 
@@ -33,11 +40,6 @@
       </div>
     </div>
     } 
-    <!-- @empty {
-    <div class="loading-state">
-      <p>Generating more tones..</p>
-    </div>
-    } -->
   </div>
 
   @if(selectedPost){
@@ -52,7 +54,7 @@
       <span>WhatsApp</span>
     </div>
 
-    <div class="share-item" (click)="shareToX()">
+    <div class="share-item" (click)="shareToX(this.data.post)">
       <i class="fa-brands fa-twitter"></i>
       <span>Twitter</span>
     </div>

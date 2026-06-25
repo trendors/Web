@@ -11,8 +11,8 @@ export class SeoService {
 
     // 2. Set Twitter-specific tags
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
-    this.meta.updateTag({ name: 'twitter:title', content: post.title });
-    this.meta.updateTag({ name: 'twitter:description', content: post.desc });
+    // this.meta.updateTag({ name: 'twitter:title', content: post.title });
+    // this.meta.updateTag({ name: 'twitter:description', content: post.desc });
     this.meta.updateTag({ name: 'twitter:image', content: post.image });
 
     // 3. Set Open Graph tags (Fallbacks for Facebook/LinkedIn/Twitter)

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, AsyncPipe, DatePipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,10 +10,9 @@ import { SeoService } from '../../../core/services/utility/seoservice';
 
 @Component({
   selector: 'app-single-post',
-  imports: [MatIcon, CommonModule,
-  ],
+  imports: [MatIcon, CommonModule, AsyncPipe, DatePipe],
   templateUrl: './single-post.html',
-  styleUrl: './single-post.scss',
+  styleUrls: ['./single-post.scss'],
 })
 export class SinglePost {
 
@@ -37,16 +36,17 @@ export class SinglePost {
       tap(() => this.isLoading = true),
       switchMap((params: any) => {
         const postId = params.get('id');
-        return this.postService.findOne(Number(postId)).pipe(
+        // Fetch post without forcing auth — allow public viewing of posts
+        return this.postService.findOne(Number(postId), { skipAuth: true }).pipe(
           tap(() => this.isLoading = false),
           switchMap((response: FetchPostResponse) => {
             if (response.status === 'SUCCESS' && response.data) {
 
               this.seoService.setTwitterCard({
-                title: response.data?.text.substring(0, 50) || 'Post Detail',
+                title: response.data?.text || 'Post Detail',
                 desc: response.data?.text || 'No excerpt available',
-                image: 'https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_t.png',
-                url: `https://b5267a42e435.ngrok-free.app/post/${response.data?.id}`
+                image: response.data?.images?.[0] ?? '',
+                url: `https://c967-102-90-123-32.ngrok-free.app/post/${response.data?.id}`
               });
 
               return new Observable<Post>((observer) => {
@@ -54,7 +54,7 @@ export class SinglePost {
                 observer.complete();
               });
             } else {
-              this.router.navigate(['/feed']);
+              // this.router.navigate(['/feed']);
               return new Observable<Post>((observer) => observer.complete());
             }
           })
@@ -64,7 +64,7 @@ export class SinglePost {
     );
   }
 
-  onLike(postId: string) {
+  onLike(postId: number | string) {
     // Implement your like logic
     console.log('Liked post:', postId);
   }

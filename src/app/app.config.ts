@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideRouter, withComponentInputBinding, withDebugTracing } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideStore } from '@ngrx/store';
@@ -37,7 +37,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     SocketService, // Add it here
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withComponentInputBinding()),
+    provideRouter(routes, withComponentInputBinding(), withDebugTracing()),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideStore({
       [authFeatureKey]: authReducer,

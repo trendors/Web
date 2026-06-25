@@ -37,21 +37,27 @@ export class LoginEffects {
   );
 
   loginSuccessPersist$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(LoginActions.loginSuccess),
-        tap(({ response }) => {
-          console.log(response, "response from login success effect");
-          if (response?.data?.token) {
-            localStorage.setItem('token', response?.data.token);
-          }
-          if (response?.data?.user) {
-            localStorage.setItem('user', JSON.stringify(response.data.user));
-          }
-        }),
+  () =>
+    this.actions$.pipe(
+      ofType(
+        LoginActions.loginSuccess,
+        LoginActions.hydrateSuccess
       ),
-    { dispatch: false },
-  );
+      tap(({ response }) => {
+        if (response?.data?.token) {
+          localStorage.setItem('token', response.data.token);
+        }
+
+        if (response?.data?.user) {
+          localStorage.setItem(
+            'user',
+            JSON.stringify(response.data.user)
+          );
+        }
+      }),
+    ),
+  { dispatch: false },
+);
 
   loginSuccessNavigate$ = createEffect(
     () =>
@@ -63,8 +69,18 @@ export class LoginEffects {
               NotificationActions.loadNotifications({ trendorId: response.data.user.trendors_id }),
             );
           }
-          this.router.navigate(['/home']);
-          console.log('Login successful, navigating to /home');
+          // Preserve possible returnUrl query param (set by authGuard). If present, navigate there.
+          const parsed = this.router.parseUrl(this.router.url);
+          const returnUrl = (parsed.queryParams && parsed.queryParams['returnUrl']) as
+            | string
+            | undefined;
+          if (returnUrl) {
+            console.log('Login successful, navigating to returnUrl', returnUrl);
+            this.router.navigateByUrl(returnUrl);
+          } else {
+            this.router.navigate(['/home']);
+            console.log('Login successful, navigating to /home');
+          }
         }),
       ),
     { dispatch: false },
@@ -95,16 +111,16 @@ export class LoginEffects {
           return null;
         }
 
-        return LoginActions.loginSuccess({
-          response: {
-              data: {
-                token,
-                user: JSON.parse(userRaw),
-                message: 'Hydrated from localStorage',
-                error: false,
-              },
-          },
-        });
+        return LoginActions.hydrateSuccess({
+      response: {
+        data: {
+          token,
+          user: JSON.parse(userRaw),
+          message: 'Hydrated',
+          error: false,
+        },
+      },
+    });
       }),
       filter(Boolean),
     ),

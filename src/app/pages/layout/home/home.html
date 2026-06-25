@@ -1,17 +1,23 @@
+<!-- <app-top-nav-filter></app-top-nav-filter> -->
 <div class="container">
     <div class="sidebar">
+        <app-user-info-card></app-user-info-card>
         <app-side-nav-card></app-side-nav-card>
     </div>
     <div class="feed">
         <router-outlet></router-outlet>
     </div>
     <div class="sidebar-right sidebar">
-        @if ( url !== '/home/profile') {
-        <app-user-info-card></app-user-info-card>
-        }
         @if(url === '/home/profile') {
         <app-social-verify />
         }
+        @if(url !== '/home/profile') {
+        <app-your-earnings></app-your-earnings>
+        }
+
+        <app-trending-ads></app-trending-ads>
+
+
     </div>
     <app-footer></app-footer>
 

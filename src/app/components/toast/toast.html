@@ -1,0 +1,5 @@
+<div class="toast-wrap" *ngIf="(vm$ | async) as msg">
+  <div class="toast" [class.success]="$any(msg).type === 'success'" [class.error]="$any(msg).type === 'error'">
+    <div class="toast-text">{{ $any(msg).text }}</div>
+  </div>
+</div>

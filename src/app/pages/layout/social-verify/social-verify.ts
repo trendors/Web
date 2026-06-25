@@ -32,7 +32,7 @@ export class SocialVerify {
 
 
 
-  twitter = { verified: true, handle: 'johndoe', followers: 12400 };
+  twitter = { verified: false, handle: 'johndoe', followers: 12400 };
   instagram = { verified: false, handle: '', followers: 0 };
   tiktok = { verified: false, handle: '', followers: 0 };
 

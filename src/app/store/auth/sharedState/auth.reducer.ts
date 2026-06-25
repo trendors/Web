@@ -27,6 +27,7 @@ export const initiaState: AuthState = {
 export const authReducer = createReducer(
   initiaState,
 
+  // Register
   on(RegisterActions.registerRequest, (state) => ({
     ...state,
     isLoading: true,
@@ -47,30 +48,39 @@ export const authReducer = createReducer(
     error: error || 'Registration failed',
   })),
 
+  // Login
   on(LoginActions.loginRequest, (state) => ({
     ...state,
     isLoading: true,
     error: null,
   })),
 
-  on(LoginActions.loginSuccess, (state, { response }) => ({
-    ...state,
-    user: response?.data?.user ?? null,
-    token: response?.data?.token ?? null,
-    isLoggedIn: true,
-    isLoading: false,
-    error: null,
-  })),
+  // Handle BOTH login and hydration
+  on(
+    LoginActions.loginSuccess,
+    LoginActions.hydrateSuccess,
+    (state, { response }) => ({
+      ...state,
+      user: response?.data?.user ?? null,
+      token: response?.data?.token ?? null,
+      isLoggedIn: true,
+      isLoading: false,
+      error: null,
+    }),
+  ),
+
   on(LoginActions.loginFailure, (state, { error }) => ({
     ...state,
     isLoading: false,
     error: error || 'Login failed',
   })),
 
+  // Logout
   on(logoutUser, () => ({
     ...initiaState,
   })),
 
+  // Forgot password
   on(PasswordRecoveryActions.forgotPasswordRequest, (state) => ({
     ...state,
     isLoading: true,
@@ -89,6 +99,7 @@ export const authReducer = createReducer(
     error: error || 'Forgot password failed',
   })),
 
+  // Reset password
   on(PasswordRecoveryActions.resetPasswordRequest, (state) => ({
     ...state,
     isLoading: true,
@@ -107,6 +118,7 @@ export const authReducer = createReducer(
     error: error || 'Reset password failed',
   })),
 
+  // Change password
   on(PasswordChangeActions.changePasswordRequest, (state) => ({
     ...state,
     isLoading: true,
@@ -125,11 +137,14 @@ export const authReducer = createReducer(
     error: error || 'Change password failed',
   })),
 
- on(updateCurrentUser, (state, { user }) => ({
-  ...state,
-  user: {
-    ...state.user,
-    ...user, 
-  },
-}))
+  // Update current user
+  on(updateCurrentUser, (state, { user }) => ({
+    ...state,
+    user: state.user
+      ? {
+          ...state.user,
+          ...user,
+        }
+      : user,
+  })),
 );

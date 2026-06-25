@@ -2,31 +2,8 @@
 
 <div class="card social-card">
     <div class="section-label">Connected Accounts</div>
-  
-  <!-- Value Prop -->
-  <!-- <div class="connect-value">
-    <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
-      <path d="M13 2L3 14h9l-1 10 10-12h-9l1-10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span>Connected accounts display your follower count, making it easier for businesses to find and partner with you.</span>
-  </div> -->
-
-  <!-- Connection Summary -->
-  <!-- <div class="connect-summary">
-    <div class="summary-pill connected">
-      <span class="dot connected-dot"></span>
-      {{ connectedCount }} Connected
-    </div>
-    <div class="summary-pill pending">
-      <span class="dot pending-dot"></span>
-      {{ 3 - connectedCount }} Not Connected
-    </div>
-  </div> -->
-
-  <!-- Platform List -->
   <div class="platform-list">
 
-    <!-- Twitter -->
     <div class="platform-item" [class.verified]="twitter.verified">
       <div class="platform-left">
         <div class="platform-icon twitter-icon">
@@ -36,7 +13,6 @@
         </div>
         <div class="platform-meta">
           <div class="platform-name-row">
-            <!-- <span class="platform-name">Twitter / X</span> -->
             <span class="status-chip connected-chip" *ngIf="twitter.verified">Connected</span>
             <span class="status-chip pending-chip" *ngIf="!twitter.verified">Not Connected</span>
           </div>
@@ -54,7 +30,6 @@
 
     <div class="item-divider"></div>
 
-    <!-- Instagram -->
     <div class="platform-item" [class.verified]="instagram.verified">
       <div class="platform-left">
         <div class="platform-icon instagram-icon">
@@ -64,7 +39,6 @@
         </div>
         <div class="platform-meta">
           <div class="platform-name-row">
-            <!-- <span class="platform-name">Instagram</span> -->
             <span class="status-chip connected-chip" *ngIf="instagram.verified">Connected</span>
             <span class="status-chip pending-chip" *ngIf="!instagram.verified">Not Connected</span>
           </div>
@@ -82,7 +56,6 @@
 
     <div class="item-divider"></div>
 
-    <!-- TikTok -->
     <div class="platform-item" [class.verified]="tiktok.verified">
       <div class="platform-left">
         <div class="platform-icon tiktok-icon">
@@ -92,7 +65,6 @@
         </div>
         <div class="platform-meta">
           <div class="platform-name-row">
-            <!-- <span class="platform-name">TikTok</span> -->
             <span class="status-chip connected-chip" *ngIf="tiktok.verified">Connected</span>
             <span class="status-chip pending-chip" *ngIf="!tiktok.verified">Not Connected</span>
           </div>
@@ -108,7 +80,6 @@
       </div>
     </div>
 
-    <!-- Verify Panel -->
     @if (activeVerify) {
     <div class="verify-panel">
 
@@ -119,7 +90,6 @@
             <button class="close-btn" (click)="closeVerify()" type="button">✕</button>
         </div>
 
-        <!-- Method Selector -->
         <div class="method-tabs">
             <button class="method-tab" [class.active]="verifyMethod === 'oauth'" (click)="verifyMethod = 'oauth'"
                 type="button">

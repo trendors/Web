@@ -29,7 +29,7 @@
               placeholder="e.g. Summer Sale 2024"
               maxlength="80"
             />
-            <div class="char-count">{{ campaignTitle.length }}/80</div>
+            <div class="char-count">{{ campaignTitle() .length }}/80</div>
           </div>
           <div class="field" style="margin-bottom: 0">
             <label
@@ -43,7 +43,7 @@
             ></textarea>
             <label> <span class="hint">This can be rewritten</span></label>
 
-            <div class="char-count">{{ campaignDescription.length }}/300</div>
+            <div class="char-count">{{ campaignDescription() .length }}/300</div>
           </div>
         </div>
       </div>
@@ -106,7 +106,7 @@
         <div class="card">
           <div
             class="upload-zone"
-            [class.dragover]="isDragging"
+              [class.dragover]="isDragging()"
             (dragover)="onDragOver($event)"
             (dragleave)="onDragLeave()"
             (drop)="onDrop($event)"
@@ -177,6 +177,39 @@
                 <div class="access-title">{{ ac.title }}</div>
                 <div class="access-desc">{{ ac.desc }}</div>
               </label>
+            </div>
+          </div>
+          <div style="margin-top:16px">
+            <div class="section-title">Payment & Slots</div>
+            <div class="card">
+              @if (selectedAccess === 'open' || selectedAccess === 'application') {
+              <div class="field">
+                <label>Rate per slot (NGN)</label>
+                <input type="number" [(ngModel)]="ratePerSlot" placeholder="e.g. 2000" />
+              </div>
+              <div class="field">
+                <label>Max slots</label>
+                <input type="number" [(ngModel)]="maxSlots" placeholder="e.g. 200" />
+              </div>
+              }
+              @if (selectedAccess === 'invite_only') {
+              <div class="field">
+                <label>Negotiated amount (NGN)</label>
+                <input type="number" [(ngModel)]="negotiatedAmount" placeholder="e.g. 2500" />
+              </div>
+              <div class="field">
+                <label>Max slots</label>
+                <input type="number" [(ngModel)]="maxSlots" placeholder="e.g. 50" />
+              </div>
+              <div class="field">
+                <label>Bonus tiers (JSON, optional)</label>
+                <textarea [(ngModel)]="bonusTiersInput" placeholder='[{"milestone":10,"bonus":500},...]'></textarea>
+              </div>
+              }
+              <div class="field">
+                <label>Total budget</label>
+                <div class="budget-val">₦{{ computedBudget }}</div>
+              </div>
             </div>
           </div>
           <div style="margin-top: 11px">
@@ -473,11 +506,11 @@
         <div class="rv-card">
           <div class="rv-row">
             <div class="rv-key">Name</div>
-            <div class="rv-val" [class.empty]="!campaignName">{{ campaignTitle() || '—' }}</div>
+            <div class="rv-val" [class.empty]="!campaignTitle()">{{ campaignTitle() || '—' }}</div>
           </div>
           <div class="rv-row">
             <div class="rv-key">Description</div>
-            <div class="rv-val" [class.empty]="!description" style="max-width: 300px">
+            <div class="rv-val" [class.empty]="!campaignDescription()" style="max-width: 300px">
               {{ campaignDescription() || '—' }}
             </div>
           </div>
@@ -521,14 +554,14 @@
           </div>
           <div class="rv-row">
             <div class="rv-key">Auto-generate captions</div>
-            <div class="rv-val">{{ autoGenerate ? 'Yes' : 'No' }}</div>
+            <div class="rv-val">{{ auto_generate_captions() ? 'Yes' : 'No' }}</div>
           </div>
           <div class="rv-row">
             <div class="rv-key">Files</div>
-            <div class="rv-val" [class.empty]="files.length === 0">
+            <div class="rv-val" [class.empty]="selectedImages().length === 0">
               {{
-                files.length > 0
-                  ? files.length + ' file' + (files.length > 1 ? 's' : '') + ' uploaded'
+                selectedImages().length > 0
+                  ? selectedImages().length + ' file' + (selectedImages().length > 1 ? 's' : '') + ' uploaded'
                   : 'No files uploaded'
               }}
             </div>
@@ -592,4 +625,7 @@
         </nav>
       </div>
     </div>
+
+
+
 

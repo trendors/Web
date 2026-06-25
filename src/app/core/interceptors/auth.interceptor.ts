@@ -21,7 +21,13 @@ if (isPlatformBrowser(platformId)) {
    // Usually, you just skip token logic or use Cookies if needed.
 }
 
-  if (token) {
+  // Allow callers to opt-out of auth handling by setting header 'x-skip-auth'
+  const skipAuthHeader = req.headers.get('x-skip-auth');
+  const skipAuth = skipAuthHeader === 'true';
+  if (skipAuth) {
+    // remove the helper header so it doesn't reach the server
+    req = req.clone({ headers: req.headers.delete('x-skip-auth') });
+  } else if (token) {
     req = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`,
@@ -31,7 +37,8 @@ if (isPlatformBrowser(platformId)) {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 || error.status === 403) {
+      // If request opted out of auth handling, don't force navigation on 401/403
+      if (!skipAuth && (error.status === 401 || error.status === 403)) {
         localStorage.removeItem('token');
         router.navigate(['/login']);
         store.dispatch(logoutUser());

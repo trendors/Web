@@ -1,7 +1,7 @@
 import { Component, Inject, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, map, Observable, tap } from 'rxjs';
 import { UtilService } from '../../core/services/utility/utility.service';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { AsyncPipe } from '@angular/common';
@@ -10,14 +10,16 @@ import { Store } from '@ngrx/store';
 import { SharesActions } from '../../store/shares/shares.action';
 import { CreateShare, SocialMedia } from '../../core/models/shares/shares.model';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
+import { LoaderComponent } from "../loader/loader";
 
 
 
 @Component({
   selector: 'app-share-sheet',
   imports: [
-    MatListModule, MatIconModule, AsyncPipe
-  ],
+    MatListModule, MatIconModule, AsyncPipe,
+    LoaderComponent
+],
   standalone: true,
   templateUrl: './share-sheet.html',
   styleUrl: './share-sheet.scss',
@@ -33,7 +35,7 @@ export class ShareSheet {
   shareVersions$!: Observable<any[]>;
   trends$!: Observable<any[]>
   user$!: Observable<any>;
-
+  isAiLoading = false;
 
 
   ngOnInit() {
@@ -50,10 +52,24 @@ export class ShareSheet {
     console.log(this.selectedPost, "selected version")
   }
 
-  fetchAireWrite() {
-    let text = this.data.post.text
-    this.shareVersions$ = this.utilService.fetchAiRewrite(text);
-  }
+
+fetchAireWrite() {
+  const text = this.data.post.text;
+  if (!text) return;
+
+  this.isAiLoading = true; 
+  this.shareVersions$ = this.utilService.fetchAiRewrite(text).pipe(
+    tap({
+      next: () => {
+        this.isAiLoading = false; 
+      },
+      error: (err) => {
+        console.error('AI Rewrite failed:', err);
+        this.isAiLoading = false; 
+      }
+    })
+  );
+}
 
   fetchXtrends() {
     this.trends$ = this.utilService.fetchTrends().pipe(
@@ -89,12 +105,12 @@ export class ShareSheet {
 
   close() { }
 
-  async shareToX() {
+  async shareToX(post: any) {
     const currentUser = await firstValueFrom(this.user$);
     let trendText = this.trends$.pipe(map(trends => trends.slice(0, 4).map((t: any) => `${t.name}`).join(' ')));
     const baseUrl = 'https://twitter.com/intent/tweet';
     const params = new URLSearchParams({
-      text: `${this.selectedPost}\n \nView more: https://b5267a42e435.ngrok-free.app/post/24 \n${await trendText.toPromise()}`
+      text: `${this.selectedPost}\n \nView more: https://c967-102-90-123-32.ngrok-free.app/post/${post.id} \n${await trendText.toPromise()}`
     });
     const shareUrl = `${baseUrl}?${params.toString()}`;
     const twitterwindow = window.open(shareUrl, '_blank', 'width=550,height=420')

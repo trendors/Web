@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guard/auth-guard';
-import path from 'path';
 
 export const routes: Routes = [
   {
@@ -77,6 +76,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
+  },
+
+  {
+    path: 'post/:id',
+    loadComponent: () =>
+      import('./pages/layout/single-post/single-post').then((m) => m.SinglePost),
   },
 
   {

@@ -1,0 +1,29 @@
+
+  <div class="earnings">
+    <div class="earnings__title">
+      <i class="ti ti-coin" aria-hidden="true"></i>
+      Your earnings
+    </div>
+ 
+    <div class="earnings__stat">
+      <div class="earnings__stat-value">${{ (totals$ | async)?.totalEarned | number:'1.2-2' }}</div>
+      <div class="earnings__stat-label">Total earned</div>
+    </div>
+    <div class="earnings__stat">
+      <div class="earnings__stat-value">$0.00</div>
+      <div class="earnings__stat-label">This week</div>
+      <div class="earnings__progress-bar">
+        <div class="earnings__progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+ 
+    <p class="earnings__hint">$5.80 to next payout ($10 min)</p>
+ 
+    <div class="earnings__divider"></div>
+ 
+    <button class="earnings__withdraw-btn" [routerLink]="['/profile']">
+      <i class="ti ti-wallet" aria-hidden="true"></i>
+      Withdraw
+    </button>
+  </div>
+ 

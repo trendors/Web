@@ -9,6 +9,9 @@ export const LoginActions = createActionGroup({
     'Login Success': props<{ response: LoginResponse }>(),
 
     'Login Failure': props<{ error: string }>(),
+
+        'Hydrate Success': props<{ response: LoginResponse }>(),
+
   },
 });
 
@@ -16,3 +19,4 @@ export const updateCurrentUser = createAction(
   '[Auth] Update Current User',
   props<{ user: User }>(),
 );
+
