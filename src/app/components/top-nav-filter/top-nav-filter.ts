@@ -51,16 +51,10 @@ export class TopNavFilter {
     this.applyFilters();
   }
 
-  // 5. Apply the Logic
   applyFilters() {
     const filters = {
       isPaid: this.onlyPaid,
       categories: Array.from(this.selectedCats) // Convert Set back to Array for the API
     };
-
-    console.log('Current Filters Applied:', filters);
-    
-    // Here you would call your service, e.g.:
-    // this.postService.getFilteredPosts(filters).subscribe(...);
   }
 }

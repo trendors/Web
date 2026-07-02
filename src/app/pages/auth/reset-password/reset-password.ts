@@ -45,7 +45,6 @@ export class ResetPassword {
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       this.token = params['token'] || null;
-      console.log('Reset token:', this.token);
     });
   }
 

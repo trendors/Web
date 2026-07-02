@@ -1,9 +1,10 @@
+
 <div class="card">
   <div class="section-label">Wallet</div>
 
   <div class="wallet-balance-row">
     <div class="wallet-info">
-      <span class="wallet-balance"> {{ (wallet$ | async)?.balance | currency }}</span>
+      <span class="wallet-balance"> {{ (wallet$ | async)?.balance || 0 }} NGN</span>
       <span class="wallet-tag">Available balance</span>
     </div>
     <div class="wallet-actions">
@@ -69,6 +70,10 @@
     <input class="field-input pin-input" type="password" placeholder="• • • • " maxlength="4" />
     <span class="field-hint">Enter your 4-digit PIN to confirm account changes</span>
   </div>
+  @if (updatingAccount) {
+    <app-loader></app-loader>
+
+  }
 
   <button class="btn-accent full-width" style="margin-top: 20px;" type="button" (click)="onSaveBankAccount()">
     Update Withdrawal Account
@@ -127,13 +132,15 @@
     [disabled]="profileForm.invalid || (isLoading$ | async)">
     {{ (isLoading$ | async) ? 'Saving...' : 'Save Changes' }}
   </button>
+
+
 </div>
 
 <div class="card">
   <div class="section-label">Security</div>
   <p class="security-note">Update your password to keep your account safe.</p>
 
-  <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="form">
+  <form [formGroup]="passwordForm"  class="form">
     <div class="field">
       <label class="field-label">Current Password</label>
       <input class="field-input" formControlName="oldPassword" type="password" placeholder="Enter current password" />
@@ -173,7 +180,7 @@
     <span class="error-msg">{{ authError }}</span>
     }
 
-    <button class="btn-accent full-width" type="submit" [disabled]="passwordForm.invalid || (authIsLoading$ | async)">
+    <button class="btn-accent full-width" type="submit" [disabled]="passwordForm.invalid || (authIsLoading$ | async)" (click)="onChangePassword()">
       {{ (authIsLoading$ | async) ? 'Updating...' : 'Update Password' }}
     </button>
   </form>

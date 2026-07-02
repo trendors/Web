@@ -44,11 +44,9 @@ export class WalletService {
 
 getAccountDetails(recipient?: string): Observable<any> {
   if (!recipient) {
-    console.warn("getAccountDetails called without a valid recipient code tracking string.");
     return of(null); 
   }
 
-  console.log("Resolving bank information for recipient:", recipient);
   return this.http.get<any>(`${this.apiUrl}/api/get-account-details/${recipient}`, {
     headers: {
       'accept': '*/*'

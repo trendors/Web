@@ -66,7 +66,6 @@ export class SinglePost {
 
   onLike(postId: number | string) {
     // Implement your like logic
-    console.log('Liked post:', postId);
   }
 
   goBack() {

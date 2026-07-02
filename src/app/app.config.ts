@@ -32,6 +32,7 @@ import {
 } from './store/transactions/transaction.reducer';
 import { TransactionsEffects } from './store/transactions/transaction.effects';
 import { SocketService } from './socket.service';
+import { UserEffects } from './store/user/user.effect';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -60,6 +61,7 @@ export const appConfig: ApplicationConfig = {
       CampaignEffects,
       InvitationEffects,
       TransactionsEffects,
+      UserEffects
     ]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],

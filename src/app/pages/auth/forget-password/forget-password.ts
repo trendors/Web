@@ -50,9 +50,6 @@ export class ForgetPassword {
         const responseData = action.response.data?.resetToken;
         if (responseData) {
           const resetLink = `/reset-password?token=${responseData}`;
-          console.log('Password reset token:', responseData);
-          console.log('Password reset link:', resetLink);
-
           this.router.navigateByUrl(resetLink);
         }
       });

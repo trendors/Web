@@ -19,27 +19,27 @@ export class UserInfoCard {
   private router = inject(Router);
   user$ = this.store.select(selectCurrentUser);
 
- 
+
   shares$!: Observable<Share[]>;
   totals$!: Observable<{ totalShares: number; totalEarned: number; pendingCount: number }>;
 
   onlyPaid: boolean = false;
   selectedCats: Set<string> = new Set();
 
-   ngOnInit() {
-      this.shares$ = this.store.select(selectFilteredShares);
+  ngOnInit() {
+    this.shares$ = this.store.select(selectFilteredShares);
     this.totals$ = this.store.select(selectTotals);
-      this.user$ = this.store.select(selectCurrentUser);
-        this.loadShares();
-    }
+    this.user$ = this.store.select(selectCurrentUser);
+    this.loadShares();
+  }
 
-   async loadShares() {
-      const user = await firstValueFrom(this.user$);
-      if (!user) {
-        return;
-      }
-      this.store.dispatch(SharesActions.loadShares({ userId: user.id }));
+  async loadShares() {
+    const user = await firstValueFrom(this.user$);
+    if (!user) {
+      return;
     }
+    this.store.dispatch(SharesActions.loadShares({ userId: user.id }));
+  }
   routeTo(path: string) {
     this.router.navigate([path]);
   }

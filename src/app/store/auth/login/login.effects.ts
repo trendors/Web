@@ -75,11 +75,9 @@ export class LoginEffects {
             | string
             | undefined;
           if (returnUrl) {
-            console.log('Login successful, navigating to returnUrl', returnUrl);
             this.router.navigateByUrl(returnUrl);
           } else {
             this.router.navigate(['/home']);
-            console.log('Login successful, navigating to /home');
           }
         }),
       ),

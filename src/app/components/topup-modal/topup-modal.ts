@@ -2,7 +2,7 @@
 import {
   Component, Output, EventEmitter, inject, signal, Input
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { PaystackService } from '../../core/services/utility/paystack.service';
@@ -18,7 +18,7 @@ declare var PaystackPop: any;
 @Component({
   selector: 'app-topup-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [NgFor, DecimalPipe, FormsModule, FormsModule],
   animations: [
     trigger('backdrop', [
       transition(':enter', [
@@ -45,152 +45,118 @@ declare var PaystackPop: any;
   styleUrl: './topup-modal.scss',
 })
 export class TopupModalComponent {
+
+  // ── Inputs / Outputs ──────────────────────────────────────────────────────
   @Input() userEmail = '';
   @Output() closed = new EventEmitter<void>();
-  @Output() topupSuccess = new EventEmitter<number>(); // emits amount topped up
+  @Output() topupSuccess = new EventEmitter<any>();
+ 
+  // ── DI ───────────────────────────────────────────────────────────────────
+  private http = inject(HttpClient);
   private store = inject(Store);
+ 
+  // ── State ─────────────────────────────────────────────────────────────────
   user: User | null = null;
-
-  currentUser$ = this.store.select(selectCurrentUser);
-  walletBalance?: number;
-
-  amount: number = 0;
-  loading = false;
-
-  constructor(private http: HttpClient) {
-  }
-
-  ngOnInit(): void {
-    this.currentUser$.pipe(take(1)).subscribe((user) => {
-      if (user) {
-        this.user = user;
-        this.userEmail = user.email;
-        console.log('Current user in TopupModalComponent:', user);
-      }
-    });
-  }
-
-  private paystack = inject(PaystackService);
-
-  presets = [1000, 2000, 5000, 10000, 20000, 50000];
+  datas = [1,2,3,4,5]
+  presets = [1_000, 2_000, 5_000, 10_000, 20_000, 50_000];
   selectedPreset: number | null = null;
   customAmount = '';
   isProcessing = signal(false);
   errorMsg = signal('');
+ 
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  ngOnInit(): void {
+      console.log('presets on init:', this.presets); // should log 6 items
 
+    this.store
+      .select(selectCurrentUser)
+      .pipe(take(1))
+      .subscribe((user) => {
+        if (user) {
+          this.user = user;
+          this.userEmail = user.email;
+        }
+      });
+  }
+ 
   get finalAmount(): number {
-    return this.selectedPreset ?? (parseInt(this.customAmount) || 0);
+    return this.selectedPreset ?? (parseInt(this.customAmount, 10) || 0);
   }
-
+ 
   get isValid(): boolean {
-    return this.finalAmount >= 100; // ₦100 minimum
+    return this.finalAmount >= 100;
   }
-
-  initiatePayment() {
-
-
-    this.loading = true;
-
-    this.http.post(`${environment.apiUrl}/utility/initialize`, {
-      email: this.userEmail,
-      amount: this.finalAmount * 100,
-      trendors_id: this.user?.trendors_id 
-    }).subscribe({
-      next: (res: any) => {
-        this.launchPaystack(res.data);
-      },
-      error: (err) => {
-        this.loading = false;
-        alert('Could not initialize payment');
-        console.error(err);
-      }
-    });
-  }
-
-  launchPaystack(paymentData: any) {
-    const handler = PaystackPop.setup({
-      key: environment.paystackPublicKey,
-      email: this.userEmail,
-      amount: this.finalAmount * 100,
-      ref: paymentData.reference, 
-      currency: 'NGN',
-      channels: ['card', 'bank', 'bank_transfer', 'ussd', 'qr', 'eft'],
-      onClose: () => {
-        this.loading = false;
-        console.log('Payment window closed');
-        this.closed.emit();
-      },
-      onSuccess: (response: any) => {
-        this.loading = false;
-        console.log('Payment successful:', response);
-
-        
-
-        // this.verifyPayment(response.reference);
-
-        this.topupSuccess.emit(response);
-      }
-    });
-
-    handler.openIframe();
-  }
-
-
-  verifyPayment(reference: string) {
-    this.http.post(`${environment.apiUrl}/payments/verify`, {
-      reference: reference,
-      email: this.userEmail,
-      amount: this.finalAmount * 100,
-    }).subscribe({
-      next: (res: any) => {
-        console.log('Payment verified:', res);
-        alert('Payment successful! Account topped up.');
-      },
-      error: (err) => {
-        console.error('Verification failed:', err);
-      }
-    });
-  }
-
+ 
   selectPreset(amount: number): void {
     this.selectedPreset = amount;
     this.customAmount = '';
     this.errorMsg.set('');
   }
-
+ 
   onCustomInput(): void {
     this.selectedPreset = null;
     this.errorMsg.set('');
   }
-
-
-  pay(): void {
+ 
+  // ── Payment flow ──────────────────────────────────────────────────────────
+  initiatePayment(): void {
     if (!this.isValid) {
-      this.errorMsg.set('Minimum top-up amount is ₦100.');
+      this.errorMsg.set('Minimum top-up is ₦100.');
       return;
     }
+ 
     this.isProcessing.set(true);
     this.errorMsg.set('');
-    const ref = this.paystack.generateRef();
+ 
+    this.http
+      .post<{ data: { reference: string } }>(
+        `${environment.apiUrl}/utility/initialize`,
+        {
+          email: this.userEmail,
+          amount: this.finalAmount * 100, // kobo
+          trendors_id: this.user?.trendors_id,
+        }
+      )
+      .subscribe({
+        next: (res) => this.launchPaystack(res.data),
+        error: (err) => {
+          this.isProcessing.set(false);
+          this.errorMsg.set(
+            err?.error?.message ?? 'Could not initialize payment. Try again.'
+          );
+          console.error('Initialize error:', err);
+        },
+      });
   }
-
-  private openPaystackPopup(ref: string): void {
-    this.paystack.openPopup({
+ 
+  private launchPaystack(paymentData: { reference: string }): void {
+    const handler = PaystackPop.setup({
+      key: environment.paystackPublicKey,
       email: this.userEmail,
       amount: this.finalAmount * 100,
-      ref,
-      onSuccess: () => {
+      ref: paymentData.reference,
+      currency: 'NGN',
+      channels: ['card', 'bank', 'bank_transfer', 'ussd', 'qr', 'eft'],
+ 
+      onClose: () => {
+        // User dismissed — don't close the modal, let them retry
         this.isProcessing.set(false);
-        this.topupSuccess.emit(this.finalAmount);
+      },
+ 
+      onSuccess: (response: any) => {
+        this.isProcessing.set(false);
+        this.topupSuccess.emit(response);
         this.closed.emit();
       },
-      onClose: () => {
-        this.isProcessing.set(false);
-      }
     });
+ 
+    handler.openIframe();
   }
-
+ 
+  // ── Close ─────────────────────────────────────────────────────────────────
   close(): void {
-    if (!this.isProcessing()) this.closed.emit();
+    if (!this.isProcessing()) {
+      this.closed.emit();
+    }
   }
 }

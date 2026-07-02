@@ -50,14 +50,10 @@ export class Home {
   url = '';
 
   constructor(private router: Router) {
-
-
-
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
       this.url = event.url;
-      console.log('Current route:', event.url);
     });
   }
 

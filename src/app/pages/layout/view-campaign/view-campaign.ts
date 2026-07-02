@@ -76,27 +76,6 @@ export class ViewCampaign implements OnInit, OnDestroy {
     { label: 'Ended', value: 'application' },
   ];
 
-  // stats: PageStat[] = [
-  //   { label: 'Total Campaigns', value: '24',   valueClass: '',       change: '↑ 4 this month',          changeClass: 'up'  },
-  //   { label: 'Active Now',      value: '9',    valueClass: 'accent', change: 'Running live',             changeClass: ''    },
-  //   { label: 'Total Reach',     value: '2.4M', valueClass: '',       change: '↑ 18% vs last month',      changeClass: 'up'  },
-  //   { label: 'Avg. Engagement', value: '6.8%', valueClass: 'amber',  change: 'Across all campaigns',     changeClass: ''    },
-  // ];
-
-  // get filteredCampaigns(): any[] {
-  //  return [];
-  // return this.campaigns.filter(c => {
-  //   const matchesFilter = this.activeFilter === 'all' || c.status === this.activeFilter;
-  //   const matchesSearch = c.name.toLowerCase().includes(this.searchQuery.toLowerCase());
-  //   return matchesFilter && matchesSearch;
-  // });
-  // }
-
-  // filteredCampaigns$ = combineLatest([this.campaigns$, this.search$, this.monthFilter$]).pipe(
-  //   map(([campaigns, search, months]) => this.applyFilters(campaigns, search, months)),
-  //   tap(list => console.log('Filtered Campaigns:', list))
-  // );
-
   constructor() {
     this.filteredCampaigns$ = combineLatest([
       this.campaigns$,
@@ -157,16 +136,11 @@ export class ViewCampaign implements OnInit, OnDestroy {
   }
 
   openModal(campaign: Campaign): void {
-    // this.selectedCampaign = campaign;
-    // this.isModalOpen = true;
-    // document.body.style.overflow = 'hidden';
-    console.log('Opening modal for campaign:', campaign);
     const dialogRef = this.dialog.open(CampaignSummary, {
       data: campaign,
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      console.log(`Dialog result: ${result}`);
     });
   }
 

@@ -150,11 +150,9 @@ export class CreateCampaign {
     }
 
     this.user$.pipe(take(1)).subscribe((user) => {
-      console.log('CreateCampaign / ngOnInit user', user);
       if (user?.id) {
         this.invitationSvc.getMyInvitations(user.id).subscribe({
           next: (list) => {
-            console.log('invitationSvc list', list);
             this.selectedMembers.set(list);
           },
           error: (err) => console.error('invitationSvc failed', err),

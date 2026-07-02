@@ -135,7 +135,6 @@ export class Posts implements OnInit, OnDestroy {
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((searchValue) => {
-        console.log('🔍 Search value changed:', searchValue);
         this.onSearchChange(searchValue);
       });
   }
@@ -153,7 +152,7 @@ export class Posts implements OnInit, OnDestroy {
     const normalizedSearch = searchQuery.trim().toLowerCase();
 
     if (!normalizedSearch) {
-      return posts; // Return all posts if search is empty
+      return posts; 
     }
 
     return posts.filter((post) => {
@@ -176,7 +175,6 @@ export class Posts implements OnInit, OnDestroy {
       this.ngZone.run(() => {
         this.cdr.markForCheck();
         this.pendingPosts.push(post);
-        console.log('New post received via socket:', this.pendingPosts);
         this.newPostsAvailable = true;
       });
     });
@@ -188,7 +186,6 @@ export class Posts implements OnInit, OnDestroy {
   }
 
   loadInitialPosts(searchString?: string) {
-    console.log('🔍 Loading posts with search:', searchString);
     this.store.dispatch(
       PostActions.findAllPosts({
         query: {
@@ -241,7 +238,6 @@ export class Posts implements OnInit, OnDestroy {
         maxIncentiveShares: 0,
       };
 
-      console.log('📝 Creating post:', dto);
       this.store.dispatch(PostActions.createPost({ dto, file: this.selectedFile || undefined }));
       this.postForm.reset();
       this.removeSelectedImage();
@@ -260,8 +256,6 @@ export class Posts implements OnInit, OnDestroy {
         userId: user.id,
         trendorsId: user.trendors_id || 'default_id',
       };
-
-      console.log('❤️ Liking post:', dto);
       this.store.dispatch(PostActions.likePost({ dto }));
     });
   }

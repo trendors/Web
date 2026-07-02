@@ -49,7 +49,6 @@ export class ShareSheet {
 
   selectVersion(post: string) {
     this.selectedPost = post
-    console.log(this.selectedPost, "selected version")
   }
 
 
@@ -87,7 +86,6 @@ fetchAireWrite() {
     try {
       const response = await fetch('https://api.ipify.org?format=json');
       const data = await response.json();
-      console.log("User IP:", data.ip);
       return data.ip as string;
     } catch (error) {
       console.error("Error fetching IP:", error);
@@ -117,8 +115,6 @@ fetchAireWrite() {
     if (!twitterwindow || twitterwindow.closed || typeof twitterwindow.closed === 'undefined') {
 
     } else {
-      console.log("we run it here", this.data)
-
       let share: CreateShare = {
         postId: this.data.post.id,
         sharers_trendorsId: currentUser?.trendors_id ?? '',

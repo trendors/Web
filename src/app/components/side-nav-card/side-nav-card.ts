@@ -33,7 +33,6 @@ export class SideNavCard implements OnInit {
 
   routeTo(path: string) {
     this.router.navigate([path]);
-    console.log(`Navigating to: ${path}`);
   }
 
   logout() {

@@ -7,30 +7,37 @@ import { logoutUser } from '../auth/logout/logout.action';
 import { updateCurrentUser } from '../auth/login/login.actions';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { User } from '../../core/models/users/user.model';
+import { ToastService } from '../../components/toast/toast.service';
 
 @Injectable()
 export class UserEffects {
   private actions$ = inject(Actions);
   private userService = inject(UserService);
   private authService = inject(AuthService);
+  private toast = inject(ToastService);
+  
 
-  updateUser$ = createEffect(() =>
+ updateUser$ = createEffect(() =>
     this.actions$.pipe(
-      tap(() => console.log('Effect triggered')), // 👈 ADD THIS
-
-      ofType(UserAction.updateUser),
+      ofType(UserAction.updateUser), 
+      tap(({ userId, updateData }) => console.log('Update User action caught in effect:', { userId, updateData })), 
       mergeMap(({ userId, updateData }) =>
         this.userService.updateUser(userId, updateData).pipe(
-          map((response) =>
-            response.data
-              ? UserAction.updateUserSuccess({ user: response.data })
-              : UserAction.updateUserFailure({
+          map((response) => {
+            if (response.data) {
+              this.toast.show('Successfully Updated Account', 'success');
+              return UserAction.updateUserSuccess({ user: response.data });
+            } else {
+              this.toast.show(response.message || 'Failed to update user', 'error');
+              return UserAction.updateUserFailure({
                 error: response.message || 'Failed to update user',
-              })
-          ),
-          catchError((error) =>
-            of(UserAction.updateUserFailure({ error: error.message }))
-          )
+              });
+            }
+          }),
+          catchError((error) => {
+            this.toast.show(error.message || 'Server error updating account', 'error');
+            return of(UserAction.updateUserFailure({ error: error.message }));
+          })
         )
       )
     )

@@ -14,7 +14,6 @@ export class NotificationService {
   }
 
   markAsRead(notificationId: number, trendorId: string): Observable<ApiResponse<null>> {
-    console.log(`Marking notification ${notificationId} as read for trendor ${trendorId}`);
     return this.http.patch<ApiResponse<null>>(
       `${this.apiUrl}/${notificationId}/read/${trendorId}`,
       {},

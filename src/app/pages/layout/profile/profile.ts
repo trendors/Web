@@ -16,7 +16,6 @@ import { MatInputModule } from '@angular/material/input';
 import { Store } from '@ngrx/store';
 import { catchError, debounceTime, distinctUntilChanged, finalize, map, Observable, of, shareReplay, startWith, switchMap, take, tap } from 'rxjs';
 import { User, UpdateUserDto } from '../../../core/models/users/user.model';
-import { UserService } from '../../../core/services/users/user.service';
 import {
   selectAuthError,
   selectCurrentUser,
@@ -27,6 +26,9 @@ import { UserAction } from '../../../store/user/user.action';
 import { selectUserError, selectUserIsLoading } from '../../../store/user/user.selector';
 import { TopupModalComponent } from '../../../components/topup-modal/topup-modal';
 import { WalletService } from '../../../core/services/wallet/wallet.service';
+import { LoaderComponent } from "../../../components/loader/loader";
+import { Alert } from "../../../components/alert/alert";
+import { ToastService } from '../../../components/toast/toast.service';
 
 @Component({
   selector: 'app-profile',
@@ -38,7 +40,9 @@ import { WalletService } from '../../../core/services/wallet/wallet.service';
     MatIconModule,
     AsyncPipe,
     TopupModalComponent,
-    CurrencyPipe
+    CurrencyPipe,
+    LoaderComponent,
+    Alert
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
@@ -47,6 +51,7 @@ export class Profile implements OnInit {
   private fb = inject(FormBuilder);
   private store = inject(Store);
   private walletService = inject(WalletService);
+  private toast = inject(ToastService);
 
   user$ = this.store.select(selectCurrentUser);
   savedBankDetails$: Observable<any> | null = null;
@@ -59,6 +64,23 @@ export class Profile implements OnInit {
   showTopup = false;
   isSubmitting = false
   bankCodeCtrl = new FormControl('', Validators.required);
+  updatingAccount: boolean = false
+  showDropdown = false;
+
+
+   private passwordMatchValidator: ValidatorFn = (
+    control: AbstractControl,
+  ): ValidationErrors | null => {
+    const newPassword = control.get('newPassword')?.value;
+    const confirmPassword = control.get('confirmPassword')?.value;
+    // Only flag an error if both fields have values but don't match
+    if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+      return { passwordMismatch: true };
+    }
+
+    return newPassword === confirmPassword ? null : { passwordMismatch: true };
+  };
+
 
 
   profileForm = this.fb.group({
@@ -86,11 +108,12 @@ export class Profile implements OnInit {
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
     },
-    // { validators: this.passwordMatchValidator },
+    { validators: this.passwordMatchValidator },
   );
 
 
   ngOnInit(): void {
+  
     this.user$.pipe(take(1)).subscribe((user) => {
       if (user) {
         this.user = user;
@@ -107,54 +130,46 @@ export class Profile implements OnInit {
         });
 
         if (user.paystackRecipientCode) {
-        this.savedBankDetails$ = this.walletService.getAccountDetails(user.paystackRecipientCode).pipe(
-          tap((res) => {
-            console.log("Bank account record retrieved from server:", res);
-            
-            // Populating your UI elements with the real database records
-            if (res && res.success) {
-              this.bankSearchCtrl.setValue(res.bankName);
-              this.bankForm.patchValue({
-                accountNumber: res.accountNumber,
-                accountName: res.accountName
-              });
-            }
-          }),
-          catchError((err) => {
-            console.error("Failed to load saved recipient details:", err);
-            return of(null);
-          })
-        );
-      }
-  
+          this.savedBankDetails$ = this.walletService.getAccountDetails(user.paystackRecipientCode).pipe(
+            tap((res) => {
+              if (res && res.success) {
+                this.bankSearchCtrl.setValue(res.bankName);
+                this.bankForm.patchValue({
+                  accountNumber: res.accountNumber,
+                  accountName: res.accountName
+                });
+                this.selectedBankCode = res.bankCode
+
+              }
+            }),
+            catchError((err) => {
+              console.error("Failed to load saved recipient details:", err);
+              return of(null);
+            })
+          );
+        }
+
       }
     });
 
   }
 
-
-
-
-
-showDropdown = false;
-
-banks$: Observable<any> = this.bankSearchCtrl.valueChanges.pipe(
-  startWith(''),
-  debounceTime(300),
-  distinctUntilChanged(),
-  switchMap(searchString => 
-    this.walletService.fetchBanks(searchString ?? '').pipe(
-      catchError(() => of([]))
+  banks$: Observable<any> = this.bankSearchCtrl.valueChanges.pipe(
+    startWith(''),
+    debounceTime(300),
+    distinctUntilChanged(),
+    switchMap(searchString =>
+      this.walletService.fetchBanks(searchString ?? '').pipe(
+        catchError(() => of([]))
+      )
     )
-  )
-);
+  );
 
-onSelectBank(bank: any): void {
-  this.selectedBankCode = bank.code;
-  this.bankSearchCtrl.setValue(bank.name, { emitEvent: false });
-  this.showDropdown = false;
-  console.log("Ready for submission! Code matched:", this.selectedBankCode);
-}
+  onSelectBank(bank: any): void {
+    this.selectedBankCode = bank.code;
+    this.bankSearchCtrl.setValue(bank.name, { emitEvent: false });
+    this.showDropdown = false;
+  }
 
   wallet$ = this.user$.pipe(
     take(1),
@@ -172,18 +187,7 @@ onSelectBank(bank: any): void {
 
 
 
-  private passwordMatchValidator: ValidatorFn = (
-    control: AbstractControl,
-  ): ValidationErrors | null => {
-    const newPassword = control.get('newPassword')?.value;
-    const confirmPassword = control.get('confirmPassword')?.value;
-    if (!newPassword || !confirmPassword) {
-      return null;
-    }
-
-    return newPassword === confirmPassword ? null : { passwordMismatch: true };
-  };
-
+ 
 
 
   onTopupSuccess(amount: number): void {
@@ -192,11 +196,10 @@ onSelectBank(bank: any): void {
     // this.store.dispatch(WalletActions.topupSuccess({ amount }))
   }
 
-  getAccountDetails(){
+  getAccountDetails() {
     this.walletService.getAccountDetails(this.user?.paystackRecipientCode).pipe(
-        map((res: any) => {
-          console.log(res.data, "Data")
-        }),
+      map((res: any) => {
+      }),
     )
   }
 
@@ -209,9 +212,6 @@ onSelectBank(bank: any): void {
       instagram_handle: this.profileForm.value.instagram_handle ?? undefined,
       facebook_username: this.profileForm.value.facebook_username ?? undefined,
     };
-
-    console.log(`Dispatching updateUser with data:`, this.profileForm.value);
-    console.log('User:', this.user);
     this.store.dispatch(UserAction.updateUser({ userId: this.user!.id, updateData }))
   }
 
@@ -222,14 +222,16 @@ onSelectBank(bank: any): void {
   }
 
   onChangePassword() {
-    if (!this.user?.id || this.passwordForm.invalid) {
-      this.passwordForm.markAllAsTouched();
-      return;
-    }
+    // if (!this.user?.id || this.passwordForm.invalid) {
+    //   this.passwordForm.markAllAsTouched();
+    //   return;
+    // }
+
+    console.log(this.passwordForm.value.oldPassword, )
 
     this.store.dispatch(
       PasswordChangeActions.changePasswordRequest({
-        userId: this.user.id,
+        userId: this.user?.id as any,
         oldPassword: this.passwordForm.value.oldPassword!,
         newPassword: this.passwordForm.value.newPassword!,
       }),
@@ -239,34 +241,32 @@ onSelectBank(bank: any): void {
   }
 
   onSaveBankAccount(): void {
-
-    console.log("saving Banks")
-    // if (this.bankForm.invalid) {
-    //   this.bankForm.markAllAsTouched();
-    //   return;
-    // }
-
-
+    this.updatingAccount = true
     const payload = {
       trendors_id: this.user?.trendors_id,
       accountNumber: this.bankForm.value.accountNumber,
       bankCode: this.selectedBankCode,
       accountName: this.bankForm.value.accountName
     };
-
     this.walletService.addBankAccount(payload)
       .pipe(finalize(() => this.isSubmitting = false))
       .subscribe({
         next: (res) => {
           if (res.success) {
-            console.log('Bank account registered successfully:', res.recipientCode);
-            // Optional: Dispatch an alert or update a local state indicator
+            this.updatingAccount = false
+            this.toast.show('Successfully Updated Account', 'success');
           } else {
+            this.updatingAccount = false
             console.error('Registration API rejected submission:', res.error);
+            this.toast.show('Error in updating account', 'error');
+
           }
         },
         error: (err) => {
+          this.updatingAccount = false
           console.error('Network dispatch failure on banking submission:', err);
+          this.toast.show('Error in updating account', 'error');
+
         }
       });
   }
