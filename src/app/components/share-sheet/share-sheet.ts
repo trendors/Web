@@ -31,7 +31,7 @@ export class ShareSheet {
   constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { post: any },
     private store: Store) { }
 
-  selectedPost: string | null = null
+  selectedPost: string | null = null;
   shareVersions$!: Observable<any[]>;
   trends$!: Observable<any[]>
   user$!: Observable<any>;
@@ -40,15 +40,15 @@ export class ShareSheet {
 
   ngOnInit() {
     this.user$ = this.store.select(selectCurrentUser);
+    this.selectedPost = this.data.post.text;
     this.fetchAireWrite()
     this.fetchXtrends()
 
   }
 
 
-
   selectVersion(post: string) {
-    this.selectedPost = post
+    this.selectedPost = post;
   }
 
 

@@ -13,10 +13,10 @@
 
     @let trends = (trends$ | async);
 
-    <div class="text-card selected"  (click)="selectVersion(this.data.post.text)">
+    <div class="text-card" [class.selected]="selectedPost === data.post.text" (click)="selectVersion(data.post.text)">
 
       <div class="card-content">
-        <p class="preview-text">{{ this.data.post.text }}</p>
+        <p class="preview-text">{{ data.post.text }}</p>
 
         <div class="trending-tags">
           @for (trnd of trends?.slice(0,4); track $index) {

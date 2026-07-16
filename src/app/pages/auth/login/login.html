@@ -2,7 +2,8 @@
   <div class="page">
     <div class="left">
       <div class="brand">
-        <div class="brand-dot"></div>
+        <!-- <div class="brand-dot"></div> -->
+         <img class="brand" src="logo6.png" alt="" srcset="">
         <div class="brand-name">trend<span>ors</span></div>
       </div>
 
@@ -73,13 +74,19 @@
         <div>
           <button class="btn-submit" type="submit" [disabled]="loginForm.invalid || (isLoading$ | async)">
             @if (!(isLoading$ | async)) {
-            Login
+            <span class="btn-content">Login</span>
             }
             @if (isLoading$ | async) {
-            <mat-spinner diameter="20" color="white"></mat-spinner>
+            <span class="btn-content">
+              <mat-spinner diameter="20" color="primary"></mat-spinner>
+            </span>
             }
           </button>
         </div>
+
+        @if (error$ | async; as error) {
+        <div class="form-error">{{ error }}</div>
+        }
 
         <div class="divider"><span>or</span></div>
 
