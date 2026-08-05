@@ -51,8 +51,9 @@ interface Tier {
   styleUrls: ['./create-campaign.scss'],
 })
 export class CreateCampaign {
+  readonly OPEN_RATE = 70; // NGN per click for open campaigns
   platforms = [
-    { id: 'twitter', emoji: '𝕏', name: 'Twitter', selected: false },
+    { id: 'twitter', emoji: '𝕏', name: 'Twitter', selected: true },
     { id: 'instagram', emoji: '📸', name: 'Instagram', selected: false },
     { id: 'tiktok', emoji: '🎵', name: 'TikTok', selected: false },
     { id: 'facebook', emoji: '👥', name: 'Facebook', selected: false },
@@ -93,17 +94,22 @@ export class CreateCampaign {
   ];
 
   accessTypes = [
-    { value: 'open', icon: '🌍', title: 'Open', desc: 'Anyone can join and share' },
-    { value: 'invite_only', icon: '📩', title: 'Invite Only', desc: 'invites media influencers' },
-    { value: 'application', icon: '📋', title: 'Application', desc: 'Sharers apply, you approve' },
+    { value: 'open', icon: '🌍', title: 'Open', desc: 'Pay per verified click. Fast, high-volume reach.', extra:"From ₦70/click · min ₦25,000" },
+    { value: 'application', icon: '📋', title: 'Application', desc: 'Vetted creator slot. Reach-tiered, one verified post.', extra:"From ₦8,000/slot · min 1 slot" },
+    { value: 'invite_only', icon: '📩', title: 'Invite Only', desc: 'Direct deal escrow with a specific creator.', extra:"From ₦200,000 · min 1 deal"},
   ];
 
   tiers: Tier[] = [
-    { name: 'Nano', range: '0 – 9,999 followers', amount: '₦500', color: '#0ea5e9' },
-    { name: 'Micro', range: '10,000 – 49,999 followers', amount: '₦2,000', color: '#8b5cf6' },
-    { name: 'Macro', range: '50,000 – 499,999 followers', amount: '₦10,000', color: '#f59e0b' },
-    { name: 'Mega', range: '500,000+ followers', amount: '₦50,000', color: '#ef4444' },
+    { name: 'Nano', range: '1k–10k', amount: '₦8,000', color: '#0ea5e9' },
+    { name: 'Micro', range: '10k–50k', amount: '₦18,000', color: '#8b5cf6' },
+    { name: 'Mid', range: '50k–200k', amount: '₦40,000', color: '#f59e0b' },
+    { name: 'Macro', range: '200k+', amount: '₦90,000', color: '#ef4444' },
   ];
+
+  // Slot counts chosen per creator tier for Application campaigns
+  tierSlots = signal<Record<string, number>>(
+    this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
+  );
 
   // Real Database
   private store = inject(Store);
@@ -298,6 +304,7 @@ export class CreateCampaign {
   ratePerSlot = signal<number | null>(null); // system-set rate for open/application
   negotiatedAmount = signal<number | null>(null); // invite-only negotiated base
   maxSlots = signal<number | null>(null);
+  openBudget = signal<number | null>(null); // total budget for open campaigns; clicks are derived from this
   status = signal<'draft' | 'active' | 'paused' | 'closed'>('draft');
   bonusTiers = signal<any | null>(null); // optional JSON structure for invite-only bonuses
   bonusTiersInput = '';
@@ -361,6 +368,11 @@ export class CreateCampaign {
 
   get selectedPlatforms(): string[] {
     return this.platforms.filter((p) => p.selected).map((p) => p.id);
+  }
+
+  getPlatformName(id: string): string {
+    const p = this.platforms.find((x) => x.id === id);
+    return p ? p.name : id;
   }
 
   addTopic(): void {
@@ -451,22 +463,61 @@ export class CreateCampaign {
     this.ratePerSlot.set(null);
     this.negotiatedAmount.set(null);
     this.maxSlots.set(null);
+    this.openBudget.set(null);
     this.status.set('draft');
     this.bonusTiers.set(null);
     this.bonusTiersInput = '';
+    this.tierSlots.set(
+      this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
+    );
+  }
+
+  get estimatedClicks(): number {
+    const b = Number(this.openBudget() ?? 0);
+    if (!this.OPEN_RATE || b <= 0) return 0;
+    return Math.floor(b / this.OPEN_RATE);
   }
 
   get computedBudget(): number {
     const access = this.selectedAccess;
     const slots = Number(this.maxSlots() ?? 0);
-    if (access === 'open' || access === 'application') {
-      return Number(this.ratePerSlot() ?? 0) * slots;
+    if (access === 'open') {
+      return Number(this.openBudget() ?? 0);
+    }
+    if (access === 'application') {
+      return this.applicationBudget;
     }
     if (access === 'invite_only') {
       return Number(this.negotiatedAmount() ?? 0) * slots;
     }
     return 0;
   }
+
+  private parseTierAmount(amount: string): number {
+    const n = Number(amount.replace(/[^\d.]/g, ''));
+    return Number.isNaN(n) ? 0 : n;
+  }
+
+  getTierSlots(name: string): number {
+    return this.tierSlots()[name] ?? 0;
+  }
+
+  setTierSlots(name: string, value: number | string): void {
+    const n = Math.max(0, Math.floor(Number(value) || 0));
+    this.tierSlots.update((cur) => ({ ...cur, [name]: n }));
+  }
+
+  get totalTierSlots(): number {
+    return Object.values(this.tierSlots()).reduce((sum, n) => sum + (n || 0), 0);
+  }
+
+  get applicationBudget(): number {
+    return this.tiers.reduce(
+      (sum, t) => sum + this.parseTierAmount(t.amount) * this.getTierSlots(t.name),
+      0,
+    );
+  }
+
   selectTier(): void {
     alert('Tier selection coming soon!');
   }
@@ -497,15 +548,32 @@ export class CreateCampaign {
       const access = this.selectedAccess;
       const cType = access === 'open' ? 'open' : access === 'invite_only' ? 'invite' : 'application';
       if (cType === 'open' || cType === 'application') {
-        // system sets the rate; ratePerSlot and maxSlots are required
-        if (!this.ratePerSlot() || !this.maxSlots()) {
-          throw new Error('ratePerSlot and maxSlots must be set for open/application campaigns');
+        // system sets the rate for open; application uses per-tier slot counts
+        if (cType === 'open' && (!this.openBudget() || Number(this.openBudget()) < 25000)) {
+          throw new Error('Campaign budget must be at least ₦25,000 for open campaigns');
         }
-        const computedBudget = Number(this.ratePerSlot()) * Number(this.maxSlots());
-        this.budget.set(computedBudget);
-        formData.append('ratePerSlot', String(this.ratePerSlot()));
-        formData.append('maxSlots', String(this.maxSlots()));
-        formData.append('totalBudget', String(computedBudget));
+        if (cType === 'open') {
+          const computedBudget = Number(this.openBudget());
+          const slots = this.estimatedClicks;
+          this.budget.set(computedBudget);
+          this.maxSlots.set(slots);
+          // ensure ratePerSlot reflects system rate
+          this.ratePerSlot.set(this.OPEN_RATE);
+          formData.append('ratePerSlot', String(this.OPEN_RATE));
+          formData.append('maxSlots', String(slots));
+          formData.append('totalBudget', String(computedBudget));
+        } else {
+          // application: budget is derived from chosen slots per creator tier
+          if (this.totalTierSlots <= 0) {
+            throw new Error('Select at least one creator tier slot for application campaigns');
+          }
+          const computedBudget = this.applicationBudget;
+          this.budget.set(computedBudget);
+          this.maxSlots.set(this.totalTierSlots);
+          formData.append('tierSlots', JSON.stringify(this.tierSlots()));
+          formData.append('maxSlots', String(this.totalTierSlots));
+          formData.append('totalBudget', String(computedBudget));
+        }
       } else if (cType === 'invite') {
         // invite-only: negotiatedAmount (base) agreed 1-on-1; optional bonus tiers (pre-declared cap)
         if (!this.negotiatedAmount() || !this.maxSlots()) {

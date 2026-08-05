@@ -95,9 +95,8 @@
         <thead>
           <tr>
             <th>Campaign</th>
-            <th>Access</th>
-            <th>Platforms</th>
-            <th>Invites</th>
+            <!-- <th>Access</th>
+            <th>Platforms</th> -->
             <th class="align-right">Action</th>
           </tr>
         </thead>
@@ -114,12 +113,12 @@
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <!-- <td>
                     <span class="status-badge" [ngClass]="statusClass(campaign.access)">
                       {{ capitalize(campaign.access) }}
                     </span>
-                  </td>
-                  <td>
+                  </td> -->
+                  <!-- <td>
                     <div class="card-platforms">
                       @for (platform of getPlatforms(campaign.platforms) | slice: 0 : 2; track platform) {
                         <span class="platform-tag">{{ platform }}</span>
@@ -128,19 +127,12 @@
                         <span class="platform-tag">+{{ getPlatforms(campaign.platforms).length - 2 }}</span>
                       }
                     </div>
-                  </td>
-                  <td>{{ campaign.invitations.length }}</td>
+                  </td> -->
+                  <!-- <td>{{ campaign.invitations.length }}</td> -->
                   <td class="align-right">
                     <button class="btn btn-ghost" type="button" (click)="$event.stopPropagation(); openModal(campaign)">
                       View
                     </button>
-                  </td>
-                </tr>
-                <tr class="table-row desc-row" (click)="openModal(campaign)">
-                  <td colspan="5">
-                    <div class="campaign-inline-desc">
-                      {{ campaign.description || 'No description provided.' }}
-                    </div>
                   </td>
                 </tr>
               }
@@ -193,10 +185,6 @@
                     <span class="mobile-meta-label">Invites</span>
                     <span class="mobile-meta-value">{{ campaign.invitations.length }}</span>
                   </div>
-                </div>
-
-                <div class="campaign-inline-desc">
-                  {{ campaign.description || 'No description provided.' }}
                 </div>
 
                 <div class="mobile-actions">

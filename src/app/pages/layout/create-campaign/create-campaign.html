@@ -173,25 +173,37 @@
                 [(ngModel)]="selectedAccess"
               />
               <label class="access-label" [for]="'ac-' + ac.value">
+                <div class="access-check">✓</div>
                 <div class="access-icon">{{ ac.icon }}</div>
                 <div class="access-title">{{ ac.title }}</div>
                 <div class="access-desc">{{ ac.desc }}</div>
+                <div class="access-extra">{{ ac.extra }}</div>
               </label>
             </div>
           </div>
           <div style="margin-top:16px">
-            <div class="section-title">Payment & Slots</div>
+            <!-- <div class="section-title">Payment & Slots</div>
             <div class="card">
               @if (selectedAccess === 'open' || selectedAccess === 'application') {
-              <div class="field">
-                <label>Rate per slot (NGN)</label>
-                <input type="number" [(ngModel)]="ratePerSlot" placeholder="e.g. 2000" />
-              </div>
-              <div class="field">
-                <label>Max slots</label>
-                <input type="number" [(ngModel)]="maxSlots" placeholder="e.g. 200" />
-              </div>
-              }
+                @if (selectedAccess === 'open') {
+                <div class="field">
+                  <label>Pay-per-action</label>
+                  <div class="readonly-field">
+                    <div class="payout-val">₦70 per click</div>
+                    <div class="hint">Fixed rate for open campaigns — sharers earn this amount for each click their post generates.</div>
+                  </div>
+                </div>
+                } @else {
+                <div class="field">
+                  <label>Rate per slot (NGN)</label>
+                  <input type="number" [(ngModel)]="ratePerSlot" placeholder="e.g. 2000" />
+                </div>
+                }
+                <div class="field">
+                  <label>Max slots</label>
+                  <input type="number" [(ngModel)]="maxSlots" placeholder="e.g. 200" />
+                </div>
+                }
               @if (selectedAccess === 'invite_only') {
               <div class="field">
                 <label>Negotiated amount (NGN)</label>
@@ -205,12 +217,35 @@
                 <label>Bonus tiers (JSON, optional)</label>
                 <textarea [(ngModel)]="bonusTiersInput" placeholder='[{"milestone":10,"bonus":500},...]'></textarea>
               </div>
+              
+              <div class="card" style="margin-top:12px">
+                <div class="grid-3">
+                  <div class="field">
+                    <label>Cost</label>
+                    <div class="payout-val">₦200,000+ <span class="tier-unit">/ deal</span></div>
+                    <div class="hint">Base deal rate for invite-only campaigns. Final terms negotiated separately.</div>
+                  </div>
+
+                  <div class="field">
+                    <label>Min budget</label>
+                    <div class="payout-val">1 deal</div>
+                    <div class="hint">Minimum deal count required for invite-only partnerships.</div>
+                  </div>
+
+                  <div class="field">
+                    <label>Setup time</label>
+                    <div class="payout-val">48-72h escrow</div>
+                    <div class="hint">Funds are held in escrow and cleared after verification.</div>
+                  </div>
+                </div>
+              </div>
+
               }
               <div class="field">
                 <label>Total budget</label>
                 <div class="budget-val">₦{{ computedBudget }}</div>
               </div>
-            </div>
+            </div> -->
           </div>
           <div style="margin-top: 11px">
             <div class="toggle-row" style="margin-bottom: 0">
@@ -230,18 +265,33 @@
       </div>
       @if (selectedAccess === 'open') {
         <div class="section">
-          <div class="section-title">
-            Payout Tiers
-            <span class="tier-info-label">— info only</span>
-          </div>
-          <div class="tier-grid">
-            <div class="tier-row" *ngFor="let tier of tiers" (click)="selectTier()">
-              <div class="tier-dot" [style.background]="tier.color"></div>
-              <div class="tier-main">
-                <div class="tier-name">{{ tier.name }}</div>
-                <div class="tier-range">{{ tier.range }}</div>
+          <div class="section-title">Open Campaign Budget</div>
+          <div class="card">
+            <div class="grid-3">
+              <div class="field">
+                <label>Campaign budget (₦)</label>
+                <input
+                  type="number"
+                  min="25000"
+                  step="1000"
+                  [(ngModel)]="openBudget"
+                  placeholder="e.g. 50000"
+                  class="input"
+                />
+                <div class="hint">Minimum spend to launch an open campaign is ₦25,000</div>
               </div>
-              <div class="tier-amt">{{ tier.amount }}<span class="tier-unit">/ post</span></div>
+
+              <div class="field">
+                <label>Estimated clicks</label>
+                <div class="payout-val">{{ estimatedClicks | number }}</div>
+                <div class="hint">At ₦70 per verified click</div>
+              </div>
+
+              <div class="field">
+                <label>Setup time</label>
+                <div class="payout-val">Instant</div>
+                <div class="hint">Campaign goes live immediately after review</div>
+              </div>
             </div>
           </div>
         </div>
@@ -318,7 +368,51 @@
       }
 
       @if (selectedAccess === 'application') {
-        <div class="page-header">
+        <div class="section" style="margin-top:12px">
+          <div class="section-title">Choose creator tiers</div>
+          <div class="hint" style="margin-bottom:12px">
+            Pick how many slots you want at each reach tier. Your budget is calculated from this.
+          </div>
+
+          <div class="card">
+            <div class="tier-picker-list">
+              <div class="tier-picker-row" *ngFor="let tier of tiers">
+                <div class="tier-dot" [style.background]="tier.color"></div>
+                <div class="tier-main">
+                  <div class="tier-name">{{ tier.name }}</div>
+                  <div class="tier-range">{{ tier.range }} followers</div>
+                </div>
+                <div class="tier-amt">{{ tier.amount }}<span class="tier-unit">/ slot</span></div>
+                <div class="tier-slot-input">
+                  <button
+                    type="button"
+                    class="tier-slot-btn"
+                    (click)="setTierSlots(tier.name, getTierSlots(tier.name) - 1)"
+                  >−</button>
+                  <input
+                    type="number"
+                    min="0"
+                    class="tier-slot-count"
+                    [value]="getTierSlots(tier.name)"
+                    (input)="setTierSlots(tier.name, $any($event.target).value)"
+                  />
+                  <button
+                    type="button"
+                    class="tier-slot-btn"
+                    (click)="setTierSlots(tier.name, getTierSlots(tier.name) + 1)"
+                  >+</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="tier-summary">
+              <span>{{ totalTierSlots }} slot{{ totalTierSlots === 1 ? '' : 's' }} selected</span>
+              <span class="budget-val">₦{{ applicationBudget }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="page-header">
           <div>
             <p>Review applicants and manage active members</p>
           </div>
@@ -330,8 +424,8 @@
               >{{ (activeMembers$ | async)?.length || 0 }} active</span
             >
           </div>
-        </div>
-        <div class="section-label">
+        </div> -->
+        <!-- <div class="section-label">
           <h2>Applicants</h2>
           <div class="line"></div>
         </div>
@@ -391,8 +485,8 @@
               }
             </tbody>
           </table>
-        </div>
-        <div class="section-label">
+        </div> -->
+        <!-- <div class="section-label">
           <h2>Active Members</h2>
           <div class="line"></div>
         </div>
@@ -451,7 +545,7 @@
               }
             </tbody>
           </table>
-        </div>
+        </div> -->
         @if (viewingProfile()) {
           <div class="modal-overlay" (click)="onOverlayClick($event)">
             <div class="modal">
@@ -489,13 +583,20 @@
       }
     </div>
     <div class="page-content" *ngIf="currentStep === 3">
-      <div class="review-plan-bar">
-        <div>
-          <div class="rpb-name">{{ activePlan.value }} Plan</div>
-          <div class="rpb-posts">{{ activePlan.posts }}</div>
+      <div class="checkout-summary">
+        <div class="checkout-highlights">
+          <div class="checkout-title">{{ campaignTitle() || 'Untitled Campaign' }}</div>
+          <div class="checkout-chips">
+            <span class="checkout-chip">{{ selectedAccess === 'open' ? 'Open' : selectedAccess === 'application' ? 'Application' : selectedAccess === 'invite_only' ? 'Invite Only' : '—' }}</span>
+            <span class="checkout-chip" *ngFor="let p of selectedPlatforms">{{ p }}</span>
+            <span class="checkout-chip" *ngIf="start_date() && end_date()">
+              {{ formatDate(start_date()) }} → {{ formatDate(end_date()) }}
+            </span>
+          </div>
         </div>
-        <div class="rpb-price">
-          {{ activePlan.price }}<span *ngIf="activePlan.value !== 'Enterprise'">/mo</span>
+        <div class="checkout-cost">
+          <div class="checkout-cost-label">Total cost</div>
+          <div class="checkout-cost-val">₦{{ computedBudget }}</div>
         </div>
       </div>
       <div class="rv-section">
@@ -570,17 +671,17 @@
       </div>
       <div class="rv-section">
         <div class="rv-head">
-          Plan & Access
+          Access & Pricing
           <span class="rv-edit" (click)="goTo(2)">Edit →</span>
         </div>
         <div class="rv-card">
           <div class="rv-row">
-            <div class="rv-key">Plan</div>
-            <div class="rv-val">{{ activePlan.label }}</div>
-          </div>
-          <div class="rv-row">
             <div class="rv-key">Access Type</div>
             <div class="rv-val">{{ selectedAccess }}</div>
+          </div>
+          <div class="rv-row">
+            <div class="rv-key">Total cost</div>
+            <div class="rv-val">₦{{ computedBudget }}</div>
           </div>
         </div>
       </div>
@@ -591,6 +692,16 @@
           before going live. You can pause or edit it at any time from your dashboard.</span
         >
       </div>
+      <button
+        class="checkout-btn checkout-btn-full"
+        (click)="createCampaign()"
+        [disabled]="isSubmitting()"
+      >
+        @if (isSubmitting() === true) {
+          <app-alert></app-alert>
+        }
+        <span>Checkout →</span>
+      </button>
     </div>
     <div>
       <div class="form-demo">
@@ -604,22 +715,11 @@
             </button>
           </div>
           <div class="nav-right">
-            <button class="nav-btn next" aria-label="next page" (click)="next()">
+            <button class="nav-btn next" aria-label="next page" (click)="next()" *ngIf="currentStep < 3">
               <span>Next</span>
               <svg viewBox="0 0 24 24">
                 <path d="M9 18l6-6-6-6" />
               </svg>
-            </button>
-            <button
-              class="nav-btn save"
-              aria-label="save form"
-              (click)="createCampaign()"
-              [disabled]="currentStep < 3"
-            >
-              @if (isSubmitting() === true) {
-                <app-alert></app-alert>
-              }
-              <span>Save</span>
             </button>
           </div>
         </nav>
