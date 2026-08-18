@@ -20,8 +20,6 @@ import {
   CampaignStatus,
   FilterOption,
 } from '../../../core/models/campaign/campaign.model';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { CampaignSummary } from '../campaign-summary/campaign-summary';
 import { BehaviorSubject, combineLatest, map, Observable, Subject, takeUntil, tap } from 'rxjs';
 
 export interface CampaignMetric {
@@ -38,7 +36,6 @@ export interface CampaignTimeline {
   selector: 'app-view-campaign',
   imports: [
     AsyncPipe,
-    DatePipe,
     NgClass,
     MatCardModule,
     MatButtonModule,
@@ -46,7 +43,6 @@ export interface CampaignTimeline {
     MatProgressSpinnerModule,
     CommonModule,
     FormsModule,
-    MatDialogModule,
   ],
   templateUrl: './view-campaign.html',
   styleUrl: './view-campaign.scss',
@@ -54,7 +50,6 @@ export interface CampaignTimeline {
 export class ViewCampaign implements OnInit, OnDestroy {
   private store = inject(Store);
   private router = inject(Router);
-  private dialog = inject(MatDialog);
   private destroy$ = new Subject<void>();
 
   campaigns$ = this.store.select(selectCampaignList);
@@ -136,12 +131,7 @@ export class ViewCampaign implements OnInit, OnDestroy {
   }
 
   openModal(campaign: Campaign): void {
-    const dialogRef = this.dialog.open(CampaignSummary, {
-      data: campaign,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-    });
+    this.router.navigate(['/home/view-campaign', campaign.id]);
   }
 
   closeModal(): void {
@@ -172,6 +162,36 @@ export class ViewCampaign implements OnInit, OnDestroy {
 
   capitalize(s: string): string {
     return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+  }
+
+  // Hardcoded placeholder click stats for open campaigns until real analytics are wired up.
+  getTotalClicks(campaign: Campaign): number {
+    // deterministic pseudo-random-ish number based on campaign id so it stays stable per render
+    return 1000 + ((campaign.id * 137) % 9000);
+  }
+
+  getTodayClicks(campaign: Campaign): number {
+    return 20 + ((campaign.id * 17) % 180);
+  }
+
+  // Hardcoded placeholder application stats until real applicant data is wired up.
+  getApplicantsCount(campaign: Campaign): number {
+    return 5 + ((campaign.id * 23) % 95);
+  }
+
+  getPendingReviewCount(campaign: Campaign): number {
+    const applicants = this.getApplicantsCount(campaign);
+    const pending = 1 + ((campaign.id * 11) % 20);
+    return Math.min(pending, applicants);
+  }
+
+  // Hardcoded placeholder negotiation stats until real negotiation data is wired up.
+  getNegotiationRound(campaign: Campaign): number {
+    return 1 + ((campaign.id * 7) % 4);
+  }
+
+  getAwaitingReplyCount(campaign: Campaign): number {
+    return 1 + ((campaign.id * 13) % 10);
   }
 
   @HostListener('document:keydown.escape')

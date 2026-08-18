@@ -1,38 +1,59 @@
-      
-        <!-- <div class="filter-chips">
-            <div class="chips-list">
-              @for (item of categories; track $index) {
-                <button class="chip" [class.active]="item === 'Paid'" (click)="onlyPaid = !onlyPaid">
-                  {{ item }}
-                </button>
-              }
-            </div>
-        </div> -->
+<nav class="topbar">
+  <div class="topbar__avatar" role="button" aria-label="User profile">{{ userInitials }}</div>
+  <div class="topbar__actions">
+    <div class="topbar__earn-pill">
+      <i class="ti ti-coin" aria-hidden="true"></i>
+      {{ earned }} earned
+    </div>
 
+    <button aria-label="Menu" (click)="toggleDrawer()"
+      style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;background:transparent;border:1px solid #ccc;border-radius:8px;cursor:pointer;">
+      <i class="ti ti-menu-2" style="font-size:20px;"></i>
+    </button>
+  </div>
+</nav>
 
-         
-  <nav class="topbar">
-    <a href="#" class="topbar__brand">
-      <i class="ti ti-bolt" aria-hidden="true"></i>
-      ShareEarn
+<div class="drawer-overlay" [class.open]="drawerOpen" (click)="closeDrawer()"></div>
+
+<aside class="drawer" [class.open]="drawerOpen" role="dialog" aria-label="Menu" [attr.aria-hidden]="!drawerOpen">
+  <div class="drawer__header">
+    <span class="drawer__title">Trendors</span>
+    <button class="drawer__close" aria-label="Close menu" (click)="closeDrawer()">
+      <i class="ti ti-x" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="drawer__section">
+    <p class="drawer__label">Campaign management</p>
+    <a class="drawer__item" routerLink="/campaigns" (click)="closeDrawer()">
+      <i class="ti ti-search" aria-hidden="true"></i>View campaigns
     </a>
- 
-    <div class="topbar__search">
-      <i class="ti ti-search" aria-hidden="true"></i>
-      <input type="text" placeholder="Search ads, brands..." aria-label="Search" />
-    </div>
- 
-    <div class="topbar__actions">
-      <div class="topbar__notif" role="button" aria-label="Notifications">
-        <i class="ti ti-bell" aria-hidden="true"></i>
-        <span class="topbar__notif-dot"></span>
-      </div>
- 
-      <div class="topbar__earn-pill">
-        <i class="ti ti-coin" aria-hidden="true"></i>
-        $4.20 earned
-      </div>
- 
-      <div class="topbar__avatar" role="button" aria-label="User profile">JD</div>
-    </div>
-  </nav>
+  </div>
+
+  <div class="drawer__section">
+    <p class="drawer__label">Influencer hub</p>
+    <a class="drawer__item" routerLink="/shares" (click)="closeDrawer()">
+      <i class="ti ti-chart-bar" aria-hidden="true"></i>My shares
+    </a>
+    <a class="drawer__item" routerLink="/transactions" (click)="closeDrawer()">
+      <i class="ti ti-receipt" aria-hidden="true"></i>Transactions
+    </a>
+    <a class="drawer__item drawer__item--highlight" routerLink="/invites" (click)="closeDrawer()">
+      <i class="ti ti-mail" aria-hidden="true"></i>Invites and applications
+
+      @if (pendingCount > 0) {
+      <span class="drawer__count">{{ pendingCount }}</span>
+      }
+    </a>
+  </div>
+
+  <div class="drawer__section">
+    <p class="drawer__label">Account</p>
+    <a class="drawer__item" routerLink="/settings" (click)="closeDrawer()">
+      <i class="ti ti-settings" aria-hidden="true"></i>Settings
+    </a>
+    <a class="drawer__item" routerLink="/logout" (click)="closeDrawer()">
+      <i class="ti ti-logout" aria-hidden="true"></i>Logout
+    </a>
+  </div>
+</aside>

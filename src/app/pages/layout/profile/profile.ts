@@ -29,6 +29,7 @@ import { WalletService } from '../../../core/services/wallet/wallet.service';
 import { LoaderComponent } from "../../../components/loader/loader";
 import { Alert } from "../../../components/alert/alert";
 import { ToastService } from '../../../components/toast/toast.service';
+import { SocialVerify } from "../social-verify/social-verify";
 
 @Component({
   selector: 'app-profile',
@@ -42,8 +43,9 @@ import { ToastService } from '../../../components/toast/toast.service';
     TopupModalComponent,
     CurrencyPipe,
     LoaderComponent,
-    Alert
-  ],
+    Alert,
+    SocialVerify
+],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -66,6 +68,7 @@ export class Profile implements OnInit {
   bankCodeCtrl = new FormControl('', Validators.required);
   updatingAccount: boolean = false
   showDropdown = false;
+  activeTab: 'wallet' | 'profile' | 'security' | 'socials' = 'wallet';
 
 
    private passwordMatchValidator: ValidatorFn = (

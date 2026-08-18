@@ -38,7 +38,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     SocketService, // Add it here
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withComponentInputBinding(), withDebugTracing()),
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideStore({
       [authFeatureKey]: authReducer,

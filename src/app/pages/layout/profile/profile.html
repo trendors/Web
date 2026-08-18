@@ -1,5 +1,14 @@
+<div class="page">
+  <div class="tab-nav">
+    <button class="tab-btn" [class.active]="activeTab === 'wallet'" (click)="activeTab = 'wallet'">Wallet</button>
+    <button class="tab-btn" [class.active]="activeTab === 'profile'" (click)="activeTab = 'profile'">Profile</button>
+    <button class="tab-btn" [class.active]="activeTab === 'security'" (click)="activeTab = 'security'">Security</button>
+    <button class="tab-btn" [class.active]="activeTab === 'socials'" (click)="activeTab = 'socials'">Socials</button>
+  </div>
+</div>
 
-<div class="card">
+
+<div class="card" [class.tab-hidden]="activeTab !== 'wallet'">
   <div class="section-label">Wallet</div>
 
   <div class="wallet-balance-row">
@@ -9,7 +18,7 @@
     </div>
     <div class="wallet-actions">
       <button class="btn-outline" type="button">Withdraw</button>
-      <button class="btn-accent" type="button" (click)="showTopup = true" 500>Top Up</button>
+      <button class="btn-accent" type="button" (click)="showTopup = true">Top Up</button>
     </div>
   </div>
 
@@ -71,7 +80,7 @@
     <span class="field-hint">Enter your 4-digit PIN to confirm account changes</span>
   </div>
   @if (updatingAccount) {
-    <app-loader></app-loader>
+  <app-loader></app-loader>
 
   }
 
@@ -81,66 +90,81 @@
 </form>
 }
 
-
 </div>
 
-<div class="card">
-  <div class="section-label">Personal Info</div>
+<div [class.tab-hidden]="activeTab !== 'profile'">
 
-  <div class="section-label danger-label ">Trendors ID : {{ user?.trendors_id }} <span
-      class="field-badge copy-btn">copy</span>
+  <div class="card">
+    <div class="section-label">Personal Info</div>
+
+    <div class="section-label danger-label ">Trendors ID : {{ user?.trendors_id }} <span
+        class="field-badge copy-btn">copy</span>
+    </div>
+
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="form">
+      <div class="form-row">
+        <div class="field">
+          <label class="field-label">First Name</label>
+          <input class="field-input" formControlName="first_name" type="text" placeholder="John" />
+        </div>
+        <div class="field">
+          <label class="field-label">Last Name</label>
+          <input class="field-input" formControlName="last_name" type="text" placeholder="Doe" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">
+          User Name
+          <span class="field-badge">Locked</span>
+        </label>
+        <input class="field-input locked" formControlName="user_name" type="text" readonly />
+      </div>
+
+      <div class="field">
+        <label class="field-label">
+          Email Address
+          <span class="field-badge">Locked</span>
+        </label>
+        <input class="field-input locked" formControlName="email" type="email" readonly />
+      </div>
+
+      <div class="field">
+        <label class="field-label">Phone Number</label>
+        <input class="field-input" formControlName="phone_number" type="tel" placeholder="+234 000 0000" />
+      </div>
+    </form>
+
+
   </div>
 
+  <div class="card actions-card">
+    <button class="btn-accent full-width" type="submit" (click)="onSave()"
+      [disabled]="profileForm.invalid || (isLoading$ | async)">
+      {{ (isLoading$ | async) ? 'Saving...' : 'Save Changes' }}
+    </button>
+  </div>
+  <div class="card danger-card">
+    <div class="section-label danger-label">Danger Zone</div>
+    <p class="danger-text">Deleting your account is permanent and cannot be undone.</p>
+    <button class="btn-danger" type="button" (click)="onDelete()">Delete Account</button>
 
-  <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="form">
-    <div class="form-row">
-      <div class="field">
-        <label class="field-label">First Name</label>
-        <input class="field-input" formControlName="first_name" type="text" placeholder="John" />
-      </div>
-      <div class="field">
-        <label class="field-label">Last Name</label>
-        <input class="field-input" formControlName="last_name" type="text" placeholder="Doe" />
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="field-label">
-        User Name
-        <span class="field-badge">Locked</span>
-      </label>
-      <input class="field-input locked" formControlName="user_name" type="text" readonly />
-    </div>
-
-    <div class="field">
-      <label class="field-label">
-        Email Address
-        <span class="field-badge">Locked</span>
-      </label>
-      <input class="field-input locked" formControlName="email" type="email" readonly />
-    </div>
-
-    <div class="field">
-      <label class="field-label">Phone Number</label>
-      <input class="field-input" formControlName="phone_number" type="tel" placeholder="+234 000 0000" />
-    </div>
-  </form>
-</div>
-
-<div class="card actions-card">
-  <button class="btn-accent full-width" type="submit" (click)="onSave()"
-    [disabled]="profileForm.invalid || (isLoading$ | async)">
-    {{ (isLoading$ | async) ? 'Saving...' : 'Save Changes' }}
-  </button>
-
+    @if (userError$ | async) {
+    <p class="error-msg">{{ userError$ | async }}</p>
+    }
+  </div>
 
 </div>
 
-<div class="card">
+
+
+
+<div class="card" [class.tab-hidden]="activeTab !== 'security'">
   <div class="section-label">Security</div>
   <p class="security-note">Update your password to keep your account safe.</p>
 
-  <form [formGroup]="passwordForm"  class="form">
+  <form [formGroup]="passwordForm" class="form">
     <div class="field">
       <label class="field-label">Current Password</label>
       <input class="field-input" formControlName="oldPassword" type="password" placeholder="Enter current password" />
@@ -180,25 +204,21 @@
     <span class="error-msg">{{ authError }}</span>
     }
 
-    <button class="btn-accent full-width" type="submit" [disabled]="passwordForm.invalid || (authIsLoading$ | async)" (click)="onChangePassword()">
+    <button class="btn-accent full-width" type="submit" [disabled]="passwordForm.invalid || (authIsLoading$ | async)"
+      (click)="onChangePassword()">
       {{ (authIsLoading$ | async) ? 'Updating...' : 'Update Password' }}
     </button>
   </form>
 </div>
 
-<div class="card danger-card">
-  <div class="section-label danger-label">Danger Zone</div>
-  <p class="danger-text">Deleting your account is permanent and cannot be undone.</p>
-  <button class="btn-danger" type="button" (click)="onDelete()">Delete Account</button>
+<div [class.tab-hidden]="activeTab !== 'socials'">
+  <app-social-verify></app-social-verify>
+</div>
 
-  @if (userError$ | async) {
-  <p class="error-msg">{{ userError$ | async }}</p>
-  }
+<div>
+
 </div>
 
 <div class="buttom">
 
 </div>
-
-
-<!-- <app-social-verify /> -->

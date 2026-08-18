@@ -1,0 +1,120 @@
+.escrow-progress {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.escrow-progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.escrow-progress-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.escrow-amount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.escrow-amount-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.escrow-amount-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.escrow-steps {
+    display: flex;
+    align-items: flex-start;
+}
+
+.escrow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    width: 64px;
+    text-align: center;
+}
+
+.escrow-step-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(136, 136, 136, 0.12);
+    color: var(--text-muted);
+    border: 2px solid transparent;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.escrow-step.done .escrow-step-dot {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+}
+
+.escrow-step.active .escrow-step-dot {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.escrow-step-label {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.escrow-step.done .escrow-step-label,
+.escrow-step.active .escrow-step-label {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.escrow-connector {
+    flex: 1 1 auto;
+    height: 2px;
+    background: var(--border);
+    margin-top: 12px;
+    min-width: 8px;
+    transition: background 0.2s ease;
+
+    &.done {
+        background: #16a34a;
+    }
+}
+
+@media (max-width: 560px) {
+    .escrow-step {
+        width: 44px;
+    }
+
+    .escrow-step-label {
+        font-size: 9px;
+    }
+}

@@ -7,7 +7,7 @@ import { LoginActions } from './login.actions';
 import { logoutUser } from '../logout/logout.action';
 import { isPlatformBrowser } from '@angular/common';
 import { NotificationActions } from '../../notification/notification.action';
-import { Store } from '@ngrx/store';
+import { Action, Store } from '@ngrx/store';
 
 @Injectable()
 export class LoginEffects {
@@ -97,30 +97,24 @@ export class LoginEffects {
     { dispatch: false },
   );
 
-  hydrateAuth$ = createEffect(() =>
+
+   hydrateAuth$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(ROOT_EFFECTS_INIT),
+      ofType(ROOT_EFFECTS_INIT), // your own custom action, or just filter differently
       filter(() => isPlatformBrowser(this.platformId)),
       map(() => {
         const token = localStorage.getItem('token');
         const userRaw = localStorage.getItem('user');
-
-        if (!token || !userRaw) {
-          return null;
-        }
-
+        if (!token || !userRaw) return null;
         return LoginActions.hydrateSuccess({
-      response: {
-        data: {
-          token,
-          user: JSON.parse(userRaw),
-          message: 'Hydrated',
-          error: false,
-        },
-      },
-    });
+          response: { data: { token, user: JSON.parse(userRaw), message: 'Hydrated', error: false } },
+        });
       }),
       filter(Boolean),
     ),
   );
+
+  ngrxOnInitEffects(): Action {
+    return { type: '[Login] Effects Init' };
+  }
 }

@@ -9,7 +9,7 @@ export const routes: Routes = [
   },
   {
     path: 'home',
-     canActivate: [authGuard],
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/layout/home/home').then((m) => m.Home),
     children: [
       { path: '', redirectTo: 'posts', pathMatch: 'full' },
@@ -44,6 +44,16 @@ export const routes: Routes = [
         path: 'view-campaign',
         loadComponent: () =>
           import('./pages/layout/view-campaign/view-campaign').then((m) => m.ViewCampaign),
+      },
+      {
+        path: 'invites-and-applications',
+        loadComponent: () =>
+          import('./pages/layout/applications-invites/applications-invites').then((m) => m.ApplicationsInvites),
+      },
+      {
+        path: 'view-campaign/:id',
+        loadComponent: () =>
+          import('./pages/layout/campaign-summary/campaign-summary').then((m) => m.CampaignSummary),
       },
       {
         path: 'transactions',

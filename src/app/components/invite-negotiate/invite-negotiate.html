@@ -1,0 +1,84 @@
+<div class="detail-panel" *ngIf="invite as inv">
+  <button class="close-btn" (click)="close.emit()" aria-label="Close">
+    <i class="ti ti-x" aria-hidden="true"></i>
+  </button>
+
+  <div class="head">
+    <div class="avatar-lg">{{ initials(inv.brand) }}</div>
+    <div>
+      <h3>{{ inv.campaignTitle }}</h3>
+      <p class="sub">{{ inv.brand }} · {{ inv.platform }}</p>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="num">₦{{ inv.currentOffer }}</div>
+      <div class="lbl">current offer</div>
+    </div>
+    <div class="stat">
+      <div class="num">₦{{ inv.escrowHeld }}</div>
+      <div class="lbl">held in escrow</div>
+    </div>
+  </div>
+
+  <div class="thread">
+    <div *ngFor="let m of inv.messages" class="msg"
+         [class.from-advertiser]="m.from === 'advertiser'"
+         [class.from-creator]="m.from === 'creator'">
+      <div class="amt">₦{{ m.amount}}</div>
+      <div class="note">{{ m.note }}</div>
+      <div class="time">{{ m.timestamp }}</div>
+    </div>
+  </div>
+
+  <app-negotiation></app-negotiation>
+
+  <!-- <ng-container [ngSwitch]="true">
+    <div class="actions-block" *ngSwitchCase="inv.status === 'awaiting_response'">
+      <p class="round-note">First response · choose how to reply</p>
+      <div class="btn-row">
+        <button class="danger-outline" (click)="onDecline()">Decline</button>
+        <button (click)="onAccept()" class="primary">Accept ₦400</button>
+      </div>
+      <div class="counter-row">
+        <input type="number" [(ngModel)]="counterAmount" placeholder="Counter amount (₦)" />
+        <input type="text" [(ngModel)]="counterNote" placeholder="Note (optional)" />
+        <button (click)="onCounter()" [disabled]="!counterAmount">Counter</button>
+      </div>
+    </div>
+
+    <div class="actions-block" *ngSwitchCase="inv.status === 'negotiating' && !isFinalRound">
+      <p class="round-note">Round {{ inv.round }} of {{ inv.maxRounds }} · your turn to respond</p>
+      <div class="btn-row">
+        <button class="danger-outline" (click)="onDecline()">Decline</button>
+        <button (click)="onAccept()" class="primary">Accept ₦{{ inv.currentOffer }}</button>
+      </div>
+      <div class="counter-row">
+        <input type="number" [(ngModel)]="counterAmount" placeholder="Counter amount (₦)" />
+        <input type="text" [(ngModel)]="counterNote" placeholder="Note (optional)" />
+        <button (click)="onCounter()" [disabled]="!counterAmount">Counter</button>
+      </div>
+    </div>
+
+    <div class="actions-block" *ngSwitchCase="inv.status === 'negotiating' && isFinalRound">
+      <p class="round-note final">Final round reached · accept the current offer or withdraw</p>
+      <div class="btn-row">
+        <button class="danger-outline" (click)="onDecline()">Decline</button>
+        <button (click)="onAccept()" class="primary">Accept ₦{{ inv.currentOffer }}</button>
+      </div>
+    </div>
+
+    <p class="status-note" *ngSwitchCase="inv.status === 'active'">
+      Deal is active. Waiting on delivery{{ inv.deliverDeadline ? ' by ' + inv.deliverDeadline : '' }}.
+    </p>
+    <p class="status-note" *ngSwitchCase="inv.status === 'declined'">
+      You declined this invite. The advertiser's escrow was released back to them.
+    </p>
+  </ng-container>
+
+  <div class="escrow-mini" *ngIf="inv.status === 'awaiting_response' || inv.status === 'negotiating'">
+    <i class="ti ti-lock" aria-hidden="true"></i>
+    Accepting will lock ₦{{ inv.currentOffer }} in escrow for this deal.
+  </div> -->
+</div>

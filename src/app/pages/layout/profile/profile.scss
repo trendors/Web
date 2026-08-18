@@ -37,7 +37,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-bottom: 48px;
+  padding-bottom: 18px;
 }
 
 .page-header {
@@ -333,9 +333,9 @@
 }
 
 /* ── Actions card ── */
-.actions-card { padding: 20px 24px; }
+.actions-card { padding: 20px 24px; margin-top: 12px; }
 
-.danger-card { border-color: rgba(192, 57, 43, 0.15); margin-bottom: 5%; }
+.danger-card { border-color: rgba(192, 57, 43, 0.15); margin-bottom: 5%; margin-top: 5%; }
 
 .danger-label { color: var(--error); }
 
@@ -376,4 +376,51 @@
 
 .buttom{
   margin-bottom: 20%;
+}
+
+.tab-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid var(--divider);
+    margin-bottom: 4px;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .tab-btn {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--grey-mid);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+
+    &.active {
+      color: var(--black);
+      border-bottom-color: var(--gold);
+    }
+  }
+
+  .tab-hidden {
+    display: none;
+  }
+
+  .card {
+    margin-bottom: 0; // tabs replace the stacked-card spacing on mobile
+  }
 }

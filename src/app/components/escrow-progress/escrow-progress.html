@@ -1,0 +1,29 @@
+<div class="escrow-progress">
+    <div class="escrow-progress-header">
+        <div class="heading">Deal Progress</div>
+        <div class="escrow-amount">
+            <span class="escrow-amount-label">In Escrow</span>
+            <span class="escrow-amount-val">{{ currencySymbol }}{{ formatAmount(escrowAmount) }}</span>
+        </div>
+    </div>
+
+    <div class="escrow-steps">
+        @for (step of steps; track step.key; let i = $index) {
+        <div class="escrow-step" [class.done]="isDone(i)" [class.active]="isActive(i)">
+            <div class="escrow-step-dot">
+                @if (isDone(i)) {
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <path d="M20 6 9 17l-5-5" />
+                </svg>
+                } @else {
+                <span>{{ step.step }}</span>
+                }
+            </div>
+            <div class="escrow-step-label">{{ step.label }}</div>
+        </div>
+        @if (!$last) {
+        <div class="escrow-connector" [class.done]="isDone(i + 1) || isActive(i + 1)"></div>
+        }
+        }
+    </div>
+</div>

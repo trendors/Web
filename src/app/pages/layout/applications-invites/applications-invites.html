@@ -1,0 +1,29 @@
+<div class="card">
+    <div class="page-head">
+        <h1>My campaigns</h1>
+        <p class="page-sub">Everything you've applied to or been invited into.</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab" [class.active]="tab() === 'applications'" (click)="setTab('applications')">
+            Applications <span class="count">{{ applications.length }}</span>
+        </button>
+        <button class="tab" [class.active]="tab() === 'invites'" (click)="setTab('invites')">
+            Invites <span class="count">{{ invites.length }}</span>
+        </button>
+    </div>
+
+    <div class="layout">
+        <div class="list-col">
+            @if (tab() === 'applications') {
+            <app-applications-lists [applications]="applications" [selectedId]="selectedApplicationId()"
+                (selectApplication)="selectApplication($event)"></app-applications-lists>
+            }
+
+            @if (tab() === 'invites') {
+            <app-invites-lists [invites]="invites" [selectedId]="selectedInviteId()"
+                (selectInvite)="selectInvite($event)"></app-invites-lists>
+            }
+        </div>
+    </div>
+</div>

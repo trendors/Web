@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject, Input, Renderer2 } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -18,43 +18,31 @@ import { selectFilteredShares } from '../../store/shares/shares.selector';
   styleUrl: './top-nav-filter.scss',
 })
 export class TopNavFilter {
-  private store = inject(Store);
-  categories: string[] = [];
-  shares$!: Observable<Share[]>;
-  user$!: Observable<any>;
-
-  onlyPaid: boolean = false;
-  selectedCats: Set<string> = new Set();
-
-   ngOnInit() {
-      this.shares$ = this.store.select(selectFilteredShares);
-      this.user$ = this.store.select(selectCurrentUser);
-        this.loadShares();
-    }
-
-   async loadShares() {
-      let user = await firstValueFrom(this.user$);
-      this.store.dispatch(SharesActions.loadShares({ userId: user.id }));
-    }
-
-  togglePaid() {
-    this.onlyPaid = !this.onlyPaid;
-    this.applyFilters();
+ @Input() userInitials = 'JD';
+  @Input() earned = '$4.20';
+  /** Number badge shown on the menu button and next to "Invites and applications". 0 hides both. */
+  @Input() pendingCount = 0;
+ 
+  private renderer = inject(Renderer2);
+ 
+  drawerOpen = false;
+ 
+  toggleDrawer(): void {
+    this.drawerOpen ? this.closeDrawer() : this.openDrawer();
   }
-
-  toggleCategory(cat: string) {
-    if (this.selectedCats.has(cat)) {
-      this.selectedCats.delete(cat);
-    } else {
-      this.selectedCats.add(cat);
-    }
-    this.applyFilters();
+ 
+  openDrawer(): void {
+    this.drawerOpen = true;
+    this.renderer.setStyle(document.body, 'overflow', 'hidden');
   }
-
-  applyFilters() {
-    const filters = {
-      isPaid: this.onlyPaid,
-      categories: Array.from(this.selectedCats) // Convert Set back to Array for the API
-    };
+ 
+  closeDrawer(): void {
+    this.drawerOpen = false;
+    this.renderer.removeStyle(document.body, 'overflow');
+  }
+ 
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.drawerOpen) this.closeDrawer();
   }
 }

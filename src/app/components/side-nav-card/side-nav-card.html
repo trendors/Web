@@ -1,43 +1,65 @@
+
+
 <nav class="side-nav-card">
-  <ul class="nav-list">
-    <li class="nav-item active" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-      (click)="routeTo('home')">
-      <span class="icon">🏠</span>
-      <span class="nav-label">Home</span>
-    </li>
-    <hr class="nav-divider" />
-    <li class="nav-item" routerLink="/home/create-campaign" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-      <span class="icon">➕</span>
-      <span class="nav-label">Create Campaign</span>
-    </li>
-    <li class="nav-item" routerLink="/home/view-campaign" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-      <span class="icon">🔍</span>
-      <span class="nav-label">View Campaign</span>
-    </li>
-    <hr class="nav-divider" />
-    <li class="nav-item" routerLink="/home/notifications" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-      <span class="icon">🔔</span>
-      <span class="nav-label">Notifications</span>
-      @if (unreadCount$ | async) {
-      <span class="badge">{{ unreadCount$ | async }}</span>
-      }
-    </li>
-    <hr class="nav-divider" />
-    <li class="nav-item" routerLink="/home/profile" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-      <span class="icon">👤</span>
-      <span class="nav-label">Profile</span>
-    </li>
-    <li class="nav-item" routerLink="/home/shares" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-      <span class="icon">📊</span>
-      <span class="nav-label">My Shares</span>
-    </li>
-    <li class="nav-item" routerLink="/home/transactions" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-      <span class="icon">💳</span>
-      <span class="nav-label">Transactions</span>
-    </li>
-    <li class="nav-item" (click)="logout()" >
-      <span class="icon">🚪</span>
-      <span class="nav-label">Logout</span>
-    </li>
-  </ul>
+  <div class="nav-groups">
+    
+    <!-- MAIN -->
+    <div class="nav-group">
+      <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+        <span class="icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </a>
+    </div>
+
+    <!-- CAMPAIGN MANAGEMENT (Advertiser Context) -->
+    <div class="nav-group">
+      <div class="group-label">Campaign Management</div>
+      <a routerLink="/home/create-campaign" routerLinkActive="active" class="nav-item">
+        <span class="icon">➕</span>
+        <span class="nav-label">Create Campaign</span>
+      </a>
+      <a routerLink="/home/view-campaign" routerLinkActive="active" class="nav-item">
+        <span class="icon">🔍</span>
+        <span class="nav-label">View Campaigns</span>
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <div class="group-label">Influencer Hub</div>
+      <a routerLink="/home/shares" routerLinkActive="active" class="nav-item">
+        <span class="icon">📊</span>
+        <span class="nav-label">My Shares</span>
+      </a>
+      <a routerLink="/home/transactions" routerLinkActive="active" class="nav-item">
+        <span class="icon">💳</span>
+        <span class="nav-label">Transactions</span>
+      </a>
+       <a routerLink="/home/invites-and-applications" routerLinkActive="active" class="nav-item">
+        <span class="icon">✉️</span>
+        <span class="nav-label">Invites And Applications</span>
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <div class="group-label">Account</div>
+      <a routerLink="/home/notifications" routerLinkActive="active" class="nav-item">
+        <span class="icon">🔔</span>
+        <span class="nav-label">Notifications</span>
+        @if (unreadCount$ | async; as unread) {
+          @if (unread > 0) {
+            <span class="badge">{{ unread }}</span>
+          }
+        }
+      </a>
+      <a routerLink="/home/profile" routerLinkActive="active" class="nav-item">
+        <span class="icon">👤</span>
+        <span class="nav-label">Profile</span>
+      </a>
+      <button type="button" class="nav-item logout-btn" (click)="logout()">
+        <span class="icon">🚪</span>
+        <span class="nav-label">Logout</span>
+      </button>
+    </div>
+
+  </div>
 </nav>

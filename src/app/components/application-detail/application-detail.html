@@ -1,0 +1,46 @@
+<div class="detail-panel" *ngIf="application as app">
+  <button class="close-btn" (click)="close.emit()" aria-label="Close">
+    <i class="ti ti-x" aria-hidden="true"></i>
+  </button>
+
+  <div class="head">
+    <div class="avatar-lg">{{ initials(app.brand) }}</div>
+    <div>
+      <h3>{{ app.campaignTitle }}</h3>
+      <p class="sub">{{ app.brand }} · {{ app.tier }} tier · {{ app.platform }}</p>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="num">₦{{ app.payout.toLocaleString() }}</div>
+      <div class="lbl">your payout</div>
+    </div>
+    <div class="stat">
+      <div class="num">{{ app.appliedAt }}</div>
+      <div class="lbl">applied</div>
+    </div>
+  </div>
+
+  <p class="bio" *ngIf="app.bio">{{ app.bio }}</p>
+
+  <ng-container [ngSwitch]="app.status">
+    <div class="post-form" *ngSwitchCase="'accepted'">
+      <p class="deadline-note" *ngIf="app.deadline">
+        <i class="ti ti-clock" aria-hidden="true"></i>{{ app.deadline }}
+      </p>
+      <label for="postLink">Post link</label>
+      <input id="postLink" type="text" [(ngModel)]="postLink" placeholder="Paste your published post URL" />
+      <button class="primary full" (click)="onSubmit()" [disabled]="!postLink.trim()">
+        Submit for verification
+      </button>
+    </div>
+
+    <p class="status-note" *ngSwitchCase="'posted'">
+      Your post is submitted and in the 24-hour verification hold. Payout releases automatically once cleared.
+    </p>
+    <p class="status-note" *ngSwitchCase="'paid'">This one's paid out — check your wallet for the transfer.</p>
+    <p class="status-note" *ngSwitchCase="'declined'">This application wasn't accepted for this campaign.</p>
+    <p class="status-note" *ngSwitchCase="'pending'">Waiting on the advertiser to review your application.</p>
+  </ng-container>
+</div>

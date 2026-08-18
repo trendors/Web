@@ -1,0 +1,34 @@
+<div class="list">
+
+
+  <div
+    *ngFor="let app of sorted()"
+    class="item"
+    [class.needs-action]="needsAction(app.status)"
+    [class.selected]="app.id === selectedId"
+    (click)="openApplicationDetail(app)"
+  >
+
+    <div class="item-top">
+      <div class="avatar">{{ initials(app.brand) }}</div>
+      <div class="info">
+        <div class="brand">{{ app.brand }} · APPLICATION</div>
+        <div class="title">{{ app.campaignTitle }}</div>
+        <div class="meta">{{ app.tier }} tier · {{ app.platform }}</div>
+      </div>
+      <div class="right">
+        <div class="amt">₦{{ app.payout.toLocaleString() }}</div>
+        <div class="amt-lbl">payout</div>
+      </div>
+    </div>
+    <span class="badge" [ngClass]="statusClass(app.status)">{{ statusLabel(app.status) }}</span>
+    <div class="deadline" *ngIf="app.deadline">
+      <i class="ti ti-clock" aria-hidden="true"></i>{{ app.deadline }}
+    </div>
+  </div>
+
+  <div class="empty" *ngIf="applications.length === 0">
+    <i class="ti ti-inbox" aria-hidden="true"></i>
+    No applications yet.
+  </div>
+</div>

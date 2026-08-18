@@ -1,0 +1,99 @@
+<div class="launcher" style="margin-bottom: 24px;">
+    <div class="launcher__label">Campaign duration</div>
+    <button class="launcher__field" type="button" (click)="open()">
+        <span class="launcher__field-text" [class.placeholder]="!startDate || !endDate">
+            {{ launcherLabel }}
+        </span>
+        <span class="launcher__field-icon">&#128197;</span>
+    </button>
+</div>
+
+<div class="overlay" [class.open]="isOpen" (click)="close()"></div>
+
+<div class="sheet" [class.open]="isOpen">
+    <div class="sheet__handle"></div>
+
+    <div class="sheet__header">
+        <div class="sheet__title">Campaign dates</div>
+        <button class="sheet__close" type="button" (click)="close()">&#10005;</button>
+    </div>
+
+    <div class="sheet__body">
+        <div class="presets">
+
+            @for (preset of presets; track $index) {
+            <button class="preset" type="button"
+                [class.active]="preset.days === null ? activePreset === 'custom' : activePreset === preset.days"
+                (click)="choosePreset(preset.days)">
+                {{ preset.label }}
+            </button>
+            }
+
+        </div>
+
+        <div class="range-summary">
+            <div class="range-summary__field" [class.active]="selecting === 'start'" (click)="selectField('start')">
+                <div class="range-summary__label">Starts</div>
+                <div class="range-summary__value" [class.placeholder]="!startDate">
+                    {{ startDate ? formatShort(startDate) : 'Select' }}
+                </div>
+            </div>
+
+            <span class="range-summary__arrow">&#8594;</span>
+
+            <div class="range-summary__field" [class.active]="selecting === 'end'" (click)="selectField('end')">
+                <div class="range-summary__label">Ends</div>
+                <div class="range-summary__value" [class.placeholder]="!endDate">
+                    {{ endDate ? formatShort(endDate) : 'Select' }}
+                </div>
+            </div>
+        </div>
+
+        <div class="duration-pill" [class.hidden]="!canConfirm">
+            {{ durationLabel }}
+        </div>
+
+        <div class="calendar__nav">
+            <button class="calendar__navbtn" type="button" (click)="prevMonth()">&#8249;</button>
+            <div class="calendar__month">{{ monthLabel }}</div>
+            <button class="calendar__navbtn" type="button" (click)="nextMonth()">&#8250;</button>
+        </div>
+
+        <div class="calendar__grid">
+
+            @for (w of weekdays; track $index) {
+                            <div class="calendar__weekday" >{{ w }}</div>
+
+            }
+
+            @for (week of weeks; track $index) {
+            <ng-container>
+
+                @for (cell of week; track $index) {
+                <div class="calendar__cell" [class.in-range]="cell.inRange || cell.isStart || cell.isEnd"
+                    [class.range-start]="cell.isStart" [class.range-end]="cell.isEnd">
+
+                    @if (cell.date) {
+                    <button class="calendar__day" type="button" [class.disabled]="cell.disabled"
+                        [class.today]="cell.isToday" [class.selected]="cell.isStart || cell.isEnd"
+                        [disabled]="cell.disabled" (click)="pickDate(cell)">
+                        {{ cell.date.getDate() }}
+                    </button>
+                    }
+
+                </div>
+                }
+
+            </ng-container>
+            }
+
+
+        </div>
+    </div>
+
+    <div class="sheet__footer">
+        <button class="apply-btn" type="button" [disabled]="!canConfirm" (click)="confirm()">
+            Confirm dates
+        </button>
+    </div>
+</div>

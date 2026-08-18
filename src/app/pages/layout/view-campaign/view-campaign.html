@@ -1,87 +1,57 @@
 <div class="page">
   <div class="card">
-    <!-- Header -->
     <div class="page-header">
       <div class="page-title">
-        <!-- <small>Overview</small> -->
         Campaigns
       </div>
       <button class="btn btn-primary" (click)="openNewCampaign()">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <span>➕</span>
         <span>New Campaign</span>
       </button>
     </div>
-    <!-- Stats -->
     <div class="stats-row">
       @if (stats$ | async; as stats) {
-        <div class="stat-card">
-          <div class="stat-label">Total Campaigns</div>
-          <div class="stat-value">{{ stats.totalCampaigns }}</div>
-          <div class="stat-change up">↑ 4 this month</div>
-        </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Campaigns</div>
+        <div class="stat-value">{{ stats.totalCampaigns }}</div>
+        <div class="stat-change up">↑ 4 this month</div>
+      </div>
 
-        <div class="stat-card">
-          <div class="stat-label">Active Now</div>
-          <div class="stat-value accent">{{ stats.activeNow }}</div>
-          <div class="stat-change">Running live</div>
-        </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Now</div>
+        <div class="stat-value accent">{{ stats.activeNow }}</div>
+        <div class="stat-change">Running live</div>
+      </div>
 
-        <div class="stat-card">
-          <div class="stat-label">Total Reach</div>
-          <div class="stat-value">{{ stats.totalReach | number }}</div>
-          <div class="stat-change up">↑ 18% vs last month</div>
-        </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Reach</div>
+        <div class="stat-value">{{ stats.totalReach | number }}</div>
+        <div class="stat-change up">↑ 18% vs last month</div>
+      </div>
 
-        <div class="stat-card">
-          <div class="stat-label">Avg. Engagement</div>
-          <div class="stat-value amber">{{ stats.avgEngagement }}%</div>
-          <div class="stat-change">Across all campaigns</div>
-        </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg. Engagement</div>
+        <div class="stat-value amber">{{ stats.avgEngagement }}%</div>
+        <div class="stat-change">Across all campaigns</div>
+      </div>
       }
     </div>
 
     <!-- Filters -->
     <div class="filters">
       @for (f of filters; track f.value) {
-        <button
-          class="filter-pill"
-          [class.active]="activeFilter === f.value"
-          (click)="setFilter(f.value)"
-        >
-          {{ f.label }}
-        </button>
+      <button class="filter-pill" [class.active]="activeFilter === f.value" (click)="setFilter(f.value)">
+        {{ f.label }}
+      </button>
       }
 
       <div class="filter-divider"></div>
 
       <div class="search-wrap">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
+        <span>🔍</span>
 
-        <input
-          class="search-input"
-          placeholder="Search campaigns…"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearchChange($event)"
-        />
+        <input class="search-input" placeholder="Search campaigns…" [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)" />
       </div>
     </div>
   </div>
@@ -90,291 +60,90 @@
 
   <div class="section-title">Campaign List</div>
   <div class="table-card">
-    <div class="table-wrap desktop-only">
-      <table class="campaign-table">
-        <thead>
-          <tr>
-            <th>Campaign</th>
-            <!-- <th>Access</th>
-            <th>Platforms</th> -->
-            <th class="align-right">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (filteredCampaigns$ | async; as campaigns) {
-            @if (campaigns.length > 0) {
-              @for (campaign of campaigns; track campaign.id) {
-                <tr class="table-row main-row" (click)="openModal(campaign)">
-                  <td>
-                    <div class="campaign-cell">
-                      <div class="campaign-avatar">{{ campaign.name.charAt(0).toUpperCase() }}</div>
-                      <div>
-                        <div class="campaign-name">{{ campaign.name }}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <!-- <td>
-                    <span class="status-badge" [ngClass]="statusClass(campaign.access)">
-                      {{ capitalize(campaign.access) }}
-                    </span>
-                  </td> -->
-                  <!-- <td>
-                    <div class="card-platforms">
-                      @for (platform of getPlatforms(campaign.platforms) | slice: 0 : 2; track platform) {
-                        <span class="platform-tag">{{ platform }}</span>
-                      }
-                      @if (getPlatforms(campaign.platforms).length > 2) {
-                        <span class="platform-tag">+{{ getPlatforms(campaign.platforms).length - 2 }}</span>
-                      }
-                    </div>
-                  </td> -->
-                  <!-- <td>{{ campaign.invitations.length }}</td> -->
-                  <td class="align-right">
-                    <button class="btn btn-ghost" type="button" (click)="$event.stopPropagation(); openModal(campaign)">
-                      View
-                    </button>
-                  </td>
-                </tr>
-              }
-            } @else {
-              <tr class="empty-row">
-                <td colspan="5">
-                  <div class="empty-state">
-                    <div class="empty-icon">🔍</div>
-                    <div class="empty-title">No campaigns found</div>
-                    <div class="empty-desc">Try a different filter or search term</div>
-                  </div>
-                </td>
-              </tr>
-            }
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <div class="mobile-only">
-      @if (filteredCampaigns$ | async; as campaigns) {
-        @if (campaigns.length > 0) {
-          <div class="mobile-campaign-list">
-            @for (campaign of campaigns; track campaign.id) {
-              <article class="mobile-campaign-card" (click)="openModal(campaign)">
-                <div class="mobile-campaign-top">
-                  <div class="campaign-cell">
-                    <div class="campaign-avatar">{{ campaign.name.charAt(0).toUpperCase() }}</div>
-                    <div class="campaign-name">{{ campaign.name }}</div>
-                  </div>
-                  <span class="status-badge" [ngClass]="statusClass(campaign.access)">
-                    {{ capitalize(campaign.access) }}
-                  </span>
-                </div>
-
-                <div class="mobile-meta-grid">
-                  <div class="mobile-meta-item">
-                    <span class="mobile-meta-label">Platforms</span>
-                    <div class="card-platforms">
-                      @for (platform of getPlatforms(campaign.platforms) | slice: 0 : 2; track platform) {
-                        <span class="platform-tag">{{ platform }}</span>
-                      }
-                      @if (getPlatforms(campaign.platforms).length > 2) {
-                        <span class="platform-tag">+{{ getPlatforms(campaign.platforms).length - 2 }}</span>
-                      }
-                    </div>
-                  </div>
-
-                  <div class="mobile-meta-item">
-                    <span class="mobile-meta-label">Invites</span>
-                    <span class="mobile-meta-value">{{ campaign.invitations.length }}</span>
-                  </div>
-                </div>
-
-                <div class="mobile-actions">
-                  <button class="btn btn-ghost" type="button" (click)="$event.stopPropagation(); openModal(campaign)">
-                    View
-                  </button>
-                </div>
-              </article>
-            }
+    @if (filteredCampaigns$ | async; as campaigns) {
+    @if (campaigns.length > 0) {
+    <div class="campaign-wide-list">
+      @for (campaign of campaigns; track campaign.id) {
+      <article class="campaign-wide-card" (click)="openModal(campaign)">
+        <div class="campaign-wide-left">
+          <div class="campaign-avatar">{{ campaign.name.charAt(0).toUpperCase() }}</div>
+          <div class="campaign-wide-info">
+            <div class="campaign-wide-name">{{ campaign.name }}</div>
           </div>
-        } @else {
-          <div class="empty-state">
-            <div class="empty-icon">🔍</div>
-            <div class="empty-title">No campaigns found</div>
-            <div class="empty-desc">Try a different filter or search term</div>
-          </div>
-        }
-      }
-    </div>
-  </div>
-</div>
+        </div>
 
-<!-- MODAL -->
-@if (selectedCampaign) {
-  <div class="modal-overlay" [class.open]="isModalOpen" (click)="closeModalOutside($event)">
-    <div class="modal">
-      <div class="modal-header">
-        <div>
-          <div style="margin-bottom: 10px">
-            <span class="status-badge" [ngClass]="statusClass(selectedCampaign.access)">
-              {{ capitalize(selectedCampaign.access) }}
+        <div class="campaign-wide-meta">
+          <div class="campaign-wide-meta-item">
+            <span class="mobile-meta-label">Type</span>
+            <span class="status-badge" [ngClass]="statusClass(campaign.access)">
+              {{ capitalize(campaign.access) }}
             </span>
           </div>
-          <div class="modal-title">{{ selectedCampaign.name }}</div>
-        </div>
-        <button class="modal-close" (click)="closeModal()">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
 
-      <div class="modal-body">
-        <!-- Description -->
-        <div class="modal-section">
-          <div class="modal-section-label">Description</div>
-          <div class="modal-desc">
-            {{ selectedCampaign.description || 'No description provided.' }}
-          </div>
-        </div>
-
-        <!-- Platforms -->
-        <div class="modal-section">
-          <div class="modal-section-label">Platforms</div>
-          <div class="card-platforms">
-            @for (platform of getPlatforms(selectedCampaign.platforms); track platform) {
+          <div class="campaign-wide-meta-item">
+            <span class="mobile-meta-label">Platforms</span>
+            <div class="card-platforms">
+              @for (platform of getPlatforms(campaign.platforms) | slice: 0 : 2; track platform) {
               <span class="platform-tag">{{ platform }}</span>
-            }
-          </div>
-        </div>
-
-        <!-- Campaign Details -->
-        <div class="modal-section">
-          <div class="modal-section-label">Details</div>
-          <div class="modal-metrics-grid">
-            <div class="modal-metric">
-              <div class="modal-metric-val">
-                {{
-                  selectedCampaign.start_date
-                    ? (selectedCampaign.start_date | date: 'MMM d, y')
-                    : '—'
-                }}
-              </div>
-              <div class="modal-metric-label">Start Date</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">
-                {{
-                  selectedCampaign.end_date ? (selectedCampaign.end_date | date: 'MMM d, y') : '—'
-                }}
-              </div>
-              <div class="modal-metric-label">End Date</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">{{ selectedCampaign.invitations.length }}</div>
-              <div class="modal-metric-label">Invitations</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">{{ selectedCampaign.files.length }}</div>
-              <div class="modal-metric-label">Files</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">
-                {{ selectedCampaign.auto_generate_captions ? 'Yes' : 'No' }}
-              </div>
-              <div class="modal-metric-label">Auto Captions</div>
-            </div>
-            <div class="modal-metric">
-              <div class="modal-metric-val">
-                {{ selectedCampaign.generate_post ? 'Yes' : 'No' }}
-              </div>
-              <div class="modal-metric-label">Auto Post</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Hashtags -->
-        @if (selectedCampaign.hash_tags) {
-          <div class="modal-section">
-            <div class="modal-section-label">Hashtags</div>
-            <div class="modal-desc">{{ selectedCampaign.hash_tags }}</div>
-          </div>
-        }
-
-        <!-- Campaign Link -->
-        @if (selectedCampaign.link) {
-          <div class="modal-section">
-            <div class="modal-section-label">Campaign Link</div>
-            <a [href]="selectedCampaign.link" target="_blank" class="modal-link">
-              {{ selectedCampaign.link }}
-            </a>
-          </div>
-        }
-
-        <!-- Media Files -->
-        @if (selectedCampaign.files.length > 0) {
-          <div class="modal-section">
-            <div class="modal-section-label">Media</div>
-            <div class="modal-media-grid">
-              @for (file of selectedCampaign.files; track file) {
-                <div class="modal-media-item">
-                  <img [src]="file" [alt]="selectedCampaign.name" />
-                </div>
+              }
+              @if (getPlatforms(campaign.platforms).length > 2) {
+              <span class="platform-tag">+{{ getPlatforms(campaign.platforms).length - 2 }}</span>
               }
             </div>
           </div>
-        }
 
-        <!-- Timeline -->
-        <div class="modal-section">
-          <div class="modal-section-label">Timeline</div>
-          <div class="timeline">
-            <div class="timeline-item">
-              <div class="timeline-dot done"></div>
-              <span>Campaign created — {{ selectedCampaign.createdAt | date: 'MMM d, y' }}</span>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" [class.done]="!!selectedCampaign.start_date"></div>
-              <span>
-                Start date —
-                {{
-                  selectedCampaign.start_date
-                    ? (selectedCampaign.start_date | date: 'MMM d, y')
-                    : 'Not set'
-                }}
-              </span>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" [class.done]="!!selectedCampaign.end_date"></div>
-              <span>
-                End date —
-                {{
-                  selectedCampaign.end_date
-                    ? (selectedCampaign.end_date | date: 'MMM d, y')
-                    : 'Not set'
-                }}
-              </span>
-            </div>
-            <div class="timeline-item">
-              <div
-                class="timeline-dot"
-                [class.done]="selectedCampaign.invitations.length > 0"
-              ></div>
-              <span>{{ selectedCampaign.invitations.length }} creator(s) invited</span>
-            </div>
+          @if (campaign.access === 'invite_only') {
+          <div class="campaign-wide-meta-item">
+            <span class="mobile-meta-label">Round of negotiations</span>
+            <span class="mobile-meta-value">{{ getNegotiationRound(campaign) }}</span>
           </div>
+
+          <div class="campaign-wide-meta-item">
+            <span class="mobile-meta-label">Awaiting your reply</span>
+            <span class="mobile-meta-value accent">{{ getAwaitingReplyCount(campaign) | number }}</span>
+          </div>
+          }
+
+          @if (campaign.access === 'open') {
+          <div class="campaign-wide-meta-item">
+            <span class="mobile-meta-label">Total clicks</span>
+            <span class="mobile-meta-value">{{ getTotalClicks(campaign) | number }}</span>
+          </div>
+
+          <div class="campaign-wide-meta-item">
+            <span class="mobile-meta-label">Clicks today</span>
+            <span class="mobile-meta-value accent">{{ getTodayClicks(campaign) | number }}</span>
+          </div>
+          }
+
+          @if (campaign.access === 'application') {
+          <div class="campaign-wide-meta-item">
+            <span class="mobile-meta-label">Applicants</span>
+            <span class="mobile-meta-value">{{ getApplicantsCount(campaign) | number }}</span>
+          </div>
+
+          <div class="campaign-wide-meta-item">
+            <span class="mobile-meta-label">Pending review</span>
+            <span class="mobile-meta-value accent">{{ getPendingReviewCount(campaign) | number }}</span>
+          </div>
+          }
         </div>
 
-        <div class="modal-footer">
-          <button class="btn btn-primary" style="flex: 1">Manage Campaign</button>
-          <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+        <div class="campaign-wide-action">
+          <button class="btn btn-ghost" type="button" (click)="$event.stopPropagation(); openModal(campaign)">
+            View
+          </button>
         </div>
-      </div>
+      </article>
+      }
     </div>
+    } @else {
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">No campaigns found</div>
+      <div class="empty-desc">Try a different filter or search term</div>
+    </div>
+    }
+    }
   </div>
-}
+</div>

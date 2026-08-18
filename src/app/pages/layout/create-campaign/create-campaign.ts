@@ -15,6 +15,7 @@ import {
   selectPendingApplicants,
 } from '../../../store/invitation/invitation.selector';
 import { InvitationActions } from '../../../store/invitation/invitation.action';
+import { Calender } from "../../../components/calender/calender";
 
 interface CampaignFile {
   file: File;
@@ -46,7 +47,7 @@ interface Tier {
 
 @Component({
   selector: 'app-create-campaign',
-  imports: [CommonModule, FormsModule, Alert],
+  imports: [CommonModule, FormsModule, Alert, Calender],
   templateUrl: './create-campaign.html',
   styleUrls: ['./create-campaign.scss'],
 })
@@ -94,10 +95,11 @@ export class CreateCampaign {
   ];
 
   accessTypes = [
-    { value: 'open', icon: '🌍', title: 'Open', desc: 'Pay per verified click. Fast, high-volume reach.', extra:"From ₦70/click · min ₦25,000" },
-    { value: 'application', icon: '📋', title: 'Application', desc: 'Vetted creator slot. Reach-tiered, one verified post.', extra:"From ₦8,000/slot · min 1 slot" },
-    { value: 'invite_only', icon: '📩', title: 'Invite Only', desc: 'Direct deal escrow with a specific creator.', extra:"From ₦200,000 · min 1 deal"},
-  ];
+  { value: 'open', icon: '🌍', title: 'Open', desc: 'Pay per verified click. Fast, high-volume reach.', extra: 'From ₦70/click · ₦25,000 min spend' },
+  { value: 'invite-only', icon: '📩', title: 'Invite Only', desc: 'Direct escrow deal with one creator.', extra: 'From ₦200,000 per deal' },
+    { value: 'application', icon: '📋', title: 'Application', desc: 'Vetted creator slots, priced by reach.', extra: 'From ₦8,000/slot · 1 slot min' },
+
+];
 
   tiers: Tier[] = [
     { name: 'Nano', range: '1k–10k', amount: '₦8,000', color: '#0ea5e9' },
@@ -105,6 +107,12 @@ export class CreateCampaign {
     { name: 'Mid', range: '50k–200k', amount: '₦40,000', color: '#f59e0b' },
     { name: 'Macro', range: '200k+', amount: '₦90,000', color: '#ef4444' },
   ];
+
+  selectedSlot: string | null = null;
+ 
+  selectAccess(id: string): void {
+    this.selectedAccess = id;
+  }
 
   // Slot counts chosen per creator tier for Application campaigns
   tierSlots = signal<Record<string, number>>(

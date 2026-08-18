@@ -1,35 +1,30 @@
-<div class="modal-overlay1">
-    <div class="modal">
-
-        <!-- Drag handle (mobile) -->
-        <div class="modal-handle" (click)="closeDialog()"></div>
-
-        <!-- Header -->
+@if (data$ | async; as data) {
+<div class="card">
+    <div class="">
         <div class="modal-header">
             <div class="modal-header-left">
-                <div class="modal-campaign-icon">
+                <button class="back-btn" (click)="goBack()" type="button" aria-label="Back to campaigns">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+                <!-- <div class="modal-campaign-icon">
                     {{ data.name.charAt(0).toUpperCase() }}
-                </div>
+                </div> -->
                 <div>
-                    <!-- <span class="status-badge" >
-              {{ capitalize(data.access) }}
-            </span> -->
                     <div class="modal-title">{{ data.name }}</div>
                     <div class="modal-created">
                         Created {{ data.createdAt | date:'MMM d, y' }}
                     </div>
                 </div>
+                  <div class="modal-campaign-icon">
+                    close
+                </div>
             </div>
-            <button class="modal-close" (click)="closeDialog()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 6 6 18M6 6l12 12" />
-                </svg>
-            </button>
         </div>
 
         <div class="modal-body">
 
-            <!-- Description -->
             <div class="modal-section">
                 <div class="modal-section-label">Description</div>
                 <div class="modal-desc">
@@ -37,7 +32,7 @@
                 </div>
             </div>
 
-            <!-- Platforms -->
+
             <div class="modal-section">
                 <div class="modal-section-label">Platforms</div>
                 <div class="modal-platforms">
@@ -50,46 +45,39 @@
                 </div>
             </div>
 
-            <!-- Details grid -->
             <div class="modal-section">
                 <div class="modal-section-label">Details</div>
                 <div class="modal-metrics-grid">
+
+                    @if(data.access === 'open') {
                     <div class="modal-metric">
                         <div class="modal-metric-val">
-                            {{ data.start_date ? (data.start_date | date:'MMM d, y') : '—' }}
+                            222
                         </div>
-                        <div class="modal-metric-label">Start Date</div>
+                        <div class="modal-metric-label">total valid clicks</div>
                     </div>
+                    }
+
+                      @if(data.access === 'open') {
                     <div class="modal-metric">
                         <div class="modal-metric-val">
-                            {{ data.end_date ? (data.end_date | date:'MMM d, y') : '—' }}
+                            78
                         </div>
-                        <div class="modal-metric-label">End Date</div>
+                        <div class="modal-metric-label">clicks today</div>
                     </div>
-                    <div class="modal-metric">
-                        <div class="modal-metric-val">{{ data.invitations.length }}</div>
-                        <div class="modal-metric-label">Invitations</div>
-                    </div>
-                    <div class="modal-metric">
-                        <div class="modal-metric-val">{{ data.files.length }}</div>
-                        <div class="modal-metric-label">Files</div>
-                    </div>
+                    }
+
+                    @if(data.access === 'open') {
                     <div class="modal-metric">
                         <div class="modal-metric-val">
-                            {{ data.auto_generate_captions ? 'Yes' : 'No' }}
+                            $15,000
                         </div>
-                        <div class="modal-metric-label">Auto Captions</div>
+                        <div class="modal-metric-label">spent $25,000</div>
                     </div>
-                    <div class="modal-metric">
-                        <div class="modal-metric-val">
-                            {{ data.generate_post ? 'Yes' : 'No' }}
-                        </div>
-                        <div class="modal-metric-label">Auto Post</div>
-                    </div>
+                    }
                 </div>
             </div>
 
-            <!-- Hashtags -->
             @if (data.hash_tags) {
             <div class="modal-section">
                 <div class="modal-section-label">Hashtags</div>
@@ -97,7 +85,6 @@
             </div>
             }
 
-            <!-- Campaign link -->
             @if (data.link) {
             <div class="modal-section">
                 <div class="modal-section-label">Campaign Link</div>
@@ -111,7 +98,6 @@
             </div>
             }
 
-            <!-- Media files -->
             @if (data.files.length > 0) {
             <div class="modal-section">
                 <div class="modal-section-label">Media</div>
@@ -125,38 +111,71 @@
             </div>
             }
 
-            <!-- Timeline -->
+            @if (data.access === 'invite_only') {
             <div class="modal-section">
-                <div class="modal-section-label">Timeline</div>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-dot done"></div>
-                        <span>Campaign created — {{ data.createdAt | date:'MMM d, y' }}</span>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot" [class.done]="!!data.start_date"></div>
-                        <span>
-                            Start date —
-                            {{ data.start_date ? (data.start_date | date:'MMM d, y') : 'Not set' }}
-                        </span>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot" [class.done]="!!data.end_date"></div>
-                        <span>
-                            End date —
-                            {{ data.end_date ? (data.end_date | date:'MMM d, y') : 'Not set' }}
-                        </span>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot" [class.done]="data.invitations.length > 0"></div>
-                        <span>{{ data.invitations.length }} creator(s) invited</span>
-                    </div>
+                <div class="modal-section-label">Deal Progress</div>
+                <app-escrow-progress [currentStage]="getEscrowStage(data)"
+                    [escrowAmount]="getEscrowAmount(data)"></app-escrow-progress>
+                <app-negotiation></app-negotiation>
+            </div>
+
+            
+            }
+
+            @if (data.access === 'application') {
+            <div class="modal-section">
+                <div class="modal-section-label">Applications</div>
+                <div class="applicants-table-wrap">
+                    <table class="applicants-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Tier</th>
+                                <th class="align-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (applicant of applicants; track applicant.id) {
+                            <tr>
+                                <td>
+                                    <div class="applicant-name">{{ applicant.name }}</div>
+                                    <div class="applicant-subtext">
+                                        {{ formatFollowers(applicant.followerCount) }} followers · {{
+                                        applicant.socialMedia }}
+                                    </div>
+                                </td>
+                                <td><span class="tier-tag">{{ applicant.tier }}</span></td>
+                                <td class="align-right">
+                                    @if (applicant.status === 'pending') {
+                                    <div class="applicant-actions">
+                                        <button class="btn-accept" type="button"
+                                            (click)="acceptApplicant(applicant)">Accept</button>
+                                        <button class="btn-decline" type="button"
+                                            (click)="declineApplicant(applicant)">Decline</button>
+                                    </div>
+                                    } @else {
+                                    <span class="applicant-status" [class.accepted]="applicant.status === 'accepted'"
+                                        [class.declined]="applicant.status === 'declined'">
+                                        {{ applicant.status === 'accepted' ? 'Accepted' : 'Declined' }}
+                                    </span>
+                                    }
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
+
+            
+            }
+
             <div class="modal-footer">
                 <button class="btn btn-primary">Manage Campaign</button>
-                <button class="btn btn-ghost" (click)="closeDialog()">Close</button>
+                <button class="btn btn-ghost" (click)="goBack()">Back to Campaigns</button>
             </div>
         </div>
     </div>
 </div>
+}

@@ -1,20 +1,24 @@
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { take, map } from 'rxjs';
 import { selectIsLoggedIn } from '../../store/auth/sharedState/auth.selector';
+import { isPlatformBrowser } from '@angular/common';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const store = inject(Store);
-  // Fast-path: if a token exists in localStorage, allow navigation immediately.
-  // This prevents the app from redirecting to `/login` on cold restarts
-  // while the store is still being hydrated by effects.
+
+   const platformId = inject(PLATFORM_ID);
+
+  if (!isPlatformBrowser(platformId)) {
+    return true;
+  }
+  
   try {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
     if (token) return true;
   } catch (e) {
-    // ignore (e.g., in non-browser environments)
   }
 
   return store.select(selectIsLoggedIn).pipe(

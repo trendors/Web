@@ -1,0 +1,33 @@
+<div class="list">
+  <div
+    *ngFor="let inv of sorted()"
+    class="item"
+    [class.needs-action]="needsAction(inv.status)"
+    [class.selected]="inv.id === selectedId"
+    (click)="openInviteDetail(inv)"
+
+  >
+    <div class="item-top">
+      <div class="avatar">{{ initials(inv.brand) }}</div>
+      <div class="info">
+        <div class="brand">{{ inv.brand }} · INVITE</div>
+        <div class="title">{{ inv.campaignTitle }}</div>
+        <div class="meta" *ngIf="inv.status === 'negotiating'">Round {{ inv.round }} of {{ inv.maxRounds }} · {{ inv.platform }}</div>
+        <div class="meta" *ngIf="inv.status !== 'negotiating'">{{ inv.platform }}</div>
+      </div>
+      <div class="right">
+        <!-- <div class="amt">₦{{ inv.currentOffer.toLocaleString() }}</div> -->
+        <div class="amt-lbl">{{ needsAction(inv.status) ? 'offer' : 'deal value' }}</div>
+      </div>
+    </div>
+    <span class="badge" [ngClass]="statusClass(inv.status)">{{ statusLabel(inv.status) }}</span>
+    <div class="deadline" *ngIf="inv.deliverDeadline">
+      <i class="ti ti-clock" aria-hidden="true"></i>Deliver by {{ inv.deliverDeadline }}
+    </div>
+  </div>
+
+  <div class="empty" *ngIf="invites.length === 0">
+    <i class="ti ti-inbox" aria-hidden="true"></i>
+    No invites yet.
+  </div>
+</div>
