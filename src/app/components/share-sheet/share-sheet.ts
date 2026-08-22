@@ -11,6 +11,7 @@ import { SharesActions } from '../../store/shares/shares.action';
 import { CreateShare, SocialMedia } from '../../core/models/shares/shares.model';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 import { LoaderComponent } from "../loader/loader";
+import { environment } from '../../../environments/environment.development';
 
 
 
@@ -26,6 +27,7 @@ import { LoaderComponent } from "../loader/loader";
 })
 export class ShareSheet {
   private utilService = inject(UtilService);
+  baseurl = environment.baseUrl;
 
 
   constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { post: any },
@@ -108,7 +110,7 @@ fetchAireWrite() {
     let trendText = this.trends$.pipe(map(trends => trends.slice(0, 4).map((t: any) => `${t.name}`).join(' ')));
     const baseUrl = 'https://twitter.com/intent/tweet';
     const params = new URLSearchParams({
-      text: `${this.selectedPost}\n \nView more: https://c967-102-90-123-32.ngrok-free.app/post/${post.id} \n${await trendText.toPromise()}`
+      text: `${this.selectedPost}\n \nView more: ${this.baseurl}/post/${post.id} \n${await trendText.toPromise()}`
     });
     const shareUrl = `${baseUrl}?${params.toString()}`;
     const twitterwindow = window.open(shareUrl, '_blank', 'width=550,height=420')
@@ -132,7 +134,7 @@ fetchAireWrite() {
     const currentUser = await firstValueFrom(this.user$);
     const baseUrl = 'https://www.facebook.com/sharer/sharer.php';
     const params = new URLSearchParams({
-      u: `https://b5267a42e435.ngrok-free.app/post/${post.id}`,
+      u: `${this.baseurl}/post/${post.id}`,
       quote: post.text
     });
     const shareUrl = `${baseUrl}?${params.toString()}`;
@@ -155,7 +157,7 @@ fetchAireWrite() {
     const currentUser = await firstValueFrom(this.user$);
     const baseUrl = 'https://www.linkedin.com/sharing/share-offsite/';
     const params = new URLSearchParams({
-      url: `https://b5267a42e435.ngrok-free.app/post/${post.id}`
+      url: `${this.baseurl}/post/${post.id}`
     });
     const shareUrl = `${baseUrl}?${params.toString()}`;
     const win = window.open(shareUrl, '_blank', 'width=550,height=420');
@@ -167,7 +169,7 @@ fetchAireWrite() {
         deviceId: this.getOrCreateDeviceId(),
         ipAddress: await this.getIPAddress(),
         external_post_url: shareUrl,
-        social_media: SocialMedia.FACEBOOK
+        social_media: SocialMedia.LINKEDIN
       };
       this.store.dispatch(SharesActions.createShares({ data: share }));
     }
@@ -177,7 +179,7 @@ fetchAireWrite() {
     const currentUser = await firstValueFrom(this.user$);
     const baseUrl = 'https://t.me/share/url';
     const params = new URLSearchParams({
-      url: `https://b5267a42e435.ngrok-free.app/post/${post.id}`,
+      url: `${this.baseurl}/post/${post.id}`,
       text: post.text
     });
     const shareUrl = `${baseUrl}?${params.toString()}`;
@@ -190,7 +192,7 @@ fetchAireWrite() {
         deviceId: this.getOrCreateDeviceId(),
         ipAddress: await this.getIPAddress(),
         external_post_url: shareUrl,
-        social_media: SocialMedia.FACEBOOK
+        social_media: SocialMedia.TELEGRAM
       };
       this.store.dispatch(SharesActions.createShares({ data: share }));
     }
@@ -200,7 +202,7 @@ fetchAireWrite() {
     const currentUser = await firstValueFrom(this.user$);
     const baseUrl = 'https://api.whatsapp.com/send';
     const params = new URLSearchParams({
-      text: `${post.text}\n\nView more: https://b5267a42e435.ngrok-free.app/post/${post.id}`
+      text: `${post.text}\n\nView more: ${this.baseurl}/post/${post.id}`
     });
     const shareUrl = `${baseUrl}?${params.toString()}`;
     const win = window.open(shareUrl, '_blank', 'width=550,height=420');

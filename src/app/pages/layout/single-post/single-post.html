@@ -1,4 +1,4 @@
-<div class="home-container">
+<!-- <div class="home-container">
 
 
   <div class="card" *ngIf="post$ | async as post">
@@ -67,4 +67,85 @@
     </aside>
   </aside>
 
+</div> -->
+
+
+
+
+<div class="page" *ngIf="post$ | async as post">
+
+  <header class="masthead">
+    <div class="masthead__mark">CAMPAIGN&nbsp;DESK</div>
+    <div class="masthead__meta" id="masthead-meta">Dispatch No. 001</div>
+  </header>
+
+  <main class="sheet">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero__eyebrow-row">
+        <span class="pill" id="status-pill">Live</span>
+        <span class="eyebrow" id="category">Campaign Category</span>
+      </div>
+      <h1 class="hero__title" id="title">{{post.heading}}</h1>
+      <p class="hero__subtitle" id="subtitle">{{post.text}}</p>
+
+      <div class="hero__figure" id="hero-image-wrap">
+        <div class="hero__figure-placeholder" id="hero-image-placeholder" *ngFor="let img of post.images">
+          <img id="hero-image" [src]="img" alt="Post image" />
+
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS STRIP -->
+    <section class="stats" id="stats" aria-label="Campaign metrics"></section>
+
+    <!-- <div class="grid">
+
+      <article class="body-copy">
+        <h2 class="body-copy__kicker">About this campaign</h2>
+        <div id="description">
+          <p>Write the full description here. This can include background, what the campaign is trying to achieve, and
+            why someone should care. Keep paragraphs short — this is read on a phone as often as a desktop.</p>
+        </div>
+
+        <ul class="highlights" id="highlights"></ul>
+      </article>
+
+      <aside class="ticket" id="ticket" aria-label="Take action">
+        <div class="ticket__top">
+          <div class="ticket__label">Take part</div>
+          <h3 class="ticket__headline" id="cta-headline">Ready when you are</h3>
+          <p class="ticket__note" id="cta-note">Takes less than a minute.</p>
+
+          <dl class="ticket__facts" id="ticket-facts"></dl>
+        </div>
+
+        <div class="ticket__perf" aria-hidden="true"></div>
+
+        <div class="ticket__bottom">
+          <a class="cta" id="cta-button" href="#" target="_blank" rel="noopener">
+            <span id="cta-icon" class="cta__icon"></span>
+            <span id="cta-text">Take action</span>
+          </a>
+          <a class="cta-secondary" id="cta-secondary" href="#">Learn more</a>
+        </div>
+      </aside>
+
+    </div> -->
+  </main>
+
+  <footer class="foot">
+    <span id="foot-org">Organization Name</span>
+    <span class="foot__dot">&middot;</span>
+    <span id="foot-updated">Updated recently</span>
+  </footer>
+
+  <!-- Sticky mobile CTA -->
+  <div class="mobile-bar" id="mobile-bar">
+    <a class="cta cta--mobile" id="cta-button-mobile" [href]="post?.link" target="_blank" rel="noopener">
+      <span id="cta-text-mobile">Take action</span>
+    </a>
+  </div>
 </div>

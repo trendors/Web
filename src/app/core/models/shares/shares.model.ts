@@ -1,7 +1,9 @@
 export enum SocialMedia {
   X = 'x',
   WHATSAPP = 'whatsapp',
-  FACEBOOK = 'facebook'
+  FACEBOOK = 'facebook',
+  LINKEDIN = 'linkedin',
+  TELEGRAM = 'telegram'
 }
 
 

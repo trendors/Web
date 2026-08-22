@@ -28,10 +28,15 @@
             <span class="hint">What's this campaign about?</span></label>
           <textarea [(ngModel)]="campaignDescription"
             placeholder="Tell sharers what they're promoting and why it matters..." maxlength="300"></textarea>
-          <label> <span class="hint">This can be rewritten</span></label>
 
           <div class="char-count">{{ campaignDescription() .length }}/300</div>
         </div>
+        <div class="field">
+          <label>Campaign Action Link <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="link" placeholder="e.g. https://example.com" maxlength="200" />
+                    <label> <span class="hint">Registration, Sign-up, Download or Purchase link</span></label>
+
+     </div>
       </div>
     </div>
 
@@ -472,10 +477,16 @@
     <app-topup-modal [amount]="5000" [fixedAmount]="true" (topupSuccess)="onTopupSuccess($event)">
     </app-topup-modal>
     }
-    <button class="checkout-btn checkout-btn-full" (click)="showTopup = true" [disabled]="isSubmitting()">
+    <!-- <button class="checkout-btn checkout-btn-full" (click)="showTopup = true" [disabled]="isSubmitting()">
       @if (isSubmitting() === true) {
       <app-alert></app-alert>
       }
+      <span>Checkout →</span>
+    </button> -->
+     <button class="checkout-btn checkout-btn-full" (click)="createCampaign()" [disabled]="isSubmitting()">
+      <!-- @if (isSubmitting() === true) {
+      <app-alert></app-alert>
+      } -->
       <span>Checkout →</span>
     </button>
   </div>
