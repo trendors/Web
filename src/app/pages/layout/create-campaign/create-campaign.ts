@@ -16,6 +16,7 @@ import {
 } from '../../../store/invitation/invitation.selector';
 import { InvitationActions } from '../../../store/invitation/invitation.action';
 import { Calender } from "../../../components/calender/calender";
+import { TopupModalComponent } from "../../../components/topup-modal/topup-modal";
 
 interface CampaignFile {
   file: File;
@@ -47,7 +48,7 @@ interface Tier {
 
 @Component({
   selector: 'app-create-campaign',
-  imports: [CommonModule, FormsModule, Alert, Calender],
+  imports: [CommonModule, FormsModule, Alert, Calender, TopupModalComponent],
   templateUrl: './create-campaign.html',
   styleUrls: ['./create-campaign.scss'],
 })
@@ -109,9 +110,17 @@ export class CreateCampaign {
   ];
 
   selectedSlot: string | null = null;
+    showTopup = false;
+
  
   selectAccess(id: string): void {
     this.selectedAccess = id;
+  }
+
+  onTopupSuccess(amount: number): void {
+    // this.walletBalance += amount; 
+    // your store dispatch here e.g:
+    // this.store.dispatch(WalletActions.topupSuccess({ amount }))
   }
 
   // Slot counts chosen per creator tier for Application campaigns
@@ -448,6 +457,15 @@ export class CreateCampaign {
     return (b / 1048576).toFixed(1) + 'MB';
   }
 
+  onDateRangeConfirmed(range: { start: Date | null; end: Date | null }): void {
+    if (range.start) {
+      this.start_date.set(range.start.toISOString().split('T')[0]);
+    }
+    if (range.end) {
+      this.end_date.set(range.end.toISOString().split('T')[0]);
+    }
+  }
+
   get activePlan(): Plan {
     return this.plans.find((p) => p.value === this.selectedPlan) ?? this.plans[1];
   }
@@ -475,6 +493,7 @@ export class CreateCampaign {
     this.status.set('draft');
     this.bonusTiers.set(null);
     this.bonusTiersInput = '';
+    
     this.tierSlots.set(
       this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
     );
@@ -544,7 +563,7 @@ export class CreateCampaign {
       formData.append('creator_id', user?.id.toString() || '');
       formData.append('auto_generate_captions', this.auto_generate_captions().toString());
       formData.append('hash_tags', JSON.stringify(this.hash_tags()));
-      formData.append('name', `${user?.first_name}_${user?.last_name}`);
+      formData.append('name', `${this.campaignTitle()} `);
       formData.append('start_date', this.start_date());
       formData.append('end_date', this.end_date());
       formData.append('access', this.selectedAccess);

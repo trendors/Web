@@ -858,6 +858,7 @@ select {
     }
 
     .checkout-btn {
+      margin: 10px;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -894,6 +895,7 @@ select {
   width: 100%;
   padding: 14px 20px;
   margin-top: 20px;
+  margin-bottom: 20px;
   background: var(--accent);
   color: #fff;
   border: none;

@@ -65,7 +65,7 @@
       </div>
     </div>
 
-    <app-calender></app-calender>
+    <app-calender (rangeConfirmed)="onDateRangeConfirmed($event)"></app-calender>
 
 
     <!-- <div class="section">
@@ -199,7 +199,7 @@
           <div class="field">
             <label>Estimated clicks</label>
             <div class="payout-val">{{ estimatedClicks | number }}</div>
-            <div class="hint">At ₦70 per verified click</div>
+            <div class="hint">At ₦50 per verified share</div>
           </div>
 
           <div class="field">
@@ -207,6 +207,18 @@
             <div class="payout-val">Instant</div>
             <div class="hint">Campaign goes live immediately after review</div>
           </div>
+        </div>
+        <div class="hint" style="margin: 2%">
+          <div>
+            <ul>
+              <li>₦50 per verified share</li>
+              <li>₦20 bonus for 5+ clicks</li>
+              <li>₦40 bonus for 20+ clicks</li>
+              <li>₦70 bonus for 50+ clicks</li>
+            </ul>
+          </div>
+
+
         </div>
       </div>
     </div>
@@ -455,7 +467,12 @@
       <span>By launching, you agree to our terms. Your campaign will be reviewed within a few minutes
         before going live. You can pause or edit it at any time from your dashboard.</span>
     </div>
-    <button class="checkout-btn checkout-btn-full" (click)="createCampaign()" [disabled]="isSubmitting()">
+    @if (showTopup) {
+  
+    <app-topup-modal [amount]="5000" [fixedAmount]="true" (topupSuccess)="onTopupSuccess($event)">
+    </app-topup-modal>
+    }
+    <button class="checkout-btn checkout-btn-full" (click)="showTopup = true" [disabled]="isSubmitting()">
       @if (isSubmitting() === true) {
       <app-alert></app-alert>
       }
