@@ -1,19 +1,8 @@
-// ── VARIABLES (keep in global styles if already defined) ──
-// These match the login page exactly
-// :host {
-//   --bg:            #f5f5f2;
-//   --surface:       #ffffff;
-//   --surface-2:     #f0f0ed;
-//   --border:        #e4e4e0;
-//   --border-light:  #d8d8d4;
-//   --text-black:  #111111;
-//   --text-secondary:#666666;
-//   --text-muted:    #aaaaaa;
-//   --accent:        #6abf30;
-//   --accent-dark:   #4e9220;
-//   --accent-dim:    rgba(106, 191, 48, 0.1);
-//   --radius:        12px;
-// }
+// ── VARIABLES (scoped locally; not all are defined globally) ──
+:host {
+  --surface:       #ffffff;
+  --surface-2:     #f0f0ed;
+}
 
 // ── PAGE LAYOUT ───────────────────────────────
 .register-page {
@@ -72,6 +61,11 @@
   animation: fadeUp 0.5s ease both;
 }
 
+.brand-logo-img {
+  height: 28px;
+  width: auto;
+}
+
 .brand-dot {
   width: 8px;
   height: 8px;
@@ -84,7 +78,7 @@
   font-weight: 800;
   font-size: 17px;
   letter-spacing: -0.3px;
-  color: var(--text-);
+  color: var(--text-black);
 }
 
 .hero { animation: fadeUp 0.5s 0.08s ease both; }

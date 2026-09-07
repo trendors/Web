@@ -10,8 +10,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve": "node dist/trendors-web-frontend/server/server.mjs",
-    "serve:ssr:trendors-web-frontend": "node dist/trendors-web-frontend/server/server.mjs"
-  },
+    "serve:ssr:trendors-web-frontend": "node dist/trendors-web-frontend/server/server.mjs",
+"generate:sdk": "openapi-generator-cli generate --skip-validate-spec -i http://localhost:6001/api-json -g typescript-angular -o ./src/app/core/api --additional-properties=providedInRoot=true"  },
   "prettier": {
     "printWidth": 100,
     "singleQuote": true,

@@ -38,7 +38,6 @@ export class Register {
   hidePassword = true;
 
   registerForm = this.fb.group({
-    user_name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     phone_number: [''],

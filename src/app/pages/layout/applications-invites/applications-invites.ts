@@ -1,21 +1,29 @@
 import { ApplicationsLists } from "../../../components/applications-lists/applications-lists";
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { InvitesLists } from "../../../components/invites-lists/invites-lists";
+import { Invitation } from "../../../core/models/invitation/invitation.model";
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { InvitationsService } from "../../../core/api";
 
 
 @Component({
   selector: 'app-applications-invites',
-  imports: [ApplicationsLists, InvitesLists ],
+  imports: [ApplicationsLists, InvitesLists],
   templateUrl: './applications-invites.html',
   styleUrl: './applications-invites.scss',
 })
-export class ApplicationsInvites  {
+export class ApplicationsInvites implements OnInit {
   onSelectApplication($event: string) {
     throw new Error('Method not implemented.');
   }
+
+  constructor(private readonly invitationService: InvitationsService) { }
+
+  private readonly http = inject(HttpClient);
   applications: any[] = [
-     {
+    {
       "id": "a1",
       "brand": "Konga",
       "campaignTitle": "Ramadan promo",
@@ -66,72 +74,33 @@ export class ApplicationsInvites  {
   selectedInviteId = signal<string | null>(null);
   tab = signal<any>('applications');
 
-  invites = [
-     {
-    id: 'i1',
-    brand: 'Zenith Foods',
-    campaignTitle: 'Ramadan hamper launch',
-    platform: 'Instagram',
-    baselineOffer: 150000,
-    currentOffer: 150000,
-    status: 'awaiting_response',
-    round: 1,
-    maxRounds: 3,
-    escrowHeld: 150000,
-    messages: [
-      {
-        from: 'advertiser',
-        amount: 150000,
-        note: '1 feed post + 2 stories, live 48h minimum.',
-        timestamp: 'Mon, 9:00 AM'
-      }
-    ]
-  },
-  {
-    id: 'i2',
-    brand: 'Glow Naturals',
-    campaignTitle: 'Skincare relaunch',
-    platform: 'Instagram',
-    baselineOffer: 200000,
-    currentOffer: 260000,
-    status: 'negotiating',
-    round: 2,
-    maxRounds: 3,
-    escrowHeld: 200000,
-    messages: [
-      {
-        from: 'advertiser',
-        amount: 200000,
-        note: '1 feed post + 3 story frames, live for 48h minimum.',
-        timestamp: 'Mon, 2:14 PM'
-      },
-      {
-        from: 'creator',
-        amount: 260000,
-        note: 'Countering — my usual rate for this reach is higher.',
-        timestamp: 'Mon, 6:40 PM'
-      }
-    ]
-  },
-  {
-    id: 'i3',
-    brand: 'Tecno Mobile',
-    campaignTitle: 'Camon launch',
-    platform: 'Instagram',
-    baselineOffer: 220000,
-    currentOffer: 220000,
-    status: 'active',
-    round: 1,
-    maxRounds: 3,
-    escrowHeld: 220000,
-    deliverDeadline: 'Aug 20',
-    messages: [{ from: 'advertiser', amount: 220000, note: 'Deal accepted.', timestamp: '3 days ago' }]
-  },
-   ]
+  invites: Invitation[] = [];
 
 
   readonly advertiserBadgeCount = 0; // wire to your advertiser-side service when it exists
   creatorBadgeCount = {}
+
+  ngOnInit(): void {
+    this.fetchInvitations();
+  }
+
+  fetchInvitations(): void {
+    let payload = {
+      "limit": 10,
+      "page": 0,
+      "sort": "ASC",
+      // "userId": "current-user-id" 
+    };
+    this.invitationService.invitationControllerFindAllInvitations(payload).subscribe({
+      next: (response) => {
+        this.invites = response.data?.list || [];
+      },
+      error: (error) => {
+        console.error('Error fetching invitations:', error);
+        this.invites = [];
+      },
+    });
+  }
 
   setTab(tab: any): void {
     this.tab.set(tab);

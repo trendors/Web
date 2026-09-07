@@ -1,112 +1,10 @@
-<!-- <div class="register-container">
-  <mat-card class="register-card">
-    <mat-card-header>
-      <mat-card-title>Create Account</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      @if (error$ | async; as error) {
-        <div class="error-message">
-          <mat-icon color="warn">error</mat-icon>
-          <span>{{ error }}</span>
-        </div>
-      }
-
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Username</mat-label>
-          <input matInput formControlName="user_name" placeholder="user" />
-          @if (registerForm.get('user_name')?.hasError('required')) {
-            <mat-error>Username is required</mat-error>
-          }
-        </mat-form-field>
-
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="half-width">
-            <mat-label>First Name</mat-label>
-            <input matInput formControlName="first_name" placeholder="Ex. John" />
-            @if (registerForm.get('first_name')?.hasError('required')) {
-              <mat-error>Required</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="half-width">
-            <mat-label>Last Name</mat-label>
-            <input matInput formControlName="last_name" placeholder="Ex. Doe" />
-            @if (registerForm.get('last_name')?.hasError('required')) {
-              <mat-error>Required</mat-error>
-            }
-          </mat-form-field>
-        </div>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput formControlName="email" placeholder="axz@example.com" />
-          @if (registerForm.get('email')?.hasError('required')) {
-            <mat-error>Email is required</mat-error>
-          }
-          @if (registerForm.get('email')?.hasError('email')) {
-            <mat-error>Invalid email format</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Phone Number (Optional)</mat-label>
-          <input matInput formControlName="phone_number" placeholder="1234567890" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
-          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
-          <button
-            mat-icon-button
-            matSuffix
-            (click)="hidePassword = !hidePassword"
-            [attr.aria-label]="'Hide password'"
-            [attr.aria-pressed]="hidePassword"
-            type="button"
-          >
-            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-          @if (registerForm.get('password')?.hasError('required')) {
-            <mat-error>Password is required</mat-error>
-          }
-          @if (registerForm.get('password')?.hasError('minlength')) {
-            <mat-error>Must be at least 6 characters</mat-error>
-          }
-        </mat-form-field>
-
-        <div class="actions">
-          <button
-            mat-flat-button
-            color="primary"
-            type="submit"
-            [disabled]="registerForm.invalid || (isLoading$ | async)"
-          >
-            @if (!(isLoading$ | async)) {
-              <span>Register</span>
-            }
-            @if (isLoading$ | async) {
-              <mat-spinner diameter="20" color="accent"></mat-spinner>
-            }
-          </button>
-        </div>
-      </form>
-    </mat-card-content>
-    <mat-card-footer>
-      <p>Already have an account? <a routerLink="/login">Login</a></p>
-    </mat-card-footer>
-  </mat-card>
-</div> -->
-
-
 
 <div class="register-page">
 
   <!-- LEFT PANEL -->
   <div class="left">
     <div class="brand">
-      <div class="brand-dot"></div>
-      <div class="brand-name">trendors</div>
+      <img class="brand-logo-img" src="logo6.png" alt="Trendors" />
     </div>
 
     <div class="hero">
@@ -153,21 +51,6 @@
     }
 
     <form class="form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-
-      <!-- Username -->
-      <div class="field">
-        <label for="user_name">Username</label>
-        <input
-          id="user_name"
-          type="text"
-          placeholder="yourhandle"
-          formControlName="user_name"
-          [class.invalid]="registerForm.get('user_name')?.invalid && registerForm.get('user_name')?.touched"
-        />
-        @if (registerForm.get('user_name')?.hasError('required') && registerForm.get('user_name')?.touched) {
-          <span class="field-error">Username is required</span>
-        }
-      </div>
 
       <!-- First + Last name -->
       <div class="field-row">

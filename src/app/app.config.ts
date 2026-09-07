@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode, importProvidersFrom } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withDebugTracing } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -33,6 +33,7 @@ import {
 import { TransactionsEffects } from './store/transactions/transaction.effects';
 import { SocketService } from './socket.service';
 import { UserEffects } from './store/user/user.effect';
+import { ApiModule, Configuration } from './core/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -40,6 +41,9 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
+     importProvidersFrom(
+      ApiModule.forRoot(() => new Configuration({ basePath: 'http://localhost:6001' }))
+    ),
     provideStore({
       [authFeatureKey]: authReducer,
       [postsFeatureKey]: postsReducer,

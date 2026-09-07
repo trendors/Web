@@ -1,0 +1,169 @@
+<div class="onboarding">
+  <div class="onboarding__card">
+
+    <div class="progress">
+      <div class="progress__fill" [style.width.%]="progressPercent"></div>
+    </div>
+
+    <div class="activation-sent" *ngIf="activationSent">
+      <div class="activation-sent__icon">✓</div>
+      <h1>Check your email</h1>
+      <p class="sub">
+        We sent an activation link to <strong>{{ data.email }}</strong>.
+        Activate your profile from that email before signing in.
+      </p>
+    </div>
+
+    <ng-container *ngIf="!activationSent">
+      <!-- Welcome -->
+      <div class="step" *ngIf="currentStep === 'welcome'">
+      <div class="mark">T</div>
+      <h1>Welcome to Trendors</h1>
+      <p class="sub">
+        Create campaigns, back the ones you believe in, and earn as they grow.
+        Let's get your account set up — it takes less than a minute.
+      </p>
+      </div>
+
+      <!-- Account type -->
+      <div class="step" *ngIf="currentStep === 'type'">
+      <h1>How will you use Trendors?</h1>
+      <p class="sub">This decides what your account can do.</p>
+
+      <div class="goal-list">
+        <button
+          type="button"
+          class="goal"
+          [class.goal--active]="data.accountType === 'creator'"
+          (click)="selectAccountType('creator')"
+        >
+          <span class="goal__label">I'm a creator</span>
+          <span class="goal__blurb">Back campaigns, earn shares, get paid</span>
+        </button>
+        <button
+          type="button"
+          class="goal"
+          [class.goal--active]="data.accountType === 'brand'"
+          (click)="selectAccountType('brand')"
+        >
+          <span class="goal__label">I'm a brand</span>
+          <span class="goal__blurb">Launch and manage your own campaigns</span>
+        </button>
+      </div>
+      </div>
+
+      <!-- Details: branches by account type -->
+      <div class="step" *ngIf="currentStep === 'details'">
+
+      <ng-container *ngIf="data.accountType === 'creator'; else brandDetails">
+        <h1>What should we call you?</h1>
+        <p class="sub">This is how you'll appear across Trendors.</p>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              [(ngModel)]="data.firstName"
+              placeholder="Sunday"
+              autocomplete="given-name"
+            />
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              [(ngModel)]="data.lastName"
+              placeholder="Sayil"
+              autocomplete="family-name"
+            />
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #brandDetails>
+        <h1>Tell us about your brand</h1>
+        <p class="sub">You can add more details to your profile later.</p>
+
+        <div class="field">
+          <label for="brandName">Brand name</label>
+          <input
+            id="brandName"
+            type="text"
+            [(ngModel)]="data.brandName"
+            placeholder="Acme Inc."
+            autocomplete="organization"
+          />
+        </div>
+        <div class="field">
+          <label for="contactName">Contact person</label>
+          <input
+            id="contactName"
+            type="text"
+            [(ngModel)]="data.contactName"
+            placeholder="Full name"
+            autocomplete="name"
+          />
+        </div>
+      </ng-template>
+
+      <div class="field">
+        <label for="phone">Phone number</label>
+        <input
+          id="phone"
+          type="tel"
+          [(ngModel)]="data.phoneNumber"
+          placeholder="0803 000 1914"
+          autocomplete="tel"
+        />
+      </div>
+
+      <div class="field">
+        <label for="email">Email address</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="data.email"
+          placeholder="you@example.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="data.password"
+          placeholder="At least 6 characters"
+          autocomplete="new-password"
+        />
+      </div>
+      </div>
+
+      <div class="actions">
+      <p class="form-error" *ngIf="saveError">{{ saveError }}</p>
+      <button
+        type="button"
+        class="btn btn--ghost"
+        *ngIf="currentStep !== 'welcome' && !isSaving"
+        (click)="back()"
+      >
+        Back
+      </button>
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="!canContinue || isSaving"
+        (click)="next()"
+      >
+        <span *ngIf="isSaving" class="spinner" aria-hidden="true"></span>
+        {{ isSaving ? 'Creating your account...' : (isLastStep ? 'Enter Trendors' : 'Continue') }}
+      </button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

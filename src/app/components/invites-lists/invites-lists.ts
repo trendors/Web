@@ -15,6 +15,10 @@ export class InvitesLists {
   @Output() selectInvite = new EventEmitter<string>();
   private dialog = inject(MatDialog);
 
+
+  constructor() {
+    console.log(this.invites, 'InvitesLists component initialized');
+  }
  
 
   needsAction(status: any): boolean {

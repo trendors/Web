@@ -1,12 +1,15 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guard/auth-guard';
+import { Onboarding } from './components/onboarding/onboarding';
 
 export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'login',
-    pathMatch: 'full',
-  },
+  // {
+  //   path: '',
+  //   redirectTo: 'login',
+  //   pathMatch: 'full',
+  // },
+    { path: '', component: Onboarding },
+
   {
     path: 'home',
     canActivate: [authGuard],
@@ -87,7 +90,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/auth/change-password/change-password').then((m) => m.ChangePassword),
   },
-
+  {
+    path: 'activate',
+    loadComponent: () =>
+      import('./components/activate/activate').then((m) => m.ActivateComponent),
+  },
   {
     path: 'post/:id',
     loadComponent: () =>

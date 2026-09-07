@@ -1,0 +1,47 @@
+<div class="activate-page">
+    <div class="activate-card">
+        @if(state === 'loading') {
+        <ng-container>
+            <div class="spinner"></div>
+            <p class="body-text">Verifying your link…</p>
+        </ng-container>
+        }
+
+        @if(state === 'success') {
+        <ng-container>
+            <div class="icon icon--success">✓</div>
+            <h1>You're all set{{ userName ? ', ' + userName : '' }}!</h1>
+            <p class="body-text">Your account is now active. You can log in and get started.</p>
+            <button class="btn" (click)="goToLogin()">Go to Login</button>
+        </ng-container>
+        }
+
+        @if(state === 'already-active') {
+        <ng-container>
+            <div class="icon">•</div>
+            <h1>Already activated</h1>
+            <p class="body-text">This account has already been verified. You can log in directly.</p>
+            <button class="btn" (click)="goToLogin()">Go to Login</button>
+        </ng-container>
+        }
+
+        @if(state === 'expired') {
+        <ng-container>
+            <div class="icon icon--warn">!</div>
+            <h1>This link has expired</h1>
+            <p class="body-text">Activation links are only valid for 48 hours. Request a new one to continue.</p>
+            <button class="btn" (click)="resendLink()">Resend Activation Link</button>
+        </ng-container>
+        }
+
+         @if(state === 'invalid') {
+        <ng-container>
+            <div class="icon icon--warn">!</div>
+            <h1>Link not valid</h1>
+            <p class="body-text">We couldn't verify this link. It may have already been used or malformed.</p>
+            <button class="btn btn--outline" (click)="resendLink()">Request New Link</button>
+        </ng-container>
+        }
+    
+    </div>
+</div>

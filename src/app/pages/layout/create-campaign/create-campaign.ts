@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, Input, signal } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, HostListener, inject, Input, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
-import { Observable, take, firstValueFrom } from 'rxjs';
+import { Observable, take, firstValueFrom, debounceTime, distinctUntilChanged, switchMap, catchError, of, Subject } from 'rxjs';
 import { Alert } from '../../../components/alert/alert';
 import { Actions, ofType } from '@ngrx/effects';
-import { InvitationService } from '../../../core/services/invitation/invitation.service';
 import { Invitation } from '../../../core/models/invitation/invitation.model';
 import {
   selectActiveMembers,
@@ -17,6 +16,9 @@ import {
 import { InvitationActions } from '../../../store/invitation/invitation.action';
 import { Calender } from "../../../components/calender/calender";
 import { TopupModalComponent } from "../../../components/topup-modal/topup-modal";
+import { CreateInvitationDto, InfluencerProfilesService, InvitationsService } from '../../../core/api';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatIcon } from "@angular/material/icon";
 
 interface CampaignFile {
   file: File;
@@ -48,59 +50,32 @@ interface Tier {
 
 @Component({
   selector: 'app-create-campaign',
-  imports: [CommonModule, FormsModule, Alert, Calender, TopupModalComponent],
+  imports: [CommonModule, FormsModule, Alert, Calender, TopupModalComponent, MatIcon],
   templateUrl: './create-campaign.html',
   styleUrls: ['./create-campaign.scss'],
 })
 export class CreateCampaign {
-  readonly OPEN_RATE = 70; // NGN per click for open campaigns
+
+  readonly OPEN_RATE = 70;
   platforms = [
     { id: 'twitter', emoji: '𝕏', name: 'Twitter', selected: true },
     { id: 'instagram', emoji: '📸', name: 'Instagram', selected: false },
     { id: 'tiktok', emoji: '🎵', name: 'TikTok', selected: false },
     { id: 'facebook', emoji: '👥', name: 'Facebook', selected: false },
   ];
-  languages = ['English', 'Nigerian Pidgin', 'Yoruba', 'Igbo', 'Hausa'];
-  mediaTypes = ['Image', 'Video', 'Text Only'];
   steps: Step[] = [
     { label: 'Basics', sub: 'Name, dates, link' },
     { label: 'Content', sub: 'Media & platforms' },
     { label: 'Plan & Access', sub: 'Subscription & sharers' },
     { label: 'Review', sub: 'Confirm & launch' },
   ];
-  plans: Plan[] = [
-    {
-      value: 'Starter',
-      name: 'Starter',
-      price: '₦30,000',
-      posts: '100 posts included',
-      label: 'Starter — ₦30,000/mo',
-      features: ['All tiers', 'Open campaigns', 'Basic analytics'],
-    },
-    {
-      value: 'Growth',
-      name: '★ Growth',
-      price: '₦50,000',
-      posts: '200 posts included',
-      label: 'Growth — ₦50,000/mo',
-      features: ['Custom rates', 'All access types', 'Full analytics'],
-    },
-    {
-      value: 'Enterprise',
-      name: 'Enterprise',
-      price: 'Custom',
-      posts: 'Unlimited posts',
-      label: 'Enterprise — Custom',
-      features: ['Dedicated manager', 'Priority payout', 'Custom tiers'],
-    },
-  ];
+
 
   accessTypes = [
-  { value: 'open', icon: '🌍', title: 'Open', desc: 'Pay per verified click. Fast, high-volume reach.', extra: 'From ₦70/click · ₦25,000 min spend' },
-  { value: 'invite-only', icon: '📩', title: 'Invite Only', desc: 'Direct escrow deal with one creator.', extra: 'From ₦200,000 per deal' },
+    { value: 'open', icon: '🌍', title: 'Open', desc: 'Pay per verified click. Fast, high-volume reach.', extra: 'From ₦70/click · ₦25,000 min spend' },
+    { value: 'invite_only', icon: '📩', title: 'Invite Only', desc: 'Direct escrow deal with one creator.', extra: 'From ₦200,000 per deal' },
     { value: 'application', icon: '📋', title: 'Application', desc: 'Vetted creator slots, priced by reach.', extra: 'From ₦8,000/slot · 1 slot min' },
-
-];
+  ];
 
   tiers: Tier[] = [
     { name: 'Nano', range: '1k–10k', amount: '₦8,000', color: '#0ea5e9' },
@@ -109,204 +84,8 @@ export class CreateCampaign {
     { name: 'Macro', range: '200k+', amount: '₦90,000', color: '#ef4444' },
   ];
 
-  selectedSlot: string | null = null;
-    showTopup = false;
+  showTopup = false;
 
- 
-  selectAccess(id: string): void {
-    this.selectedAccess = id;
-  }
-
-  onTopupSuccess(amount: number): void {
-    // this.walletBalance += amount; 
-    // your store dispatch here e.g:
-    // this.store.dispatch(WalletActions.topupSuccess({ amount }))
-  }
-
-  // Slot counts chosen per creator tier for Application campaigns
-  tierSlots = signal<Record<string, number>>(
-    this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
-  );
-
-  // Real Database
-  private store = inject(Store);
-  private actions$ = inject(Actions);
-
-  user$ = this.store.select(selectCurrentUser);
-  private invitationSvc = inject(InvitationService);
-  pendingApplicants$: Observable<Invitation[]> = this.store.select(selectPendingApplicants);
-  activeMembers$: Observable<Invitation[]> = this.store.select(selectActiveMembers);
-  invitationLoading$: Observable<boolean> = this.store.select(selectInvitationLoading);
-  // invitations = signal<Invitation[]>([]);
-  // selectedMembers2 = signal<any[]>([]);
-  viewingProfile = signal<any | null>(null);
-  @Input() campaignId: number | null = null;
-
-  ngOnInit(): void {
-    if (this.campaignId) {
-      this.store.dispatch(
-        InvitationActions.loadCampaignInvitations({ campaignId: this.campaignId }),
-      );
-    } else {
-      console.warn('campaignId missing; using placeholder demo invitations');
-      this.store.dispatch(
-        InvitationActions.loadCampaignInvitationsSuccess({
-          invites: [
-            {
-              id: 999,
-              status: 'Pending',
-              role: 'Influncer',
-              user: {
-                id: 111,
-                name: 'Test User',
-                trendor_id: 'T-001',
-                influencerProfile: { platforms: [{ name: 'Instagram', followers: '1.2k' }] },
-                status: 'Pending'
-              },
-              campaign: { id: 123, name: 'Demo Campaign' },
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-          ],
-        }),
-      );
-    }
-
-    this.user$.pipe(take(1)).subscribe((user) => {
-      if (user?.id) {
-        this.invitationSvc.getMyInvitations(user.id).subscribe({
-          next: (list) => {
-            this.selectedMembers.set(list);
-          },
-          error: (err) => console.error('invitationSvc failed', err),
-        });
-      }
-    });
-
-    this.actions$
-      .pipe(ofType(CampaignActions.createCampaignSuccess), take(1))
-      .subscribe(({ campaign }) => {
-        if (campaign?.id) {
-          this.campaignId = campaign.id;
-          this.store.dispatch(
-            InvitationActions.loadCampaignInvitations({ campaignId: campaign.id }),
-          );
-        }
-      });
-  }
-
-  addMember(member: any) {
-    this.selectedMembers.update((list) => [...list, member]);
-    this.searchQuery.set(''); // Collapse dropdown
-  }
-
-  removeMember(id: any) {
-    this.selectedMembers.update((list) => list.filter((m) => m.id !== id));
-  }
-
-  // Aplicant
-  acceptApplicant(invite: Invitation): void {
-    this.user$.pipe(take(1)).subscribe((user) => {
-      if (!user?.id) return;
-      this.store.dispatch(
-        InvitationActions.acceptInvite({
-          inviteId: invite.id,
-          userId: user.id,
-        }),
-      );
-    });
-  }
-
-  declineApplicant(invite: Invitation): void {
-    this.user$.pipe(take(1)).subscribe((user) => {
-      if (!user?.id) return;
-      this.store.dispatch(
-        InvitationActions.declineInvite({
-          inviteId: invite.id,
-          userId: user.id,
-        }),
-      );
-    });
-  }
-
-  removeActiveMember(invite: Invitation): void {
-    this.store.dispatch(InvitationActions.removeActiveMember({ inviteId: invite.id }));
-  }
-
-  showProfile(invite: Invitation): void {
-    this.viewingProfile.set(invite);
-  }
-
-  onOverlayClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.viewingProfile.set(null);
-    }
-  }
-
-  // end of real database logic
-
-  // Fake Database
-  allRecords = signal([
-    { id: '1', name: 'Sayil Tests', trendor_id: 'SALH-PH-10034', status: 'ACTIVE', gender: 'Male' },
-    { id: '2', name: 'Preye Owa', trendor_id: 'SALH-PH-10065', status: 'ACTIVE', gender: 'Female' },
-    {
-      id: '3',
-      name: 'Boma George',
-      trendor_id: 'SALH-PH-10099',
-      status: 'INACTIVE',
-      gender: 'Male',
-    },
-    {
-      id: '4',
-      name: 'Kelechi Amadi',
-      trendor_id: 'SALH-PH-10122',
-      status: 'ACTIVE',
-      gender: 'Male',
-    },
-  ]);
-
-  searchQuery = signal('');
-  selectedMembers = signal<any[]>([]);
-
-  // Dropdown Logic: Show matches that aren't already selected
-  searchResults = computed(() => {
-    const q = this.searchQuery().toLowerCase().trim();
-    if (!q) return [];
-    return this.allRecords().filter(
-      (r) => r.name.toLowerCase().includes(q) && !this.selectedMembers().some((s) => s.id === r.id),
-    );
-  });
-
-  applicants = signal([
-    {
-      id: 'a1',
-      name: 'Zina Victor',
-      status: 'PENDING',
-      platforms: [
-        { name: 'Instagram', followers: '12.5k' },
-        { name: 'TikTok', followers: '45k' },
-        { name: 'X', followers: '2.1k' },
-      ],
-    },
-    {
-      id: 'a2',
-      name: 'Tunde Mike',
-      status: 'PENDING',
-      platforms: [
-        { name: 'Instagram', followers: '1.2k' },
-        { name: 'Facebook', followers: '500' },
-      ],
-    },
-  ]);
-
-  initials(name: string): string {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  }
 
   selectedAccess = 'open';
   autoAssignTier = true;
@@ -335,10 +114,7 @@ export class CreateCampaign {
   auto_generate_captions = signal(false);
   start_date = signal('');
   end_date = signal('');
-  isFormValid: any;
-  totalBudget: any;
   selectedPlan = 'Growth';
-  autoGenerate = true;
   topicInput = '';
   hash_tags = signal<string[]>([]);
   campaignName = '';
@@ -347,6 +123,124 @@ export class CreateCampaign {
   language = 'English';
   mediaType = 'Image';
   files: CampaignFile[] = [];
+
+  selectAccess(id: string): void {
+    this.selectedAccess = id;
+  }
+
+  onTopupSuccess(amount: number): void {
+  }
+
+  tierSlots = signal<Record<string, number>>(
+    this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
+  );
+
+  private store = inject(Store);
+  private actions$ = inject(Actions);
+
+  user$ = this.store.select(selectCurrentUser);
+  pendingApplicants$: Observable<Invitation[]> = this.store.select(selectPendingApplicants);
+  activeMembers$: Observable<Invitation[]> = this.store.select(selectActiveMembers);
+  invitationLoading$: Observable<boolean> = this.store.select(selectInvitationLoading);
+  viewingProfile = signal<any | null>(null);
+  @Input() campaignId: number | null = null;
+
+  @ViewChild('searchSectionRef') searchSectionRef?: ElementRef<HTMLElement>;
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.users().length === 0) return; // nothing open, skip the work
+
+    const target = event.target as HTMLElement;
+    const container = this.searchSectionRef?.nativeElement;
+
+    if (container && !container.contains(target)) {
+      this.users.set([]);
+    }
+  }
+
+  constructor(private invitationSvc: InvitationsService, private influencerService: InfluencerProfilesService) {
+
+  }
+
+  private destroyRef = inject(DestroyRef);
+
+  // Subject to bridge template events into an RxJS stream
+  private searchSubject = new Subject<string>();
+
+  // Your existing Signal state
+  users = signal<any[]>([]); //
+
+  ngOnInit(): void {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((query: any) =>
+        this.influencerService.influncerProfileControllerFindAll(10, 0, 'DESC', query).pipe(
+          catchError((err) => {
+            console.error('Error searching influencers:', err);
+            return of([]);
+          })
+        )
+      ),
+      takeUntilDestroyed(this.destroyRef) // Auto-unsubscribe on component destroy
+    ).subscribe((res: any) => {
+      this.users.set(res?.data?.list || []);
+    });
+  }
+
+  // Method called from your template
+  searchUsers(query: string): void {
+    this.searchSubject.next(query);
+  }
+
+  selectMember(user: any): void {
+    if (!this.selectedMembers().some((m) => m.id === user.id)) {
+      this.selectedMembers.update((members) => [...members, user]);
+    }
+    this.users.set([]);
+  }
+
+  inviteMember(user: any): void {
+    this.invitationSvc.invitationControllerCreateInvitation({
+      campaignId: this.campaignId!,
+      userId: user.user?.id ?? user.id,
+      role: CreateInvitationDto.RoleEnum.Influencer, // Replace with the appropriate role
+    }).subscribe({
+      next: (res) => {
+        console.log('Invitation sent successfully:', res);
+      },
+      error: (err) => {
+        console.error('Error sending invitation:', err);
+      }
+    });
+  }
+
+ 
+
+
+  onOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
+      this.viewingProfile.set(null);
+    }
+  }
+
+  // end of real database logic
+
+  searchQuery = signal('');
+  selectedMembers = signal<any[]>([]);
+
+
+
+  initials(name: string): string {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  }
+
 
   get progressPct(): number {
     return Math.round(((this.currentStep + 1) / this.totalSteps) * 100);
@@ -374,6 +268,9 @@ export class CreateCampaign {
   prev(): void {
     if (this.currentStep > 0) this.goTo(this.currentStep - 1);
   }
+
+
+
   formatDate(d: string): string {
     if (!d) return '—';
     return new Date(d).toLocaleDateString('en-NG', {
@@ -387,10 +284,6 @@ export class CreateCampaign {
     return this.platforms.filter((p) => p.selected).map((p) => p.id);
   }
 
-  getPlatformName(id: string): string {
-    const p = this.platforms.find((x) => x.id === id);
-    return p ? p.name : id;
-  }
 
   addTopic(): void {
     const v = this.topicInput.trim();
@@ -422,7 +315,7 @@ export class CreateCampaign {
     event.preventDefault();
   }
 
-  onDragLeave(): void {}
+  onDragLeave(): void { }
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
@@ -448,7 +341,10 @@ export class CreateCampaign {
   }
 
   removeFile(i: number): void {
-    this.selectedImages().splice(i, 1);
+    // Use .update() rather than mutating the array returned by the getter —
+    // signals don't detect in-place mutation (e.g. .splice()), so the UI
+    // would silently fail to refresh.
+    this.selectedImages.update((list) => list.filter((_, index) => index !== i));
   }
 
   private fmtSize(b: number): string {
@@ -466,9 +362,7 @@ export class CreateCampaign {
     }
   }
 
-  get activePlan(): Plan {
-    return this.plans.find((p) => p.value === this.selectedPlan) ?? this.plans[1];
-  }
+
 
   resetForm(): void {
     this.currentStep = 0;
@@ -483,7 +377,6 @@ export class CreateCampaign {
     this.end_date.set('');
     this.selectedAccess = '';
     this.shareCount.set(0);
-    this.totalBudget = 0;
     this.campaignType.set('open');
     this.budget.set(null);
     this.ratePerSlot.set(null);
@@ -493,7 +386,7 @@ export class CreateCampaign {
     this.status.set('draft');
     this.bonusTiers.set(null);
     this.bonusTiersInput = '';
-    
+
     this.tierSlots.set(
       this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
     );
@@ -625,7 +518,6 @@ export class CreateCampaign {
         }
       }
 
-
       this.selectedImages().forEach((img) => formData.append('files', img.file));
 
       this.store.dispatch(
@@ -644,4 +536,3 @@ export class CreateCampaign {
     }
   }
 }
-

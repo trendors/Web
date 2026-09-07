@@ -1,3 +1,5 @@
+
+
 <div class="list">
   <div
     *ngFor="let inv of sorted()"
@@ -8,12 +10,12 @@
 
   >
     <div class="item-top">
-      <div class="avatar">{{ initials(inv.brand) }}</div>
+      <div class="avatar">{{ initials(inv.user.brandProfile.brand_name) }}</div>
       <div class="info">
-        <div class="brand">{{ inv.brand }} · INVITE</div>
-        <div class="title">{{ inv.campaignTitle }}</div>
+        <div class="brand">{{ inv.user.brandProfile.brand_name }} · INVITE</div>
+        <div class="title">{{ inv.campaign.name }}</div>
         <div class="meta" *ngIf="inv.status === 'negotiating'">Round {{ inv.round }} of {{ inv.maxRounds }} · {{ inv.platform }}</div>
-        <div class="meta" *ngIf="inv.status !== 'negotiating'">{{ inv.platform }}</div>
+        <div class="meta" >{{ inv.campaign.platforms.join(', ') }}</div>
       </div>
       <div class="right">
         <!-- <div class="amt">₦{{ inv.currentOffer.toLocaleString() }}</div> -->
@@ -21,8 +23,8 @@
       </div>
     </div>
     <span class="badge" [ngClass]="statusClass(inv.status)">{{ statusLabel(inv.status) }}</span>
-    <div class="deadline" *ngIf="inv.deliverDeadline">
-      <i class="ti ti-clock" aria-hidden="true"></i>Deliver by {{ inv.deliverDeadline }}
+    <div class="deadline" >
+      <i class="ti ti-clock" aria-hidden="true"></i>Deliver by {{ inv.campaign.end_date }}
     </div>
   </div>
 
