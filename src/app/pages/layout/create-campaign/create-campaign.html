@@ -71,89 +71,14 @@
     </div>
 
     <app-calender (rangeConfirmed)="onDateRangeConfirmed($event)"></app-calender>
-
-
-    <!-- <div class="section">
-        <div class="section-title">Schedule</div>
-        <div class="card">
-          <div class="grid-2">
-            <div class="field" style="margin-bottom: 0">
-              <label>Start Date <span class="req">*</span></label>
-              <input type="date" [(ngModel)]="start_date" />
-            </div>
-            <div class="field" style="margin-bottom: 0">
-              <label>End Date <span class="req">*</span></label>
-              <input type="date" [(ngModel)]="end_date" />
-            </div>
-          </div>
-        </div>
-      </div> -->
-
   </div>
-
   <div class="page-content" *ngIf="currentStep === 1">
-    <div class="section">
-      <div class="section-title">Campaign Media</div>
-      <div class="card">
-        <div class="upload-zone" [class.dragover]="isDragging()" (dragover)="onDragOver($event)"
-          (dragleave)="onDragLeave()" (drop)="onDrop($event)" (click)="fileInput.click()">
-          <input #fileInput type="file" multiple accept="image/*,video/*,.pdf" style="display: none"
-            (change)="onFilesSelected($event)" />
-          <div class="upload-icon">📂</div>
-          <div class="upload-title">Drop files or click to browse</div>
-          <div class="upload-sub">
-            Supports <strong>JPG, PNG, MP4, PDF</strong> · Max <strong>50MB</strong> · Up to
-            <strong>10 files</strong>
-          </div>
-        </div>
-
-        <div class="file-list" *ngIf="selectedImages().length > 0">
-          <div class="file-item" *ngFor="let f of selectedImages(); let i = index">
-            <div class="file-thumb">
-              <img *ngIf="f.preview" [src]="f.preview" [alt]="f.file.name" />
-              <span *ngIf="!f.preview">{{ f.icon }}</span>
-            </div>
-            <div class="file-info">
-              <div class="file-name">{{ f.file.name }}</div>
-              <div class="file-size">{{ f.size }}</div>
-            </div>
-            <div class="file-remove" (click)="removeFile(i)">✕</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Platforms</div>
-      <div class="card">
-        <div class="platform-grid">
-          <div class="platform-item" *ngFor="let p of platforms">
-            <input type="checkbox" [id]="'p-' + p.id" [(ngModel)]="p.selected" />
-            <label class="platform-label" [for]="'p-' + p.id">
-              <span class="platform-emoji">{{ p.emoji }}</span>
-              <span class="platform-name">{{ p.name }}</span>
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="page-content" *ngIf="currentStep === 2">
     <div class="section">
       <div class="section-title">Who Can Join</div>
       <div class="card">
 
-
-
-
-
-
-
         <div class="wrap">
-          <!-- <p class="heading">Choose a Slot Type</p> -->
-
           <div class="card-grid">
-
             <button class="card" [class.selected]="selectedAccess === ac.value" (click)="selectAccess(ac.value)"
               *ngFor="let ac of accessTypes; let i = index">
               <span class="check">
@@ -166,8 +91,6 @@
               <span class="card-desc">{{ ac.desc }}</span>
               <span class="card-cost">{{ ac.extra }} <span></span></span>
             </button>
-            <!-- } -->
-
           </div>
         </div>
 
@@ -230,24 +153,6 @@
     }
     @if (selectedAccess === 'invite_only') {
     <div class="batch-container">
-      <!-- <div class="search-section"  #searchSectionRef>
-        <input type="text" #searchInput
-          placeholder="Search users by name..."
-          class="search-input"
-          (input)="searchUsers(searchInput.value)" />
-
-        @if (users().length > 0) {
-        <ul class="dropdown">
-          @for (m of users(); track m.id) {
-          <li  class="dropdown-item" (click)="selectMember(m)">
-            <strong>{{ m.first_name }} {{ m.last_name }}</strong>
-            <span>{{ m.trendors_id }}</span>
-          </li>
-          }
-        </ul>
-        }
-      </div> -->
-
       <div class="search-section" #searchSectionRef>
         <input type="text" #searchInput placeholder="Search users by name..." class="search-input"
           (input)="searchUsers(searchInput.value)" />
@@ -312,11 +217,7 @@
                 <span class="count">12k</span>
               </span>
             </div>
-            <button
-              type="button"
-              class="invite-btn"
-              (click)="$event.stopPropagation(); inviteMember(m)"
-            >
+            <button type="button" class="invite-btn" (click)="$event.stopPropagation(); inviteMember(m)">
               Invite
             </button>
           </li>
@@ -438,7 +339,59 @@
     }
     }
   </div>
+  <div class="page-content" *ngIf="currentStep === 2">
+    <div class="section">
+      <div class="section-title">Campaign Media</div>
+      <div class="card">
+        <div class="upload-zone" [class.dragover]="isDragging()" (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave()" (drop)="onDrop($event)" (click)="fileInput.click()">
+          <input #fileInput type="file" multiple accept="image/*,video/*,.pdf" style="display: none"
+            (change)="onFilesSelected($event)" />
+          <div class="upload-icon">📂</div>
+          <div class="upload-title">Drop files or click to browse</div>
+          <div class="upload-sub">
+            Supports <strong>JPG, PNG, MP4, PDF</strong> · Max <strong>50MB</strong> · Up to
+            <strong>10 files</strong>
+          </div>
+        </div>
+
+        <div class="file-list" *ngIf="selectedImages().length > 0">
+          <div class="file-item" *ngFor="let f of selectedImages(); let i = index">
+            <div class="file-thumb">
+              <img *ngIf="f.preview" [src]="f.preview" [alt]="f.file.name" />
+              <span *ngIf="!f.preview">{{ f.icon }}</span>
+            </div>
+            <div class="file-info">
+              <div class="file-name">{{ f.file.name }}</div>
+              <div class="file-size">{{ f.size }}</div>
+            </div>
+            <div class="file-remove" (click)="removeFile(i)">✕</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <div class="page-content" *ngIf="currentStep === 3">
+
+    <div class="section">
+      <div class="section-title">Platforms</div>
+      <div class="card">
+        <div class="platform-grid">
+          <div class="platform-item" *ngFor="let p of platforms">
+            <input type="checkbox" [id]="'p-' + p.id" [(ngModel)]="p.selected" />
+            <label class="platform-label" [for]="'p-' + p.id">
+              <span class="platform-emoji">{{ p.emoji }}</span>
+              <span class="platform-name">{{ p.name }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-content" *ngIf="currentStep === 4">
     <div class="checkout-summary">
       <div class="checkout-highlights">
         <div class="checkout-title">{{ campaignTitle() || 'Untitled Campaign' }}</div>
@@ -552,12 +505,6 @@
     <app-topup-modal [amount]="5000" [fixedAmount]="true" (topupSuccess)="onTopupSuccess($event)">
     </app-topup-modal>
     }
-    <!-- <button class="checkout-btn checkout-btn-full" (click)="showTopup = true" [disabled]="isSubmitting()">
-      @if (isSubmitting() === true) {
-      <app-alert></app-alert>
-      }
-      <span>Checkout →</span>
-    </button> -->
     <button class="checkout-btn checkout-btn-full" (click)="createCampaign()" [disabled]="isSubmitting()">
       <!-- @if (isSubmitting() === true) {
       <app-alert></app-alert>
@@ -566,27 +513,6 @@
     </button>
   </div>
   <div>
-    <!-- <div class="form-demo">
-        <nav class="nav-bar" aria-label="form navigation">
-          <div class="nav-left">
-            <button class="nav-btn prev" aria-label="previous page" (click)="prev()">
-              <svg viewBox="0 0 24 24">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-              <span>Previous</span>
-            </button>
-          </div>
-          <div class="nav-right">
-            <button class="nav-btn next" aria-label="next page" (click)="next()" *ngIf="currentStep < 3">
-              <span>Next</span>
-              <svg viewBox="0 0 24 24">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          </div>
-        </nav>
-      </div> -->
-
     <div class="pager">
       <button class="pager__btn" aria-label="Previous" (click)="prev()">
         <i class="ti ti-chevron-left" aria-hidden="true"></i>

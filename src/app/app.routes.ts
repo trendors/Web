@@ -53,10 +53,27 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/layout/applications-invites/applications-invites').then((m) => m.ApplicationsInvites),
       },
+
+      {
+        path: 'invite-negotiate',
+        loadComponent: () =>
+          import('./components/invite-negotiate/invite-negotiate').then((m) => m.InviteNegotiate),
+      },
       {
         path: 'view-campaign/:id',
         loadComponent: () =>
           import('./pages/layout/campaign-summary/campaign-summary').then((m) => m.CampaignSummary),
+      },
+      {
+        path: 'view-influencer-metrics/:id',
+        loadComponent: () =>
+          import('./pages/layout/view-influencer-metrics/view-influencer-metrics').then((m) => m.InfluencerMetricsComponent),
+      },
+
+      {
+        path: 'view-pending-influencer-metrics/:id',
+        loadComponent: () =>
+          import('./pages/layout/view-pending-influencer-metrics/view-pending-influencer-metrics').then((m) => m.ViewPendingInfluencerMetricsComponent),
       },
       {
         path: 'transactions',

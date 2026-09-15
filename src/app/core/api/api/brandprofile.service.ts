@@ -16,6 +16,10 @@ import { HttpClient, HttpHeaders, HttpParams,
 import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
+// @ts-ignore
+import { CreateBrandprofileDto } from '../model/createBrandprofileDto';
+// @ts-ignore
+import { UpdateBrandprofileDto } from '../model/updateBrandprofileDto';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -34,18 +38,19 @@ export class BrandprofileService extends BaseService {
     }
 
     /**
+     * 1. Create a new Brand Profile
      * @endpoint post /brandprofile
-     * @param body 
+     * @param createBrandprofileDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public brandprofileControllerCreate(body: object, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public brandprofileControllerCreate(body: object, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public brandprofileControllerCreate(body: object, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public brandprofileControllerCreate(body: object, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        if (body === null || body === undefined) {
-            throw new Error('Required parameter body was null or undefined when calling brandprofileControllerCreate.');
+    public brandprofileControllerCreate(createBrandprofileDto: CreateBrandprofileDto, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public brandprofileControllerCreate(createBrandprofileDto: CreateBrandprofileDto, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public brandprofileControllerCreate(createBrandprofileDto: CreateBrandprofileDto, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public brandprofileControllerCreate(createBrandprofileDto: CreateBrandprofileDto, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (createBrandprofileDto === null || createBrandprofileDto === undefined) {
+            throw new Error('Required parameter createBrandprofileDto was null or undefined when calling brandprofileControllerCreate.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -86,7 +91,7 @@ export class BrandprofileService extends BaseService {
         return this.httpClient.request<any>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: createBrandprofileDto,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -258,20 +263,20 @@ export class BrandprofileService extends BaseService {
     /**
      * @endpoint patch /brandprofile/{id}
      * @param id 
-     * @param body 
+     * @param updateBrandprofileDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public brandprofileControllerUpdate(id: string, body: object, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public brandprofileControllerUpdate(id: string, body: object, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public brandprofileControllerUpdate(id: string, body: object, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public brandprofileControllerUpdate(id: string, body: object, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public brandprofileControllerUpdate(id: string, updateBrandprofileDto: UpdateBrandprofileDto, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public brandprofileControllerUpdate(id: string, updateBrandprofileDto: UpdateBrandprofileDto, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public brandprofileControllerUpdate(id: string, updateBrandprofileDto: UpdateBrandprofileDto, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public brandprofileControllerUpdate(id: string, updateBrandprofileDto: UpdateBrandprofileDto, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling brandprofileControllerUpdate.');
         }
-        if (body === null || body === undefined) {
-            throw new Error('Required parameter body was null or undefined when calling brandprofileControllerUpdate.');
+        if (updateBrandprofileDto === null || updateBrandprofileDto === undefined) {
+            throw new Error('Required parameter updateBrandprofileDto was null or undefined when calling brandprofileControllerUpdate.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -312,7 +317,7 @@ export class BrandprofileService extends BaseService {
         return this.httpClient.request<any>('patch', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: updateBrandprofileDto,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

@@ -1,8 +1,6 @@
-
-
 <nav class="side-nav-card">
   <div class="nav-groups">
-    
+
     <!-- MAIN -->
     <div class="nav-group">
       <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
@@ -11,8 +9,8 @@
       </a>
     </div>
 
-    <!-- CAMPAIGN MANAGEMENT (Advertiser Context) -->
-    <div class="nav-group">
+    @if ( activeProfile() === 'brand') {
+       <div class="nav-group">
       <div class="group-label">Campaign Management</div>
       <a routerLink="/home/create-campaign" routerLinkActive="active" class="nav-item">
         <span class="icon">➕</span>
@@ -23,7 +21,10 @@
         <span class="nav-label">View Campaigns</span>
       </a>
     </div>
-
+    }
+    <!-- CAMPAIGN MANAGEMENT (Advertiser Context) -->
+   
+    @if ( activeProfile() === 'creative') {
     <div class="nav-group">
       <div class="group-label">Influencer Hub</div>
       <a routerLink="/home/shares" routerLinkActive="active" class="nav-item">
@@ -34,22 +35,21 @@
         <span class="icon">💳</span>
         <span class="nav-label">Transactions</span>
       </a>
-       <a routerLink="/home/invites-and-applications" routerLinkActive="active" class="nav-item">
+      <a routerLink="/home/invites-and-applications" routerLinkActive="active" class="nav-item">
         <span class="icon">✉️</span>
         <span class="nav-label">Invites And Applications</span>
       </a>
     </div>
+  }
 
     <div class="nav-group">
       <div class="group-label">Account</div>
       <a routerLink="/home/notifications" routerLinkActive="active" class="nav-item">
         <span class="icon">🔔</span>
         <span class="nav-label">Notifications</span>
-        @if (unreadCount$ | async; as unread) {
-          @if (unread > 0) {
-            <span class="badge">{{ unread }}</span>
-          }
-        }
+        <ng-container *ngIf="unreadCount$ | async as unread">
+          <span *ngIf="unread > 0" class="badge">{{ unread }}</span>
+        </ng-container>
       </a>
       <a routerLink="/home/profile" routerLinkActive="active" class="nav-item">
         <span class="icon">👤</span>
@@ -60,6 +60,8 @@
         <span class="nav-label">Logout</span>
       </button>
     </div>
+
+    
 
   </div>
 </nav>

@@ -16,16 +16,12 @@ import { Store } from '@ngrx/store';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { PostActions } from '../../../store/posts/post/posts.actions';
 import {
-  selectAllPosts,
   selectIsLoadingMore,
-  selectIsLoadingPosts,
 } from '../../../store/posts/post/posts.selectors';
 import {
   BehaviorSubject,
-  combineLatest,
   debounceTime,
   distinctUntilChanged,
-  map,
   Observable,
   Subject,
   take,
@@ -35,8 +31,6 @@ import {
   CreatePostDto,
   Channel,
   LikePostDto,
-  LoadType,
-  LoadMoreDto,
   Post,
   CreateCommentDto,
   DeleteCommentPayload,
@@ -53,6 +47,7 @@ import { NewPostsNotifier } from "../../../components/new-posts-notifier/new-pos
 import { Fab } from "../../../components/fab/fab";
 import { SocketService } from '../../../socket.service';
 import { LoaderComponent } from "../../../components/loader/loader";
+import { Campaign, FetchPostDto, PostsService } from '../../../core/api';
 
 @Component({
   selector: 'app-home',
@@ -86,18 +81,20 @@ export class Posts implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
-  posts$ = this.store.select(selectAllPosts);
-  loading$ = this.store.select(selectIsLoadingPosts);
+
   loadingMore$ = this.store.select(selectIsLoadingMore);
   user$ = this.store.select(selectCurrentUser);
+
+  private isLoadingPosts$ = new BehaviorSubject<boolean>(false);
+  loading$ = this.isLoadingPosts$.asObservable();
+  activePostTab: 'open' | 'application' = 'open';
+  postsError: string | null = null;
   newPostsAvailable: boolean = false;
   pendingPosts: any[] = [];
-
   filteredPosts$: Observable<Post[]> = new Observable<Post[]>();
-
   searchControl = new FormControl('', { nonNullable: true });
   private searchQuery$ = new BehaviorSubject<string>('');
-
+  private postTab$ = new BehaviorSubject<'open_posts' | 'application_required_posts'>('open_posts');
   selectedFile: File | null = null;
   imagePreview: string | null = null;
   currentUserId: number | undefined;
@@ -105,20 +102,19 @@ export class Posts implements OnInit, OnDestroy {
   currentUserName: string | undefined;
   editingCommentId: number | null = null;
   editCommentText: string = '';
+applyingPostIds = new Set<number>();
 
   newCommentTexts: { [postId: number]: string } = {};
   expandedComments: { [postId: number]: boolean } = {};
   visibleCommentsCount: { [postId: number]: number } = {};
+  posts: Post[] = [];
 
   postForm = this.fb.group({
     text: ['', [Validators.required, Validators.minLength(3)]],
   });
 
-  constructor() {
-    // Initialize filtered posts combining posts$ with search query
-    this.filteredPosts$ = combineLatest([this.posts$, this.searchQuery$]).pipe(
-      map(([posts, searchQuery]) => this.filterPosts(posts, searchQuery)),
-    );
+  constructor(private postService: PostsService) {
+
   }
 
   ngOnInit() {
@@ -128,7 +124,7 @@ export class Posts implements OnInit, OnDestroy {
     this.user$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       this.currentUserId = user?.id;
       this.currentTrendorsId = user?.trendors_id;
-      this.currentUserName = user?.user_name || `${user?.first_name}_${user?.last_name}`;
+      this.currentUserName = user?.user_name || `${user?.creativeProfile?.first_name ?? ''}_${user?.creativeProfile?.last_name ?? ''}`;
     });
 
     // Setup Search Listener with debounce
@@ -148,14 +144,26 @@ export class Posts implements OnInit, OnDestroy {
     this.searchQuery$.next(value);
   }
 
-  private filterPosts(posts: Post[], searchQuery: string): Post[] {
+  private filterPosts(
+    posts: Post[],
+    searchQuery: string,
+    tab: 'open_posts' | 'application_required_posts',
+  ): Post[] {
     const normalizedSearch = searchQuery.trim().toLowerCase();
 
-    if (!normalizedSearch) {
-      return posts; 
-    }
-
     return posts.filter((post) => {
+      const matchesAccess =
+        tab === 'open_posts'
+          ? post.campaign?.access === 'open'
+          : post.campaign?.access === 'application';
+      if (!matchesAccess) {
+        return false;
+      }
+
+      if (!normalizedSearch) {
+        return true;
+      }
+
       const matchesText = post.text.toLowerCase().includes(normalizedSearch);
       const matchesHeading = post.heading?.toLowerCase().includes(normalizedSearch) ?? false;
       const matchesUserName = post.userName?.toLowerCase().includes(normalizedSearch) ?? false;
@@ -163,6 +171,13 @@ export class Posts implements OnInit, OnDestroy {
       return matchesText || matchesHeading || matchesUserName;
     });
   }
+
+  selectPostTab(tab: 'open' | 'application'): void {
+    if (this.activePostTab === tab) return; // avoid redundant refetch
+    this.activePostTab = tab;
+    this.loadInitialPosts(undefined, tab);
+  }
+
 
   refreshPosts() {
     this.newPostsAvailable = false;
@@ -185,31 +200,34 @@ export class Posts implements OnInit, OnDestroy {
     return post.likes.some((like) => like.userId === this.currentUserId);
   }
 
-  loadInitialPosts(searchString?: string) {
-    this.store.dispatch(
-      PostActions.findAllPosts({
-        query: {
-          limit: 20,
-          page: 0,
-          searchString,
-          relations: ['user', 'likes', 'comments', 'shares'],
+  loadInitialPosts(searchString?: string, campaignType?: 'open' | 'application') {
+    this.isLoadingPosts$.next(true);
+    this.postsError = null;
+
+    this.postService
+      .postsControllerFindAll({
+        limit: 20,
+        page: 0,
+        searchString,
+        relations: ['user', 'likes', 'comments', 'shares', 'campaign'],
+        campaignType: campaignType ?? this.activePostTab,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (posts) => {
+          this.posts = posts.data.list;
+          this.isLoadingPosts$.next(false);
         },
-      }),
-    );
+        error: (err) => {
+          console.error('Failed to load posts', err);
+          this.postsError = 'Could not load posts. Please try again.';
+          this.isLoadingPosts$.next(false);
+        },
+      });
   }
 
   onLoadMore() {
-    this.posts$.pipe(take(1)).subscribe((posts) => {
-      if (!posts || posts.length === 0) return;
-
-      const lastPost = posts[posts.length - 1].id;
-      const query: LoadMoreDto = {
-        loadMoreOptions: { type: LoadType.LT, id: lastPost },
-        limit: 20,
-        relations: ['user', 'likes', 'comments', 'shares'],
-      };
-      this.store.dispatch(PostActions.loadMorePosts({ query }));
-    });
+    this.loadInitialPosts(undefined, this.activePostTab);
   }
 
   onSubmitPost() {
@@ -222,7 +240,7 @@ export class Posts implements OnInit, OnDestroy {
       }
       const dto: CreatePostDto = {
         text: this.postForm.value.text || '',
-        userName: user.user_name || `${user.first_name}_${user.last_name}`,
+        userName: user.user_name || `${user.creativeProfile?.first_name ?? ''}_${user.creativeProfile?.last_name ?? ''}`,
         userId: user.id,
         channel: Channel.PUBLIC,
         trendorsId: user.trendors_id || 'default_id',
@@ -293,8 +311,6 @@ export class Posts implements OnInit, OnDestroy {
     return post.id;
   }
 
-  // comment
-
   isCommentOwner(commentUserId: number): boolean {
     return this.currentUserId === commentUserId;
   }
@@ -343,15 +359,12 @@ export class Posts implements OnInit, OnDestroy {
 
   toggleShowAllComments(postId: number, totalCount: number) {
     const current = this.visibleCommentsCount[postId] || 3;
-    // If already expanded, collapse back to 3; otherwise show all
     this.visibleCommentsCount[postId] = current <= 3 ? totalCount : 3;
   }
 
   submitComment(postId: number) {
     const text = this.newCommentTexts[postId]?.trim();
-
     if (!text || !this.currentUserId || !this.currentTrendorsId || !this.currentUserName) return;
-
     const dto: CreateCommentDto = {
       text: text,
       postId: postId,
@@ -361,7 +374,43 @@ export class Posts implements OnInit, OnDestroy {
     };
 
     this.store.dispatch(PostActions.addComment({ dto }));
-
     this.newCommentTexts[postId] = '';
+  }
+
+
+  isAppliedByCurrentUser(post: Post): boolean {
+    // if (!this.currentUserId || !post.applications) return false;
+    // return post.applications.some((app) => app.userId === this.currentUserId);
+    return true
+  }
+
+  openApplySheet(post: Post): void {
+    // const ref = this.bottomSheet.open(ApplySheet, {
+    //   data: { post },
+    //   panelClass: 'custom-apply-sheet',
+    // });
+
+    // ref.afterDismissed().subscribe((confirmed) => {
+    //   if (confirmed) {
+    //     this.submitApplication(post.id);
+    //   }
+    // });
+  }
+
+  private submitApplication(postId: number): void {
+  //   this.user$.pipe(take(1)).subscribe((user) => {
+  //     if (!user?.id) return;
+  //     this.applyingPostIds.add(postId);
+
+  //     const dto = {
+  //       postId,
+  //       userId: user.id,
+  //       trendorsId: user.trendors_id || 'default_id',
+  //     };
+
+  //     this.store.dispatch(PostActions.applyToCampaign({ dto }));
+     
+  //   }
+  // );
   }
 }

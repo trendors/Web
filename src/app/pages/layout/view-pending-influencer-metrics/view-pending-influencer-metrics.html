@@ -1,0 +1,85 @@
+<div class="metrics-page">
+
+  <!-- Main -->
+  <main class="main-container">
+
+    <!-- Back -->
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()"
+    >
+      <span class="back-icon">←</span>
+      <span>Back to influencers</span>
+    </button>
+
+
+    <!-- Influencer Summary -->
+    <section class="influencer-card">
+
+      <!-- Avatar -->
+      <img
+        [src]="influencer.avatar"
+        [alt]="influencer.name"
+        class="avatar"
+      />
+
+      <!-- Details -->
+      <div class="influencer-details">
+
+        <div class="name-row">
+
+          <h1>
+            {{ influencer.name }}
+          </h1>
+
+          <span class="status-badge" [class]="influencer.status.toLowerCase()">
+            <span class="status-dot"></span>
+            {{ influencer.status }}
+          </span>
+
+        </div>
+
+        <p class="subtitle">
+          {{ influencer.username }}
+          <span>·</span>
+          {{ influencer.campaign }}
+        </p>
+
+        <!-- Total Followers -->
+        <div class="total-followers">
+          <span class="followers-label">Total Followers</span>
+          <span class="followers-value">{{ formatFollowers(totalFollowers) }}</span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- Social Media Breakdown -->
+    <!-- <div class="section-heading">
+      <h2>Social Media Followers</h2>
+    </div> -->
+
+    <div class="social-grid">
+      @for (social of socialMedia; track social.platform) {
+        <div class="social-card">
+          <div class="social-header">
+            <span class="platform-icon">{{ getPlatformIcon(social.platform) }}</span>
+            <span class="platform-name">{{ social.platform }}</span>
+          </div>
+          <div class="social-stats">
+            <span class="social-followers">{{ formatFollowers(social.followers) }}</span>
+            <span class="social-engagement">Engagement: {{ social.engagement }}</span>
+          </div>
+          <div class="social-handle">
+            {{ social.handle }}
+          </div>
+        </div>
+      }
+    </div>
+    <app-negotiation></app-negotiation>
+  </main>
+
+</div>

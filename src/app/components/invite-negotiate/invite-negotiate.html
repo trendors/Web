@@ -1,84 +1,108 @@
-<div class="detail-panel" *ngIf="invite as inv">
-  <button class="close-btn" (click)="close.emit()" aria-label="Close">
-    <i class="ti ti-x" aria-hidden="true"></i>
-  </button>
+<div class="page">
 
-  <div class="head">
-    <div class="avatar-lg">{{ initials(inv.brand) }}</div>
-    <div>
-      <h3>{{ inv.campaignTitle }}</h3>
-      <p class="sub">{{ inv.brand }} · {{ inv.platform }}</p>
-    </div>
+  <div class="topbar">
+    <a class="back-link" href="javascript:void(0)"><span class="arrow">←</span> Campaigns</a>
+    <span class="status-pill"><span class="dot"></span>Awaiting your response</span>
   </div>
 
-  <div class="stat-grid">
-    <div class="stat">
-      <div class="num">₦{{ inv.currentOffer }}</div>
-      <div class="lbl">current offer</div>
-    </div>
-    <div class="stat">
-      <div class="num">₦{{ inv.escrowHeld }}</div>
-      <div class="lbl">held in escrow</div>
-    </div>
+  <div class="layout">
+
+    <!-- MAIN COLUMN -->
+    <section class="main-col">
+      <div class="brand-row">
+        <div class="brand-avatar">N</div>
+        <div>
+          <div class="brand-name">Nova Running Co.</div>
+          <div class="brand-sub">Invited you directly · 2 days ago</div>
+        </div>
+      </div>
+
+      <h1 class="title">Nova Trail 2.0 — launch reel</h1>
+      <p class="summary">One reel to introduce the Trail 2.0 to your audience, filmed on an actual trail or outdoor route.</p>
+
+      <dl class="facts">
+        <div class="fact">
+          <dt>Media type</dt>
+          <dd>Reel, 15–30 seconds</dd>
+        </div>
+        <div class="fact">
+          <dt>Platforms</dt>
+          <dd><span class="tag">Instagram</span><span class="tag">TikTok</span></dd>
+        </div>
+        <div class="fact">
+          <dt>Starting budget</dt>
+          <dd class="money">₦150,000</dd>
+        </div>
+      </dl>
+
+      <div class="details">
+        <h2>The brief</h2>
+        <p>Film yourself running a trail or uneven outdoor route in the Trail 2.0. Show the shoe in a close-up at least once, and say a few words about how it feels underfoot. No script — keep it in your own voice. We'll send a product link and three sample captions once you accept.</p>
+
+        <h2>Deliverables</h2>
+        <ul>
+          <li>1 reel or TikTok video, 15–30 seconds</li>
+          <li>Product visible within the first 5 seconds</li>
+          <li>Posted within 5 days of accepting</li>
+          <li>Caption tags @novarunningco</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SIDE COLUMN -->
+    <aside class="side-col">
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Negotiate</h2>
+          <p>Reply, accept, or send a counter offer</p>
+        </div>
+
+        <div class="thread">
+          <div class="msg from-brand">
+            <span class="meta">Nova Running Co.</span>
+            Hi Zara! We'd love you for the Trail 2.0 launch. Starting offer is ₦150,000 for one reel.
+          </div>
+          <div class="msg from-you">
+            <span class="meta">You</span>
+            Thanks for reaching out! My rate for a reel this size is usually ₦220,000 — could we meet there?
+          </div>
+          <div class="msg from-brand">
+            <span class="meta">Nova Running Co.</span>
+            We can do ₦190,000, plus we'll send a pair of Trail 2.0s for the shoot.
+          </div>
+        </div>
+
+        <div class="composer">
+          <textarea rows="2" placeholder="Write a reply…"></textarea>
+        </div>
+
+        <div class="counter-box" id="counterBox">
+          <label for="counterAmount">Your counter offer</label>
+          <div class="amount-row">
+            <span>₦</span>
+            <input type="text" id="counterAmount" placeholder="200,000">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-decline" type="button">Decline</button>
+          <button class="btn btn-counter" type="button" >Counter</button>
+          <button class="btn btn-accept" type="button">Accept ₦190,000</button>
+        </div>
+      </div>
+
+      <div class="panel howto">
+        <h3>How this works</h3>
+        <p class="lead">What happens after you respond</p>
+        <ol>
+          <li>Accept the offer, or negotiate until you both agree on a rate.</li>
+          <li>Once accepted, film and post within the deadline above.</li>
+          <li>Paste your post link back here — we verify it automatically.</li>
+          <li>Funds release 24 hours after your post goes live.</li>
+        </ol>
+      </div>
+
+    </aside>
   </div>
-
-  <div class="thread">
-    <div *ngFor="let m of inv.messages" class="msg"
-         [class.from-advertiser]="m.from === 'advertiser'"
-         [class.from-creator]="m.from === 'creator'">
-      <div class="amt">₦{{ m.amount}}</div>
-      <div class="note">{{ m.note }}</div>
-      <div class="time">{{ m.timestamp }}</div>
-    </div>
-  </div>
-
-  <app-negotiation></app-negotiation>
-
-  <!-- <ng-container [ngSwitch]="true">
-    <div class="actions-block" *ngSwitchCase="inv.status === 'awaiting_response'">
-      <p class="round-note">First response · choose how to reply</p>
-      <div class="btn-row">
-        <button class="danger-outline" (click)="onDecline()">Decline</button>
-        <button (click)="onAccept()" class="primary">Accept ₦400</button>
-      </div>
-      <div class="counter-row">
-        <input type="number" [(ngModel)]="counterAmount" placeholder="Counter amount (₦)" />
-        <input type="text" [(ngModel)]="counterNote" placeholder="Note (optional)" />
-        <button (click)="onCounter()" [disabled]="!counterAmount">Counter</button>
-      </div>
-    </div>
-
-    <div class="actions-block" *ngSwitchCase="inv.status === 'negotiating' && !isFinalRound">
-      <p class="round-note">Round {{ inv.round }} of {{ inv.maxRounds }} · your turn to respond</p>
-      <div class="btn-row">
-        <button class="danger-outline" (click)="onDecline()">Decline</button>
-        <button (click)="onAccept()" class="primary">Accept ₦{{ inv.currentOffer }}</button>
-      </div>
-      <div class="counter-row">
-        <input type="number" [(ngModel)]="counterAmount" placeholder="Counter amount (₦)" />
-        <input type="text" [(ngModel)]="counterNote" placeholder="Note (optional)" />
-        <button (click)="onCounter()" [disabled]="!counterAmount">Counter</button>
-      </div>
-    </div>
-
-    <div class="actions-block" *ngSwitchCase="inv.status === 'negotiating' && isFinalRound">
-      <p class="round-note final">Final round reached · accept the current offer or withdraw</p>
-      <div class="btn-row">
-        <button class="danger-outline" (click)="onDecline()">Decline</button>
-        <button (click)="onAccept()" class="primary">Accept ₦{{ inv.currentOffer }}</button>
-      </div>
-    </div>
-
-    <p class="status-note" *ngSwitchCase="inv.status === 'active'">
-      Deal is active. Waiting on delivery{{ inv.deliverDeadline ? ' by ' + inv.deliverDeadline : '' }}.
-    </p>
-    <p class="status-note" *ngSwitchCase="inv.status === 'declined'">
-      You declined this invite. The advertiser's escrow was released back to them.
-    </p>
-  </ng-container>
-
-  <div class="escrow-mini" *ngIf="inv.status === 'awaiting_response' || inv.status === 'negotiating'">
-    <i class="ti ti-lock" aria-hidden="true"></i>
-    Accepting will lock ₦{{ inv.currentOffer }} in escrow for this deal.
-  </div> -->
 </div>

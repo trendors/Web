@@ -12,7 +12,7 @@ import { Wallet } from './wallet';
 import { BrandProfile } from './brandProfile';
 
 
-export interface UpdateUserDto { 
+export interface User { 
     /**
      * Unique identifier for the entity
      */

@@ -34,6 +34,7 @@ model/campaignTier.ts
 model/changePasswordDto.ts
 model/createAdCreativeDto.ts
 model/createBenefitDto.ts
+model/createBrandprofileDto.ts
 model/createCampaignDto.ts
 model/createCampaignTierDto.ts
 model/createCommentDto.ts
@@ -49,6 +50,7 @@ model/createUserDto.ts
 model/createUserMediaDatumDto.ts
 model/createUserSubscriptionDto.ts
 model/createWalletDto.ts
+model/creativeProfile.ts
 model/creditWalletDto.ts
 model/debitWalletDto.ts
 model/fetchPostDto.ts
@@ -66,6 +68,7 @@ model/resetPasswordDto.ts
 model/respondToInvitationDto.ts
 model/searchBanksDto.ts
 model/updateAdCreativeDto.ts
+model/updateBrandprofileDto.ts
 model/updateCampaignDto.ts
 model/updateCommentDto.ts
 model/updateCreativeProfileDto.ts
@@ -77,6 +80,7 @@ model/updateSubscriptionDto.ts
 model/updateUserDto.ts
 model/updateUserMediaDatumDto.ts
 model/updateWalletDto.ts
+model/user.ts
 model/userLoginFilterOptions.ts
 model/wallet.ts
 param.ts

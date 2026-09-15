@@ -1,33 +1,63 @@
- <aside class="mini-dashboard">
-      @if (user$ | async; as user) {
+<aside class="mini-dashboard">
+  @if (user$ | async; as user) {
+  <div class="user-header">
+    <div class="user-info">
+      <span class="name">
+        @if (hasBothProfiles$ | async) {
+        @if (activeProfile() === 'brand') {
+        {{ user.brandProfile?.brand_name || user.brandProfile?.contact_name || 'Brand' }}
+        } @else {
+        {{ user.creativeProfile?.first_name ?? '' }} {{ user.creativeProfile?.last_name ?? '' }}
+        }
+        } @else if (hasOnlyBrandProfile$ | async) {
+        {{ user.brandProfile?.brand_name || user.brandProfile?.contact_name || 'Brand' }}
+        } @else {
+        {{ user.creativeProfile?.first_name ?? '' }} {{ user.creativeProfile?.last_name ?? '' }}
+        }
+      </span>
 
-      <div class="user-header">
-        <div class="avatar-small gray">
-          {{ user.first_name.slice(0, 1).toUpperCase() || 'U' }}
-        </div>
-        <div class="user-info">
-          <span class="name">{{ user.first_name }} {{ user.last_name }} </span>
-          <span class="label">Level 3 sharer</span>
-        </div>
-      </div>
+      @if (activeProfile() && !(hasBothProfiles$ | async)) {
+      <!-- only one profile exists: just label it, nothing to toggle -->
+      <span class="profile-tag" [class.brand-tag]="activeProfile() === 'brand'"
+        [class.creative-tag]="activeProfile() === 'creative'">
+        {{ activeProfile() === 'brand' ? 'Brand' : 'Creative' }}
+      </span>
       }
-      <hr class="divider" />
+    </div>
 
-      <div class="stats-grid">
+    @if (hasBothProfiles$ | async) {
+    <!-- both profiles exist: segmented switch, both options always visible -->
+    <div class="profile-switch" role="radiogroup" aria-label="Active profile">
+      <button type="button" class="profile-switch__option" [class.active]="activeProfile() === 'creative'" role="radio"
+        [attr.aria-checked]="activeProfile() === 'creative'" (click)="setActiveProfile('creative')">
+        Creative
+      </button>
+      <button type="button" class="profile-switch__option" [class.active]="activeProfile() === 'brand'" role="radio"
+        [attr.aria-checked]="activeProfile() === 'brand'" (click)="setActiveProfile('brand')">
+        Brand
+      </button>
+      <span class="profile-switch__indicator" [class.is-brand]="activeProfile() === 'brand'"></span>
+    </div>
+    }
+  </div>
+  }
 
-        <div class="stat-item">
-          <span class="stat-value">{{ (shares$ | async)?.length || 0 }}</span>
-          <span class="stat-label">Shares</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">${{ (totals$ | async)?.totalEarned | number:'1.2-2' }}</span>
-          <span class="stat-label"> earned</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">0</span>
-          <span class="stat-label">rate</span>
-        </div>
-      </div>
+  <hr class="divider" />
 
-      <button (click)="routeTo('home/profile')" class="btn-profile">View Profile</button>
-    </aside>
+  <div class="stats-grid">
+    <div class="stat-item">
+      <span class="stat-value">{{ (shares$ | async)?.length || 0 }}</span>
+      <span class="stat-label">Shares</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">${{ (totals$ | async)?.totalEarned | number:'1.2-2' }}</span>
+      <span class="stat-label">Earned</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">0</span>
+      <span class="stat-label">Rate</span>
+    </div>
+  </div>
+
+  <button (click)="routeTo('home/profile')" class="btn-profile">View Profile</button>
+</aside>

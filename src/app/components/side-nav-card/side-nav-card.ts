@@ -1,11 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { take } from 'rxjs';
+import { map, take } from 'rxjs';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 import { NotificationActions } from '../../store/notification/notification.action';
 import { selectUnreadCount } from '../../store/notification/notification.selector';
 import { AsyncPipe } from '@angular/common';
+import { ActiveProfileService } from '../../core/services/activeprofile.service';
 
 @Component({
   selector: 'app-side-nav-card',
@@ -23,13 +24,18 @@ export class SideNavCard implements OnInit {
   unreadCount$ = this.store.select(selectUnreadCount);
   currentUser$ = this.store.select(selectCurrentUser);
 
+  private profileService = inject(ActiveProfileService);
+    activeProfile = this.profileService.activeProfile;    
+  
+
   ngOnInit() {
     this.currentUser$.pipe(take(1)).subscribe((user) => {
       if (user?.id) {
-        this.store.dispatch(NotificationActions.loadNotifications({ trendorId: user.trendors_id }));
+        this.store.dispatch(NotificationActions.loadNotifications({ trendorId: user.trendors_id as string }));
       }
     });
   }
+  
 
   routeTo(path: string) {
     this.router.navigate([path]);

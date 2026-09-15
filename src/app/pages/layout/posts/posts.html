@@ -3,6 +3,16 @@
   <input type="text" placeholder="Search posts.." [formControl]="searchControl" class="search-input" />
 </div>
 
+<div class="post-tabs" role="tablist" aria-label="Post type">
+  <button type="button" class="post-tab" [class.active]="activePostTab === 'open'" (click)="selectPostTab('open')">
+    Open posts
+  </button>
+  <button type="button" class="post-tab" [class.active]="activePostTab === 'application'"
+    (click)="selectPostTab('application')">
+    Application required
+  </button>
+</div>
+
 @if (loading$ | async) {
 <app-loader></app-loader>
 }
@@ -19,11 +29,23 @@
 </div>
 
 <div class="posts-list">
-  @if ((filteredPosts$ | async)?.length ?? 0 > 0) {
-  @for (post of filteredPosts$ | async; track trackById($index, post)) {
+  @if (posts?.length ?? 0 > 0) {
+  @for (post of posts; track trackById($index, post)) {
   <article class="card post-card">
 
     <!-- ── POST HEADER ── -->
+    <!-- <div class="post-header">
+      <div class="post-author">
+        <div class="avatar-small gray">
+          {{ (post.userName || 'U').slice(0, 1).toUpperCase() }}
+        </div>
+        <div class="author-details">
+          <h4>{{ post.userName || 'Anonymous' }}</h4>
+          <span class="post-time">&#64;{{ post.userName }}</span>
+        </div>
+      </div>
+    </div> -->
+
     <div class="post-header">
       <div class="post-author">
         <div class="avatar-small gray">
@@ -34,6 +56,9 @@
           <span class="post-time">&#64;{{ post.userName }}</span>
         </div>
       </div>
+      <!-- @if (post.campaign?.access === 'application') {
+      <span class="badge-application">Application required</span>
+      } -->
     </div>
 
     <!-- ── POST CONTENT ── -->
@@ -57,6 +82,50 @@
       }
     </div>
 
+    <!-- @if (post.campaign?.access === 'application') {
+    <div class="apply-cta">
+      <button class="apply-btn" [class.applied]="isAppliedByCurrentUser(post)"
+        [disabled]="isAppliedByCurrentUser(post) || applyingPostIds.has(post.id)" (click)="openApplySheet(post)">
+        @if (applyingPostIds.has(post.id)) {
+        <mat-spinner diameter="16"></mat-spinner>
+        } @else if (isAppliedByCurrentUser(post)) {
+        <mat-icon>check_circle</mat-icon> Applied
+        } @else {
+        Apply to Campaign
+        }
+      </button>
+    </div> } -->
+
+
+    <!-- ── REQUIREMENTS PANEL ── -->
+   @if (post.campaign?.access === 'application') {
+
+<div class="requirements-panel">
+  <div class="requirements-title">Eligibility requirements</div>
+
+  <ul class="requirements-list">
+    <!-- Neutral row (no pass/fail known) -->
+    <li class="req-item">
+      <span class="req-icon neutral">•</span>
+      <span class="req-label">Platforms: {{ post.campaign?.platforms?.join(', ') }}</span>
+    </li>
+
+    <!-- Met requirement -->
+    <li class="req-item met">
+      <span class="req-icon">✓</span>
+      <span class="req-label">Min. 5,000 Twitter followers</span>
+      <span class="req-note">You have 8,200</span>
+    </li>
+
+    <!-- Unmet requirement -->
+    <li class="req-item unmet">
+      <span class="req-icon">✕</span>
+      <span class="req-label">Min. 700 Facebook followers</span>
+      <span class="req-note">You have 5,000</span>
+    </li>
+  </ul>
+</div>
+   }
     <!-- ── ACTION BAR ── -->
     <div class="post-actions">
       <!-- Like -->
@@ -75,13 +144,27 @@
         <span class="action-count">{{ post.comments?.length || 0 }}</span>
       </button>
 
-      <div class="spacer"></div>
+      @if (post.campaign?.access === 'application') {
+      <span class="badge-application" [class.applied]="isAppliedByCurrentUser(post)">
 
-      <!-- Share -->
+
+        @if (applyingPostIds.has(post.id)) {
+        <mat-spinner diameter="16"></mat-spinner>
+        } @else if (isAppliedByCurrentUser(post)) {
+        <mat-icon>check_circle</mat-icon> Applied
+        } @else {
+        Apply to Campaign
+        }
+
+      </span>
+      } @else {
       <button class="action-btn" (click)="openShareMenu(post)" aria-label="Share post">
         <i class="fa-solid fa-share"></i>
         <span class="action-count">{{ post.shares?.length || 0 }}</span>
       </button>
+      }
+
+
     </div>
 
     <!-- ── COMMENTS PANEL (toggle) ── -->
@@ -179,7 +262,6 @@
   </article>
   }
 
-  <!-- Load more trigger -->
   @if (loadingMore$ | async) {
   <div class="loading-more">
     <mat-spinner diameter="24"></mat-spinner>
@@ -187,7 +269,8 @@
   </div>
   }
 
-  } @else if (!(loading$ | async)) {
+  }
+  @else {
   <div class="empty-state">
     <mat-icon>article</mat-icon>
     <p>No posts yet. Be the first to create one!</p>

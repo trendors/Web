@@ -89,7 +89,7 @@ export class ApplicationsInvites implements OnInit {
       "limit": 10,
       "page": 0,
       "sort": "ASC",
-      // "userId": "current-user-id" 
+      // "userId": 
     };
     this.invitationService.invitationControllerFindAllInvitations(payload).subscribe({
       next: (response) => {

@@ -37,7 +37,6 @@
       }
     </div>
 
-    <!-- Filters -->
     <div class="filters">
       @for (f of filters; track f.value) {
       <button class="filter-pill" [class.active]="activeFilter === f.value" (click)="setFilter(f.value)">
@@ -56,7 +55,6 @@
     </div>
   </div>
 
-  <!-- <pre>{{ campaigns$ | async | json }}</pre> -->
 
   <div class="section-title">Campaign List</div>
   <div class="table-card">

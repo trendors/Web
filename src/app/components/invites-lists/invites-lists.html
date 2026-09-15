@@ -10,15 +10,14 @@
 
   >
     <div class="item-top">
-      <div class="avatar">{{ initials(inv.user.brandProfile.brand_name) }}</div>
+      <div class="avatar">{{ initials(inv.user.user_name) }}</div>
       <div class="info">
-        <div class="brand">{{ inv.user.brandProfile.brand_name }} · INVITE</div>
+        <div class="brand">{{ inv.user.user_name }} · INVITE</div>
         <div class="title">{{ inv.campaign.name }}</div>
         <div class="meta" *ngIf="inv.status === 'negotiating'">Round {{ inv.round }} of {{ inv.maxRounds }} · {{ inv.platform }}</div>
         <div class="meta" >{{ inv.campaign.platforms.join(', ') }}</div>
       </div>
       <div class="right">
-        <!-- <div class="amt">₦{{ inv.currentOffer.toLocaleString() }}</div> -->
         <div class="amt-lbl">{{ needsAction(inv.status) ? 'offer' : 'deal value' }}</div>
       </div>
     </div>

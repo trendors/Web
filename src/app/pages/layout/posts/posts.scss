@@ -155,6 +155,35 @@
   }
 }
 
+.post-tabs {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 4px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.post-tab {
+  width: 100%;
+  padding: 7px 11px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #65676b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.active {
+    background: #fde9de;
+    color: #e8632b;
+  }
+}
+
 // ── POST CARD ─────────────────────────────────────────────────────────────────
 .post-card {
   overflow: hidden;
@@ -680,6 +709,168 @@ textarea {
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
+}
+
+// ── APPLICATION REQUIRED BADGE ──
+.badge-application {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  margin-left: auto;
+  border-radius: 999px;
+  background-color: #FDEBD9;
+  color: #C2680A;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+// post-header needs to allow the badge to sit at the far right
+.post-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// ── APPLY CTA ──
+.apply-cta {
+  padding-top: 8px;
+}
+
+.apply-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+
+  // Default / not-applied state
+  background-color: #E8730D;
+  color: #FFFFFF;
+
+  &:hover:not(:disabled) {
+    background-color: #D6650A;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  // Applying (in-flight) state
+  &:disabled:not(.applied) {
+    background-color: #E8730D;
+    opacity: 0.65;
+    cursor: default;
+  }
+
+  // Applied / success state
+  &.applied {
+    background-color: transparent;
+    color: #2E9E5B;
+    border: 1.5px solid #2E9E5B;
+    opacity: 1;
+    cursor: default;
+    width: 100%;
+
+    mat-icon {
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  mat-spinner {
+    ::ng-deep circle {
+      stroke: #FFFFFF;
+    }
+  }
+}
+
+.requirements-panel {
+   margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  // background-color: #FAFAFA;
+  // border: 1px solid #ECECEC;
+}
+
+.requirements-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #8A8A8A;
+  margin-bottom: 8px;
+}
+
+.requirements-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.req-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #333333;
+}
+
+.req-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* neutral = requirement stated, no pass/fail comparison available */
+.req-icon.neutral {
+  background-color: #E4E4E4;
+  color: #8A8A8A;
+}
+
+/* met requirement */
+.req-item.met .req-icon {
+  background-color: #E3F6EA;
+  color: #2E9E5B;
+}
+
+/* unmet requirement */
+.req-item.unmet .req-icon {
+  background-color: #FBE7E7;
+  color: #D64545;
+}
+
+.req-item.unmet .req-label {
+  color: #A0281B;
+}
+
+.req-label {
+  flex: 1;
+}
+
+.req-note {
+  font-size: 11px;
+  color: #999999;
+  white-space: nowrap;
 }
 
 // ── RESPONSIVE ────────────────────────────────────────────────────────────────

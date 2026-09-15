@@ -54,7 +54,15 @@ export interface Post {
   createdAt: string | Date;
   updatedAt: string | Date;
   deletedAt?: string | Date;
-
+  campaign?: {
+    id: number;
+    name: string;
+    description?: string;
+    startDate: string | Date;
+    endDate: string | Date;
+    access?: string;
+    platforms?: string[];
+  };
   user?: User;
   likes?: LikePost[];
   comments?: Comment[];

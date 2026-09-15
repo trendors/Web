@@ -25,6 +25,10 @@ export interface FetchPostDto {
      */
     page?: number;
     /**
+     * Filter posts by campaign type
+     */
+    campaignType?: FetchPostDto.CampaignTypeEnum;
+    /**
      * This initiates a search when present
      */
     relations?: Array<string>;
@@ -35,6 +39,12 @@ export namespace FetchPostDto {
         Desc: 'DESC',
     } as const;
     export type OrderEnum = typeof OrderEnum[keyof typeof OrderEnum];
+    export const CampaignTypeEnum = {
+        Open: 'open',
+        InviteOnly: 'invite_only',
+        Application: 'application',
+    } as const;
+    export type CampaignTypeEnum = typeof CampaignTypeEnum[keyof typeof CampaignTypeEnum];
 }
 
 

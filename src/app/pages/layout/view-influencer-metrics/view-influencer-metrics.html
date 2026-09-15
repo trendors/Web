@@ -1,0 +1,340 @@
+<div class="metrics-page">
+
+
+
+
+  <!-- Main -->
+  <main class="main-container">
+
+    <!-- Back -->
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()"
+    >
+      <span class="back-icon">←</span>
+      <span>Back to influencers</span>
+    </button>
+
+
+    <!-- Influencer summary -->
+    <section class="influencer-card">
+
+      <!-- Avatar -->
+      <img
+        [src]="influencer.avatar"
+        [alt]="influencer.name"
+        class="avatar"
+      />
+
+      <!-- Details -->
+      <div class="influencer-details">
+
+        <div class="name-row">
+
+          <h1>
+            {{ influencer.name }}
+          </h1>
+
+          <span class="status-badge active">
+            <span class="status-dot"></span>
+            {{ influencer.status }}
+          </span>
+
+        </div>
+
+        <p class="subtitle">
+          {{ influencer.username }}
+          <span>·</span>
+          {{ influencer.campaign }}
+        </p>
+
+        <!-- Platform -->
+        <div class="platform-row">
+
+          <span class="platform-icon">
+          </span>
+
+          <span class="platform-name">
+            {{ influencer.platform }}
+          </span>
+
+          <span class="followers">
+            {{ influencer.followers }} followers
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- Completion -->
+      <div class="summary-box completion-box">
+
+        <div class="summary-label">
+          Content completion
+        </div>
+
+        <div class="summary-value">
+          {{ influencer.completed }} /
+          {{ influencer.totalContent }}
+        </div>
+
+        <div class="progress-track">
+          <div
+            class="progress-fill"
+            [style.width.%]="completionPercentage"
+          ></div>
+        </div>
+
+        <div class="completion-text">
+          {{ completionPercentage }}% complete
+        </div>
+
+      </div>
+
+
+      <!-- Payout -->
+      <div class="summary-box payout-box">
+
+        <div class="summary-label payout-label">
+          <span>◈</span>
+          Total payout
+        </div>
+
+        <div class="summary-value">
+          ${{ influencer.totalPayout }}
+        </div>
+
+        <div class="payout-breakdown">
+
+          <span class="paid-text">
+            ${{ influencer.paid }} paid
+          </span>
+
+          <span>·</span>
+
+          <span class="pending-text">
+            ${{ influencer.pending }} pending
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- Content Metrics heading -->
+    <div class="section-heading">
+
+      <h2>
+        Content Metrics
+      </h2>
+
+      <p>
+        {{ contents.length }} posts ·
+        {{ totalViews }} total views
+      </p>
+
+    </div>
+
+
+    <!-- Content -->
+    <div class="content-list">
+
+      @for (content of contents; track content.title) {
+
+        <article class="content-card">
+
+          <!-- Content image -->
+          <img
+            [src]="content.image"
+            [alt]="content.title"
+            class="content-image"
+          />
+
+
+          <div class="content-body">
+
+            <!-- Top content row -->
+            <div class="content-top">
+
+              <div class="content-info">
+
+                <!-- Title -->
+                <div class="content-title-row">
+
+                  <span class="content-title">
+                    {{ content.title }}
+                  </span>
+
+                  <span class="content-type">
+                    {{ content.type }}
+                  </span>
+
+                </div>
+
+
+                <!-- Platform/date/post -->
+                <div class="content-meta">
+
+                  <span class="platform-icon small">
+                    {{ getPlatformIcon(content.platform) }}
+                  </span>
+
+                  <span class="platform-name small">
+                    {{ content.platform }}
+                  </span>
+
+                  <span class="date">
+                    <span>▣</span>
+                    {{ content.date }}
+                  </span>
+
+                  <span class="separator">
+                    ·
+                  </span>
+
+                  <button
+                    type="button"
+                    class="post-link"
+                    (click)="openPost(content)"
+                  >
+                    View post
+                    <span>↗</span>
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <!-- Payout status -->
+              <div
+                class="content-payout"
+                [class.paid]="content.status === 'Paid'"
+                [class.pending]="content.status === 'Pending'"
+              >
+
+                <div class="content-payout-label">
+                  <span>◈</span>
+                  {{ content.payoutLabel }}
+                </div>
+
+                <div class="content-payout-value">
+                  ${{ content.payout }}
+                </div>
+
+                <div class="status-wrapper">
+
+                  <span
+                    class="status-badge"
+                    [class.active]="content.status === 'Paid'"
+                    [class.pending-badge]="content.status === 'Pending'"
+                  >
+                    <span class="status-dot"></span>
+                    {{ content.status }}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- Metrics -->
+            <div class="metrics-grid">
+
+              <!-- Views -->
+              <div class="metric">
+                <div class="metric-label">
+                  <span class="metric-icon">◉</span>
+                  Views
+                </div>
+
+                <div class="metric-value">
+                  {{ content.views }}
+                </div>
+              </div>
+
+
+              <!-- Likes -->
+              <div class="metric">
+                <div class="metric-label">
+                  <span class="metric-icon">♡</span>
+                  Likes
+                </div>
+
+                <div class="metric-value">
+                  {{ content.likes }}
+                </div>
+              </div>
+
+
+              <!-- Comments -->
+              <div class="metric">
+                <div class="metric-label">
+                  <span class="metric-icon">◌</span>
+                  Comments
+                </div>
+
+                <div class="metric-value">
+                  {{ content.comments }}
+                </div>
+              </div>
+
+
+              <!-- Shares -->
+              <div class="metric">
+                <div class="metric-label">
+                  <span class="metric-icon">♧</span>
+                  Shares
+                </div>
+
+                <div class="metric-value">
+                  {{ content.shares }}
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </article>
+
+      }
+
+
+      <!-- Empty state example -->
+      @if (contents.length === 0) {
+
+        <div class="empty-state">
+
+          <div class="empty-icon">
+            ▶
+          </div>
+
+          <div>
+
+            <div class="empty-title">
+              No content yet
+            </div>
+
+            <p>
+              This influencer hasn't posted any content
+              for this campaign yet.
+            </p>
+
+          </div>
+
+        </div>
+
+      }
+
+    </div>
+
+  </main>
+
+</div>

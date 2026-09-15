@@ -1,11 +1,40 @@
-
 <div class="negotiation">
 
   <div class="negotiation-header">
-    <span  class="heading">Negotiation with Alex Carter</span>
+    <span class="heading">Negotiation with Alex Carter</span>
     <span class="status-pill status-pending">Waiting on client</span>
   </div>
 
+  <!-- Suitability Score -->
+  <div class="suitability-section">
+    <div class="suitability-header">
+      <span class="suitability-label">Influencer Suitability</span>
+      <span class="suitability-score">92% Match</span>
+    </div>
+    <div class="suitability-bar">
+      <div class="suitability-fill" style="width: 92%"></div>
+    </div>
+    <div class="suitability-details">
+      <div class="suitability-item">
+        <span class="detail-label">Audience Match</span>
+        <span class="detail-value">95%</span>
+      </div>
+      <div class="suitability-item">
+        <span class="detail-label">Engagement Rate</span>
+        <span class="detail-value">4.2%</span>
+      </div>
+      <div class="suitability-item">
+        <span class="detail-label">Past Performance</span>
+        <span class="detail-value">Excellent</span>
+      </div>
+      <div class="suitability-item">
+        <span class="detail-label">Platform Relevance</span>
+        <span class="detail-value">High</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offer Card -->
   <div class="offer-card">
     <div class="offer-label">Current offer</div>
     <div class="offer-amount-row">
@@ -14,7 +43,7 @@
     </div>
     <div class="offer-meta">You · awaiting response</div>
 
-    <div class="offer-actions" >
+    <div class="offer-actions">
       <button class="btn btn-accept">Accept</button>
       <button class="btn btn-counter">Counter</button>
       <button class="btn btn-decline">Decline</button>
@@ -29,6 +58,80 @@
     </div>
   </div>
 
+  <!-- Negotiation Form -->
+  <div class="negotiation-form">
+    <div class="form-heading">Make a Counter Offer</div>
+    
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Total Amount ($)</label>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="Enter total amount"
+          value="920"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Number of Contents</label>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="e.g., 5"
+          value="5"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Cost Per Content ($)</label>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="e.g., 184"
+          value="184"
+          disabled
+        />
+        <span class="form-hint">Auto-calculated</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Delivery Timeline</label>
+        <select class="form-input form-select">
+          <option value="7">7 days</option>
+          <option value="14" selected>14 days</option>
+          <option value="30">30 days</option>
+          <option value="60">60 days</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-summary">
+      <div class="summary-row">
+        <span class="summary-label">Total Payout</span>
+        <span class="summary-value">$920</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Contents</span>
+        <span class="summary-value">5 posts</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Cost Per Post</span>
+        <span class="summary-value">$184</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Delivery</span>
+        <span class="summary-value">14 days</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-submit">Submit Counter Offer</button>
+      <button class="btn btn-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Offer History -->
   <div class="heading">Offer history</div>
   <div class="timeline">
 

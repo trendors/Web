@@ -7,19 +7,13 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { User } from './user';
 
 
-export interface BrandProfile { 
-    /**
-     * Unique identifier for the entity
-     */
-    id?: number;
+export interface CreateBrandprofileDto { 
+    userId: number;
     brand_name?: string;
     contact_name?: string;
     industry?: string;
     website?: string;
-    is_verified?: boolean;
-    user?: User;
 }
 

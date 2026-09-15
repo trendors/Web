@@ -1,117 +1,502 @@
 
+// .mini-dashboard {
+//   background: #fff;
+//   border: 1px solid #e0e0e0;
+//   border-radius: 12px;
+//   padding: 16px;
+//   position: sticky;
+//   top: 20px;
+//   height: fit-content;
+// }
+
+// .user-header {
+//   display: flex;
+//   align-items: center;
+//   gap: 12px;
+//   margin-bottom: 16px;
+// }
+
+// .user-info
+//  .name {
+//   display: block;
+//   font-weight: 600;
+//   font-size: 14px;
+//   color: #333;
+// }
+
+// .user-info .label {
+//   font-size: 12px;
+//   color: #888;
+// }
+
+// .divider {
+//   border: 0;
+//   border-top: 1px solid #f0f0f0;
+//   margin: 12px 0;
+// }
+
+// .stats-grid {
+//   display: grid;
+//   grid-template-columns: 1fr 1fr 1fr;
+//   gap: 8px;
+//   margin-bottom: 16px;
+// }
+
+// .stat-item {
+//   display: flex;
+//   flex-direction: column;
+// }
+
+// .stat-value {
+//   font-weight: 700;
+//   font-size: 16px;
+//   color: var(--primary, #007bff);
+// }
+
+// .stat-label {
+//   font-size: 11px;
+//   color: #777;
+//   text-transform: uppercase;
+//   letter-spacing: 0.5px;
+// }
+
+// .btn-profile {
+//   width: 100%;
+//   padding: 8px;
+//   background: #f8f9fa;
+//   border: 1px solid #ddd;
+//   border-radius: 6px;
+//   font-size: 12px;
+//   font-weight: 600;
+//   cursor: pointer;
+//   transition: background 0.2s;
+// }
+
+// .btn-profile:hover {
+//   background: #e2e6ea;
+// }
+
+// .nav-link {
+//   display: block;
+//   padding: 12px;
+//   text-decoration: none;
+//   color: var(--text-main);
+//   border-radius: 8px;
+// }
+
+// .nav-link:hover {
+//   background: #f0f2f5;
+// }
+
+
+// .avatar-small {
+//   width: 40px;
+//   height: 40px;
+//   border-radius: 50%;
+//   background: var(--primary);
+//   flex-shrink: 0;
+
+//   /* Centering Logic */
+//   display: flex;
+//   align-items: center;
+//   /* Vertical center */
+//   justify-content: center;
+//   /* Horizontal center */
+
+//   /* Text Styling */
+//   color: white;
+//   /* Adjust based on your background */
+//   font-size: 14px;
+//   /* Size of the initials */
+//   font-weight: 600;
+//   text-transform: uppercase;
+// }
+
+// .avatar-small.gray {
+//   background: #ddd;
+//   color: #666;
+// }
+
+// // ─────────────────────────────────────────────
+// // Profile Components — tags & toggle button
+// // ─────────────────────────────────────────────
+
+// // Design tokens (adjust to match your system)
+// $ink: #14161a;
+// $muted: #6b7280;
+// $hairline: rgba(20, 22, 26, 0.1);
+// $surface: #fff;
+// $surface-sunken: #f5f6f8;
+
+// $brand: #3a5ba0;
+// $brand-tint: #eef2fa;
+
+// $creative: #8a4baf;
+// $creative-tint: #f6eefa;
+
+// $radius-pill: 999px;
+// $radius-sm: 8px;
+
+// .profile-tag {
+//   display: inline-flex;
+//   align-items: center;
+//   gap: 4px;
+//   padding: 3px 10px;
+//   border-radius: $radius-pill;
+//   font-size: 11px;
+//   font-weight: 500;
+//   letter-spacing: 0.01em;
+//   line-height: 1.4;
+//   margin-left: 8px;
+//   vertical-align: middle;
+//   white-space: nowrap;
+
+//   // small dot as a quiet identifier, instead of shouting via uppercase
+//   &::before {
+//     content: '';
+//     width: 5px;
+//     height: 5px;
+//     border-radius: 50%;
+//     background: currentColor;
+//     opacity: 0.55;
+//   }
+
+//   &.brand-tag {
+//     background: $brand-tint;
+//     color: $brand;
+//   }
+
+//   &.creative-tag {
+//     background: $creative-tint;
+//     color: $creative;
+//   }
+// }
+
+// .profile-toggle-btn {
+//   appearance: none;
+//   padding: 6px 14px;
+//   border: 1px solid $hairline;
+//   border-radius: $radius-sm;
+//   background: $surface;
+//   font-size: 12px;
+//   font-weight: 500;
+//   color: $muted;
+//   cursor: pointer;
+//   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+//   &:hover {
+//     background: $surface-sunken;
+//     color: $ink;
+//   }
+
+//   &:focus-visible {
+//     outline: 2px solid var(--primary, #{$brand});
+//     outline-offset: 2px;
+//   }
+
+//   &.active {
+//     background: $ink;
+//     border-color: $ink;
+//     color: $surface;
+
+//     &:hover {
+//       background: lighten($ink, 8%);
+//     }
+//   }
+
+//   @media (prefers-reduced-motion: reduce) {
+//     transition: none;
+//   }
+// }\\
+
+
+
+// ─────────────────────────────────────────────
+// Mini Dashboard — sidebar card
+// ─────────────────────────────────────────────
+
+
+// ─────────────────────────────────────────────
+// Mini Dashboard — sidebar card
+// ─────────────────────────────────────────────
+
+// Design tokens
+$ink: #14161a;
+$muted: #6b7280;
+$faint: #9ca3af;
+$hairline: rgba(20, 22, 26, 0.08);
+$surface: #fff;
+$surface-sunken: #f5f6f8;
+
+$brand: #3a5ba0;
+$brand-tint: #eef2fa;
+
+$creative: #8a4baf;
+$creative-tint: #f6eefa;
+
+$radius-lg: 14px;
+$radius-pill: 999px;
+$radius-sm: 8px;
+
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-4: 16px;
+
+// ─────────────────────────────────────────────
+// Card shell
+// ─────────────────────────────────────────────
+
 .mini-dashboard {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 16px;
+  background: $surface;
+  border: 1px solid $hairline;
+  border-radius: $radius-lg;
+  padding: $space-4;
   position: sticky;
   top: 20px;
   height: fit-content;
 }
 
+// ─────────────────────────────────────────────
+// Header: avatar, name, tag, toggle
+// ─────────────────────────────────────────────
+
 .user-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-3;
+  margin-bottom: $space-4;
 }
 
-.user-info .name {
-  display: block;
-  font-weight: 600;
-  font-size: 14px;
-  color: #333;
-}
-
-.user-info .label {
-  font-size: 12px;
-  color: #888;
-}
-
-.divider {
-  border: 0;
-  border-top: 1px solid #f0f0f0;
-  margin: 12px 0;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.stat-item {
+.user-info {
   display: flex;
-  flex-direction: column;
-}
+  align-items: center;
+  min-width: 0; // let long names truncate instead of pushing the toggle off-card
 
-.stat-value {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--primary, #007bff);
-}
+  .name {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    color: $ink;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-.stat-label {
-  font-size: 11px;
-  color: #777;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  .label {
+    font-size: 12px;
+    color: $faint;
+  }
 }
-
-.btn-profile {
-  width: 100%;
-  padding: 8px;
-  background: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-profile:hover {
-  background: #e2e6ea;
-}
-
-.nav-link {
-  display: block;
-  padding: 12px;
-  text-decoration: none;
-  color: var(--text-main);
-  border-radius: 8px;
-}
-
-.nav-link:hover {
-  background: #f0f2f5;
-}
-
 
 .avatar-small {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--primary, #{$brand});
   flex-shrink: 0;
+  margin-right: $space-3;
 
-  /* Centering Logic */
   display: flex;
   align-items: center;
-  /* Vertical center */
   justify-content: center;
-  /* Horizontal center */
 
-  /* Text Styling */
-  color: white;
-  /* Adjust based on your background */
+  color: #fff;
   font-size: 14px;
-  /* Size of the initials */
   font-weight: 600;
   text-transform: uppercase;
+
+  &.gray {
+    background: $surface-sunken;
+    color: $faint;
+  }
 }
 
-.avatar-small.gray {
-  background: #ddd;
-  color: #666;
+.profile-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  margin-left: $space-2;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.55;
+  }
+
+  &.brand-tag {
+    background: $brand-tint;
+    color: $brand;
+  }
+
+  &.creative-tag {
+    background: $creative-tint;
+    color: $creative;
+  }
+}
+
+// Two-option segmented switch, shown only when a user has both profiles.
+// Both choices stay visible at once — clearer than a single button whose
+// own label doubles as "current state" and "thing to click."
+.profile-switch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 2px;
+  background: $surface-sunken;
+  border: 1px solid $hairline;
+  border-radius: $radius-pill;
+}
+
+.profile-switch__option {
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 5px 12px;
+  border-radius: $radius-pill;
+  font-size: 12px;
+  font-weight: 500;
+  color: $muted;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &.active {
+    color: $surface;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary, #{$brand});
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.profile-switch__indicator {
+  position: absolute;
+  z-index: 0;
+  top: 2px;
+  left: 2px;
+  width: calc(50% - 2px);
+  height: calc(100% - 4px);
+  background: $ink;
+  border-radius: $radius-pill;
+  transition: transform 0.2s ease;
+
+  // slides from the "creative" (default) position to "brand"
+  &.is-brand {
+    transform: translateX(100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// ─────────────────────────────────────────────
+// Divider
+// ─────────────────────────────────────────────
+
+.divider {
+  border: 0;
+  border-top: 1px solid $hairline;
+  margin: $space-3 0;
+}
+
+// ─────────────────────────────────────────────
+// Stats
+// ─────────────────────────────────────────────
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $space-2;
+  margin-bottom: $space-4;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-value {
+  font-weight: 700;
+  font-size: 16px;
+  color: $ink;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: $faint;
+  // sentence case instead of tracked-out caps — quieter, still reads as metadata
+}
+
+// ─────────────────────────────────────────────
+// Buttons & links
+// ─────────────────────────────────────────────
+
+.btn-profile {
+  width: 100%;
+  padding: 9px;
+  background: $surface;
+  border: 1px solid $hairline;
+  border-radius: $radius-sm;
+  font-size: 12px;
+  font-weight: 600;
+  color: $ink;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: $surface-sunken;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary, #{$brand});
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.nav-link {
+  display: block;
+  padding: $space-3;
+  text-decoration: none;
+  color: var(--text-main, $ink);
+  border-radius: $radius-sm;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: $surface-sunken;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary, #{$brand});
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }

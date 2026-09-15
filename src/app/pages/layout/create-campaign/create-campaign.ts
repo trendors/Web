@@ -65,8 +65,9 @@ export class CreateCampaign {
   ];
   steps: Step[] = [
     { label: 'Basics', sub: 'Name, dates, link' },
-    { label: 'Content', sub: 'Media & platforms' },
     { label: 'Plan & Access', sub: 'Subscription & sharers' },
+    { label: 'Media', sub: 'Media ' },
+    { label: 'Platforms', sub: 'Select platforms' },
     { label: 'Review', sub: 'Confirm & launch' },
   ];
 
@@ -90,7 +91,7 @@ export class CreateCampaign {
   selectedAccess = 'open';
   autoAssignTier = true;
   currentStep = 0;
-  totalSteps = 4;
+  totalSteps = 5;
   selectedTier = '';
 
   selectedType = signal<'paid' | 'free' | null>(null);
@@ -216,7 +217,7 @@ export class CreateCampaign {
     });
   }
 
- 
+
 
 
   onOverlayClick(event: MouseEvent): void {
@@ -453,7 +454,7 @@ export class CreateCampaign {
       formData.append('description', this.campaignDescription());
       formData.append('category', this.campaignCategory());
       formData.append('type', String(this.selectedType() ?? ''));
-      formData.append('creator_id', user?.id.toString() || '');
+      formData.append('creator_id', user?.id?.toString() || '');
       formData.append('auto_generate_captions', this.auto_generate_captions().toString());
       formData.append('hash_tags', JSON.stringify(this.hash_tags()));
       formData.append('name', `${this.campaignTitle()} `);
@@ -461,10 +462,6 @@ export class CreateCampaign {
       formData.append('end_date', this.end_date());
       formData.append('access', this.selectedAccess);
       formData.append('platform', JSON.stringify(this.selectedPlatforms));
-
-      // Campaign payment model (flat-rate-with-cap)
-      // Determine which payment fields to send based on `campaignType`:
-      // Derive campaign type from selectedAccess radio value
       const access = this.selectedAccess;
       const cType = access === 'open' ? 'open' : access === 'invite_only' ? 'invite' : 'application';
       if (cType === 'open' || cType === 'application') {

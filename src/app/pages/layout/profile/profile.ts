@@ -15,7 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Store } from '@ngrx/store';
 import { catchError, debounceTime, distinctUntilChanged, finalize, map, Observable, of, shareReplay, startWith, switchMap, take, tap } from 'rxjs';
-import { User, UpdateUserDto } from '../../../core/models/users/user.model';
+// import { User, UpdateUserDto } from '../../../core/models/users/user.model';
 import {
   selectAuthError,
   selectCurrentUser,
@@ -30,6 +30,7 @@ import { LoaderComponent } from "../../../components/loader/loader";
 import { Alert } from "../../../components/alert/alert";
 import { ToastService } from '../../../components/toast/toast.service';
 import { SocialVerify } from "../social-verify/social-verify";
+import { UpdateUserDto, User } from '../../../core/api';
 
 @Component({
   selector: 'app-profile',
@@ -121,8 +122,8 @@ export class Profile implements OnInit {
       if (user) {
         this.user = user;
         this.profileForm.patchValue({
-          first_name: user.first_name,
-          last_name: user.last_name,
+          first_name: user.creativeProfile?.first_name ?? '',
+          last_name: user.creativeProfile?.last_name ?? '',
           email: user.email,
           phone_number: user.phone_number,
           user_name: user.user_name,
@@ -178,7 +179,7 @@ export class Profile implements OnInit {
     take(1),
     switchMap(user =>
       user
-        ? this.walletService.getUserWallet(user.trendors_id).pipe(
+        ? this.walletService.getUserWallet(user.trendors_id as string).pipe(
           map((res: any) => res.data ?? { balance: 0 }),
           catchError(() => of({ balance: 0 })),
           shareReplay(1)
@@ -208,19 +209,19 @@ export class Profile implements OnInit {
 
   onSave() {
     const updateData: UpdateUserDto = {
-      first_name: this.profileForm.value.first_name ?? undefined,
-      last_name: this.profileForm.value.last_name ?? undefined,
+      // first_name: this.profileForm.value.first_name ?? undefined,
+      // last_name: this.profileForm.value.last_name ?? undefined,
       phone_number: this.profileForm.value.phone_number ?? undefined,
       twitter_handle: this.profileForm.value.twitter_handle ?? undefined,
       instagram_handle: this.profileForm.value.instagram_handle ?? undefined,
       facebook_username: this.profileForm.value.facebook_username ?? undefined,
     };
-    this.store.dispatch(UserAction.updateUser({ userId: this.user!.id, updateData }))
+    this.store.dispatch(UserAction.updateUser({ userId: this.user!.id as number, updateData }))
   }
 
   onDelete() {
     if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
-      this.store.dispatch(UserAction.deleteUser({ userId: this.user!.id }));
+      this.store.dispatch(UserAction.deleteUser({ userId: this.user!.id as number }));
     }
   }
 

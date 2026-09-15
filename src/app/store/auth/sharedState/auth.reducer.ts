@@ -1,10 +1,11 @@
 import { createReducer, on } from '@ngrx/store';
-import { User } from '../../../core/models/users/user.model';
+// import { User } from '../../../core/models/users/user.model';
 import { RegisterActions } from '../register/register.action';
 import { LoginActions, updateCurrentUser } from '../login/login.actions';
 import { logoutUser } from '../logout/logout.action';
 import { PasswordRecoveryActions } from '../passwordRecovery/password-recovery.actions';
 import { PasswordChangeActions } from '../changePassword/change-password.actions';
+import { User } from '../../../core/api';
 
 export const authFeatureKey = 'auth';
 

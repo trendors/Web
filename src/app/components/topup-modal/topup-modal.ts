@@ -90,7 +90,7 @@ export class TopupModalComponent implements OnInit {
   private http = inject(HttpClient);
   private store = inject(Store);
 
-  user: User | null = null;
+  user?: User 
 
   presets = [
     1_000,
@@ -116,8 +116,8 @@ ngOnInit(): void {
     .pipe(take(1))
     .subscribe((user) => {
       if (user) {
-        this.user = user;
-        this.userEmail = user.email;
+        this.user = user as User;
+        this.userEmail = user.email as string;
         this.cdr.markForCheck(); // or detectChanges()
       }
     });

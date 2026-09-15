@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { InviteNegotiate } from '../invite-negotiate/invite-negotiate';
 
@@ -14,6 +15,7 @@ export class InvitesLists {
   @Input() selectedId: string | null = null;
   @Output() selectInvite = new EventEmitter<string>();
   private dialog = inject(MatDialog);
+  private router = inject(Router);
 
 
   constructor() {
@@ -58,15 +60,21 @@ export class InvitesLists {
   }
 
 
-    openInviteDetail(invite: any): void {
-      const dialogRef = this.dialog.open(InviteNegotiate, {
-        data:  invite,
-      });
+  // route to InviteNegotiate
+  openInviteDetail(invite: any): void {
+    this.router.navigate(['/invite-negotiate', invite.id]);
+  }
+
+
+    // openInviteDetail(invite: any): void {
+    //   const dialogRef = this.dialog.open(InviteNegotiate, {
+    //     data:  invite,
+    //   });
   
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          // Handle the result from the dialog if needed
-        }
-      });
-    }
+    //   dialogRef.afterClosed().subscribe(result => {
+    //     if (result) {
+    //       // Handle the result from the dialog if needed
+    //     }
+    //   });
+    // }
 }
