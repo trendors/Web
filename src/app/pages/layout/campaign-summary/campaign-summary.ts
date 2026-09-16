@@ -1,5 +1,6 @@
 import { DatePipe, AsyncPipe, NgSwitchDefault, NgSwitch, NgSwitchCase, CommonModule } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { map, Observable, switchMap } from 'rxjs';
@@ -29,6 +30,12 @@ export class CampaignSummary {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private store = inject(Store);
+  private location = inject(Location);
+
+  goBack(): void {
+    this.location.back();
+  }
+
 
   data$: Observable<Campaign | undefined> = this.route.paramMap.pipe(
     map((params) => Number(params.get('id'))),
@@ -269,9 +276,6 @@ export class CampaignSummary {
     this.router.navigate(['/home/create-campaign']);
   }
 
-  goBack(): void {
-    this.router.navigate(['/home/view-campaign']);
-  }
 
   acceptApplicant(applicant: Applicant): void {
     applicant.status = 'accepted';

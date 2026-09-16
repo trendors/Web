@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Negotiation } from '../../../components/negotiation/negotiation';
 
 interface SocialMedia {
@@ -33,6 +33,8 @@ interface ContentItem {
 export class ViewPendingInfluencerMetricsComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+      private location = inject(Location);
+
 
   influencerId: number | null = null;
 
@@ -145,7 +147,7 @@ export class ViewPendingInfluencerMetricsComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/home/campaign-summary']);
+    this.location.back();
   }
 
   openPost(content: ContentItem): void {
