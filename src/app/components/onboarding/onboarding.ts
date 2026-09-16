@@ -144,6 +144,10 @@ export class Onboarding implements OnInit {
     if (this.stepIndex > 0) this.stepIndex--;
   }
 
+  login(){
+    this.router.navigate(['/login']);
+  }
+
   saveUser(credentials?: {
     email?: string;
     password?: string;
