@@ -457,6 +457,23 @@
   border-radius: 12px;
   object-fit: cover;
   flex-shrink: 0;
+  background: #f1f2f4;
+}
+
+.campaign-card__gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.campaign-card__gallery-item {
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: #f4f5f6;
 }
 
 .campaign-card__info {
@@ -513,6 +530,10 @@
 
 .meta-item:first-of-type {
   margin-left: 10px;
+}
+
+.platform-label {
+  text-transform: capitalize;
 }
 
 /* ---------- Stat grid ---------- */
@@ -752,6 +773,15 @@
   background: var(--ink-soft);
 }
 
+.btn-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-view-more:disabled:hover {
+  background: var(--ink);
+}
+
 .action-status {
   font-size: 13px;
   color: var(--ink-soft);
@@ -770,9 +800,14 @@
 .table__head,
 .table__row {
   display: grid;
-  grid-template-columns: 2.2fr 1.4fr 1.2fr 2fr;
+  grid-template-columns: 2.2fr 1.2fr 2fr;
   align-items: center;
   padding: 16px 24px;
+}
+
+.table--invites .table__head,
+.table--invites .table__row {
+  grid-template-columns: 2.2fr 1.2fr 2fr;
 }
 
 .table__head {
@@ -808,6 +843,161 @@
   flex-shrink: 0;
 }
 
+.avatar-fallback {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #eceef0;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.avatar--overlay {
+  margin-left: -42px;
+}
+
+.influencers__state {
+  padding: 24px;
+  text-align: center;
+  color: var(--ink-soft);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.influencers__state--error {
+  color: var(--red);
+}
+
+/* ---------- Expandable influencer posts ---------- */
+
+.table__row-group {
+  border-bottom: 1px solid var(--border);
+}
+
+.table__row-group:last-child {
+  border-bottom: none;
+}
+
+.table__row-group .table__row {
+  border-bottom: none;
+}
+
+.chevron {
+  transition: transform 0.15s ease;
+}
+
+.chevron.open {
+  transform: rotate(90deg);
+}
+
+.table__detail {
+  padding: 0 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fafafb;
+}
+
+.detail-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 12px 0 4px;
+}
+
+.detail-summary__item {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.detail-summary__item strong {
+  color: var(--ink);
+}
+
+.detail-summary .btn-view-more {
+  margin-left: auto;
+}
+
+.post-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.post-card__thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #f1f2f4;
+}
+
+.post-card__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-card__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.post-card__title {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.post-card__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.post-card__date {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.metric-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.metric-chip {
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: #f1f2f4;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+
+.metric-chip strong {
+  color: var(--ink);
+}
+
+.post-card__recorded {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
 .influencer-name {
   display: flex;
   flex-direction: column;
@@ -821,13 +1011,6 @@
 .influencer-name__handle {
   font-size: 13px;
   color: var(--ink-soft);
-}
-
-.col--platform {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--ink);
 }
 
 .platform-icon--table {
@@ -938,7 +1121,7 @@
 
   .table__head,
   .table__row {
-    grid-template-columns: 2fr 1.2fr 1.1fr 1.6fr;
+    grid-template-columns: 2fr 1.1fr 1.6fr;
   }
 }
 
@@ -1088,8 +1271,7 @@
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       "influencer influencer"
-      "platform status"
-      "progress progress";
+      "status progress";
     gap: 12px 10px;
     padding: 16px;
     background: var(--bg-card);
@@ -1097,12 +1279,46 @@
     border-radius: 12px;
   }
 
-  .col--influencer {
-    grid-area: influencer;
+  .table--invites .table__row {
+    grid-template-areas:
+      "influencer influencer"
+      "status actions";
   }
 
-  .col--platform {
-    grid-area: platform;
+  .table__row-group {
+    border-bottom: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .table__row-group .table__row {
+    border: none;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .table__detail {
+    padding: 0 16px 16px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .post-card {
+    flex-direction: column;
+  }
+
+  .post-card__thumb {
+    width: 100%;
+    height: 140px;
+  }
+
+  .detail-summary .btn-view-more {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .col--influencer {
+    grid-area: influencer;
   }
 
   .col--status {
@@ -1111,6 +1327,10 @@
 
   .col--progress {
     grid-area: progress;
+  }
+
+  .table--invites .col--actions {
+    grid-area: actions;
   }
 
   .progress__track {
@@ -1148,6 +1368,15 @@
   .avatar {
     width: 36px;
     height: 36px;
+  }
+
+  .avatar-fallback {
+    width: 36px;
+    height: 36px;
+  }
+
+  .avatar--overlay {
+    margin-left: -36px;
   }
 
   .influencer-name__full {

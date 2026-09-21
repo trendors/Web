@@ -6,6 +6,21 @@
   <!-- Main -->
   <main class="main-container">
 
+    @if (loading()) {
+      <p>Loading influencer metrics…</p>
+    } @else if (error()) {
+      <div class="empty-state">
+        <div class="empty-icon">!</div>
+        <div>
+          <div class="empty-title">Could not load metrics</div>
+          <p>{{ error() }}</p>
+          <button type="button" class="back-button" (click)="goBack()">
+            <span class="back-icon">←</span>
+            <span>Back to influencers</span>
+          </button>
+        </div>
+      </div>
+    } @else if (header(); as h) {
     <!-- Back -->
     <button
       type="button"
@@ -22,9 +37,10 @@
 
       <!-- Avatar -->
       <img
-        [src]="influencer.avatar"
-        [alt]="influencer.name"
+        [src]="h.avatar"
+        [alt]="h.name"
         class="avatar"
+        (error)="onImgError($event, fallbackAvatar)"
       />
 
       <!-- Details -->
@@ -33,20 +49,20 @@
         <div class="name-row">
 
           <h1>
-            {{ influencer.name }}
+            {{ h.name }}
           </h1>
 
-          <span class="status-badge active">
+          <span class="status-badge" [class.active]="h.statusActive">
             <span class="status-dot"></span>
-            {{ influencer.status }}
+            {{ h.status }}
           </span>
 
         </div>
 
         <p class="subtitle">
-          {{ influencer.username }}
+          {{ h.username }}
           <span>·</span>
-          {{ influencer.campaign }}
+          {{ h.campaign }}
         </p>
 
         <!-- Platform -->
@@ -56,11 +72,11 @@
           </span>
 
           <span class="platform-name">
-            {{ influencer.platform }}
+            {{ h.platform }}
           </span>
 
           <span class="followers">
-            {{ influencer.followers }} followers
+            {{ contents().length }} posts
           </span>
 
         </div>
@@ -76,19 +92,19 @@
         </div>
 
         <div class="summary-value">
-          {{ influencer.completed }} /
-          {{ influencer.totalContent }}
+          {{ h.completed }} /
+          {{ h.totalContent }}
         </div>
 
         <div class="progress-track">
           <div
             class="progress-fill"
-            [style.width.%]="completionPercentage"
+            [style.width.%]="completionPercentage()"
           ></div>
         </div>
 
         <div class="completion-text">
-          {{ completionPercentage }}% complete
+          {{ completionPercentage() }}% complete
         </div>
 
       </div>
@@ -103,19 +119,19 @@
         </div>
 
         <div class="summary-value">
-          ${{ influencer.totalPayout }}
+          ₦{{ h.totalPayout | number }}
         </div>
 
         <div class="payout-breakdown">
 
           <span class="paid-text">
-            ${{ influencer.paid }} paid
+            ₦{{ h.paid | number }} paid
           </span>
 
           <span>·</span>
 
           <span class="pending-text">
-            ${{ influencer.pending }} pending
+            ₦{{ h.pending | number }} pending
           </span>
 
         </div>
@@ -133,8 +149,8 @@
       </h2>
 
       <p>
-        {{ contents.length }} posts ·
-        {{ totalViews }} total views
+        {{ contents().length }} posts ·
+        {{ totalViews() }} total views
       </p>
 
     </div>
@@ -143,7 +159,7 @@
     <!-- Content -->
     <div class="content-list">
 
-      @for (content of contents; track content.title) {
+      @for (content of contents(); track content.id ?? content.title) {
 
         <article class="content-card">
 
@@ -152,6 +168,7 @@
             [src]="content.image"
             [alt]="content.title"
             class="content-image"
+            (error)="onImgError($event, fallbackThumb)"
           />
 
 
@@ -189,21 +206,27 @@
 
                   <span class="date">
                     <span>▣</span>
-                    {{ content.date }}
+                    @if (content.date) {
+                      {{ content.date | date:'MMM d, y' }}
+                    } @else {
+                      Not published yet
+                    }
                   </span>
 
                   <span class="separator">
                     ·
                   </span>
 
-                  <button
-                    type="button"
-                    class="post-link"
-                    (click)="openPost(content)"
-                  >
-                    View post
-                    <span>↗</span>
-                  </button>
+                  @if (content.postUrl) {
+                    <button
+                      type="button"
+                      class="post-link"
+                      (click)="openPost(content)"
+                    >
+                      View post
+                      <span>↗</span>
+                    </button>
+                  }
 
                 </div>
 
@@ -223,7 +246,7 @@
                 </div>
 
                 <div class="content-payout-value">
-                  ${{ content.payout }}
+                  ₦{{ content.payout | number }}
                 </div>
 
                 <div class="status-wrapper">
@@ -255,7 +278,7 @@
                 </div>
 
                 <div class="metric-value">
-                  {{ content.views }}
+                  {{ formatCompact(content.views) }}
                 </div>
               </div>
 
@@ -268,7 +291,7 @@
                 </div>
 
                 <div class="metric-value">
-                  {{ content.likes }}
+                  {{ formatCompact(content.likes) }}
                 </div>
               </div>
 
@@ -281,7 +304,7 @@
                 </div>
 
                 <div class="metric-value">
-                  {{ content.comments }}
+                  {{ formatCompact(content.comments) }}
                 </div>
               </div>
 
@@ -294,7 +317,7 @@
                 </div>
 
                 <div class="metric-value">
-                  {{ content.shares }}
+                  {{ formatCompact(content.shares) }}
                 </div>
               </div>
 
@@ -308,7 +331,7 @@
 
 
       <!-- Empty state example -->
-      @if (contents.length === 0) {
+      @if (contents().length === 0) {
 
         <div class="empty-state">
 
@@ -335,6 +358,19 @@
 
     </div>
 
+    } @else {
+      <div class="empty-state">
+        <div class="empty-icon">!</div>
+        <div>
+          <div class="empty-title">Influencer not found</div>
+          <p>This influencer has no data for this campaign yet.</p>
+          <button type="button" class="back-button" (click)="goBack()">
+            <span class="back-icon">←</span>
+            <span>Back to influencers</span>
+          </button>
+        </div>
+      </div>
+    }
   </main>
 
 </div>

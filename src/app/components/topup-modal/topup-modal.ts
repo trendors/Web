@@ -10,7 +10,7 @@ import {
   ChangeDetectorRef
 } from '@angular/core';
 
-import { CommonModule, DecimalPipe, NgFor } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   trigger,
@@ -35,7 +35,6 @@ declare var PaystackPop: any;
   standalone: true,
   imports: [
     CommonModule,
-    NgFor,
     DecimalPipe,
     FormsModule
   ],
@@ -92,7 +91,8 @@ export class TopupModalComponent implements OnInit {
 
   user?: User 
 
-  presets = [
+  // Static presets: always rendered, never gated behind entered amounts.
+  readonly presets = [
     1_000,
     2_000,
     5_000,
@@ -101,7 +101,7 @@ export class TopupModalComponent implements OnInit {
     50_000
   ];
 
-  selectedPreset: number | null = null;
+  selectedPreset = signal<number | null>(null);
   customAmount = '';
   isProcessing = signal(false);
   errorMsg = signal('');
@@ -136,12 +136,12 @@ ngOnInit(): void {
 
     if (this.presets.includes(this.amount)) {
 
-      this.selectedPreset = this.amount;
+      this.selectedPreset.set(this.amount);
       this.customAmount = '';
 
     } else {
 
-      this.selectedPreset = null;
+      this.selectedPreset.set(null);
       this.customAmount = this.amount.toString();
 
     }
@@ -158,7 +158,7 @@ ngOnInit(): void {
       return this.amount;
     }
 
-    return this.selectedPreset ??
+    return this.selectedPreset() ??
       (parseInt(this.customAmount, 10) || 0);
   }
 
@@ -172,7 +172,7 @@ ngOnInit(): void {
       return;
     }
 
-    this.selectedPreset = amount;
+    this.selectedPreset.set(amount);
 
     this.customAmount = '';
 
@@ -185,7 +185,7 @@ ngOnInit(): void {
       return;
     }
 
-    this.selectedPreset = null;
+    this.selectedPreset.set(null);
 
     this.errorMsg.set('');
   }

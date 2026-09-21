@@ -31,6 +31,7 @@ import { Alert } from "../../../components/alert/alert";
 import { ToastService } from '../../../components/toast/toast.service';
 import { SocialVerify } from "../social-verify/social-verify";
 import { UpdateUserDto, User } from '../../../core/api';
+import { userFirstName, userLastName } from '../../../core/utils/user-display';
 
 @Component({
   selector: 'app-profile',
@@ -122,8 +123,10 @@ export class Profile implements OnInit {
       if (user) {
         this.user = user;
         this.profileForm.patchValue({
-          first_name: user.creativeProfile?.first_name ?? '',
-          last_name: user.creativeProfile?.last_name ?? '',
+          // Brand-only accounts have no creative profile: fall back to the
+          // brand contact name so first/last name still show.
+          first_name: userFirstName(user),
+          last_name: userLastName(user),
           email: user.email,
           phone_number: user.phone_number,
           user_name: user.user_name,

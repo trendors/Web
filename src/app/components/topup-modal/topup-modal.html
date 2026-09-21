@@ -23,15 +23,16 @@
   <div class="section-label">Quick Amounts</div>
 
   <div class="preset-grid">
-  <button
-    *ngFor="let amount of presets"
-    class="preset-btn"
-    [class.active]="selectedPreset === amount"
-    (click)="selectPreset(amount)"
-    type="button">
-    ₦{{ amount | number }}
-  </button>
-</div>
+    @for (preset of presets; track preset) {
+      <button
+        class="preset-btn"
+        [class.active]="selectedPreset() === preset"
+        (click)="selectPreset(preset)"
+        type="button">
+        ₦{{ preset | number }}
+      </button>
+    }
+  </div>
 
 
   <!-- Custom Amount -->

@@ -38,7 +38,6 @@
 
 <div class="section-label" style="margin-bottom: 14px;">Withdrawal Account</div>
 
-@if (savedBankDetails$ | async; as bankInfo) {
 <form [formGroup]="bankForm">
   <div class="field">
     <label class="field-label">Account Number</label>
@@ -88,7 +87,7 @@
     Update Withdrawal Account
   </button>
 </form>
-}
+
 
 </div>
 

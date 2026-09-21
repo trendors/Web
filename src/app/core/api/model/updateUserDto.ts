@@ -9,6 +9,7 @@
  */
 import { CreativeProfile } from './creativeProfile';
 import { Wallet } from './wallet';
+import { CampaignInfluencer } from './campaignInfluencer';
 import { BrandProfile } from './brandProfile';
 
 
@@ -42,5 +43,6 @@ export interface UpdateUserDto {
     brandProfile?: BrandProfile;
     notifications?: Array<string>;
     wallet?: Wallet;
+    campaignInfluencers?: Array<CampaignInfluencer>;
 }
 

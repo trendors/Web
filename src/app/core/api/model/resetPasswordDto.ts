@@ -15,7 +15,7 @@ export interface ResetPasswordDto {
      */
     token: string;
     /**
-     * New password for the user
+     * New password for the user (min 8 characters)
      */
     newPassword: string;
 }

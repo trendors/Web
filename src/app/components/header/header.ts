@@ -11,6 +11,7 @@ import { selectCurrentUser, selectIsLoggedIn } from '../../store/auth/sharedStat
 import { logoutUser } from '../../store/auth/logout/logout.action';
 import { selectUnreadCount } from '../../store/notification/notification.selector';
 import { MatBadgeModule } from '@angular/material/badge';
+import { userDisplayName } from '../../core/utils/user-display';
 
 @Component({
   selector: 'app-header',
@@ -33,6 +34,7 @@ export class Header {
   isLoggedIn$ = this.store.select(selectIsLoggedIn);
   currentUser$ = this.store.select(selectCurrentUser);
   unreadCount$ = this.store.select(selectUnreadCount);
+  protected readonly displayName = userDisplayName;
 
   onLogout() {
     this.store.dispatch(logoutUser());

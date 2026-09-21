@@ -20,6 +20,7 @@ import {
   CampaignStatus,
   FilterOption,
 } from '../../../core/models/campaign/campaign.model';
+import { environment } from '../../../../environments/environment';
 import { BehaviorSubject, combineLatest, map, Observable, Subject, takeUntil, tap } from 'rxjs';
 
 export interface CampaignMetric {
@@ -209,5 +210,74 @@ export class ViewCampaign implements OnInit, OnDestroy {
 
   trackById(_i: number, campaign: Campaign) {
     return campaign.id;
+  }
+
+  /** First usable media URL, or null when the campaign has no (valid) files. */
+  campaignImage(campaign: Campaign): string | null {
+    const files = this.normalizeFiles((campaign as any)?.files);
+    for (const f of files) {
+      const url = this.resolveFileUrl(f);
+      if (url) return url;
+    }
+    return null;
+  }
+
+  onThumbError(event: Event): void {
+    // Hide the broken <img> so the initial-letter avatar underneath shows.
+    const img = event.target as HTMLImageElement | null;
+    if (img) img.style.display = 'none';
+  }
+
+  private normalizeFiles(files: unknown): string[] {
+    if (!files) return [];
+    const out: string[] = [];
+    const pushValue = (v: unknown): void => {
+      if (v == null) return;
+      if (typeof v === 'string') {
+        const trimmed = v.trim();
+        if (!trimmed) return;
+        if (trimmed.startsWith('[') || trimmed.startsWith('"')) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) {
+              parsed.forEach(pushValue);
+              return;
+            }
+            if (typeof parsed === 'string') {
+              pushValue(parsed);
+              return;
+            }
+          } catch {
+            // not JSON, fall through
+          }
+        }
+        out.push(trimmed);
+        return;
+      }
+      if (Array.isArray(v)) {
+        v.forEach(pushValue);
+        return;
+      }
+      if (typeof v === 'object') {
+        const obj = v as Record<string, unknown>;
+        const candidate = obj['url'] ?? obj['src'] ?? obj['path'] ?? obj['fileUrl'] ?? obj['location'];
+        if (typeof candidate === 'string') {
+          pushValue(candidate);
+          return;
+        }
+      }
+    };
+    pushValue(files);
+    return out;
+  }
+
+  private resolveFileUrl(file: string): string {
+    const trimmed = (file ?? '').trim();
+    if (!trimmed) return '';
+    if (/^(https?:\/\/|data:|blob:)/i.test(trimmed)) return trimmed;
+    if (trimmed.startsWith('//')) return `https:${trimmed}`;
+    const base = (environment.apiUrl ?? '').replace(/\/+$/, '');
+    const path = trimmed.replace(/^\.?\//, '');
+    return base ? `${base}/${path}` : `/${path}`;
   }
 }

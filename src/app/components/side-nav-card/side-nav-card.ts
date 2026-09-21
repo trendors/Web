@@ -1,9 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { map, take } from 'rxjs';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 import { NotificationActions } from '../../store/notification/notification.action';
+import { logoutUser } from '../../store/auth/logout/logout.action';
 import { selectUnreadCount } from '../../store/notification/notification.selector';
 import { AsyncPipe } from '@angular/common';
 import { ActiveProfileService } from '../../core/services/activeprofile.service';
@@ -20,6 +22,7 @@ export class SideNavCard implements OnInit {
 
   private store = inject(Store);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   unreadCount$ = this.store.select(selectUnreadCount);
   currentUser$ = this.store.select(selectCurrentUser);
@@ -34,6 +37,11 @@ export class SideNavCard implements OnInit {
         this.store.dispatch(NotificationActions.loadNotifications({ trendorId: user.trendors_id as string }));
       }
     });
+    // Keep the active profile in sync on every user change, even on pages
+    // without the user card (late-arriving relations included).
+    this.currentUser$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
+      this.profileService.init(user);
+    });
   }
   
 
@@ -42,8 +50,7 @@ export class SideNavCard implements OnInit {
   }
 
   logout() {
-    this.router.navigate(['/login']);
-    localStorage.setItem('token', "");
-    localStorage.setItem('user', "");
+    // Go through the store so token/user/activeProfile are all cleared.
+    this.store.dispatch(logoutUser());
   }
 }

@@ -8,6 +8,7 @@
  * Do not edit the class manually.
  */
 import { CampaignTier } from './campaignTier';
+import { CampaignInfluencer } from './campaignInfluencer';
 
 
 export interface CreateCampaignDto { 
@@ -67,5 +68,6 @@ export interface CreateCampaignDto {
      * Array of campaign tiers associated with the campaign
      */
     campaignTier?: Array<CampaignTier>;
+    campaignInfluencers?: Array<CampaignInfluencer>;
 }
 

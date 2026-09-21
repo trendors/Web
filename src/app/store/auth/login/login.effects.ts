@@ -7,6 +7,7 @@ import { LoginActions } from './login.actions';
 import { logoutUser } from '../logout/logout.action';
 import { isPlatformBrowser } from '@angular/common';
 import { NotificationActions } from '../../notification/notification.action';
+import { UserAction } from '../../user/user.action';
 import { Action, Store } from '@ngrx/store';
 
 @Injectable()
@@ -84,6 +85,17 @@ export class LoginEffects {
     { dispatch: false },
   );
 
+  // The login payload may not include profile relations (brand/creative), which
+  // the app needs to pick the right experience. Reload the full user right away.
+  loginSuccessRefreshUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(LoginActions.loginSuccess),
+      map(({ response }) => response?.data?.user?.id),
+      filter((id): id is number => typeof id === 'number'),
+      map((userId) => UserAction.loadCurrentUser({ userId })),
+    ),
+  );
+
   logout$ = createEffect(
     () =>
       this.actions$.pipe(
@@ -91,6 +103,7 @@ export class LoginEffects {
         tap(() => {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          localStorage.removeItem('activeProfile');
           this.router.navigate(['/login']);
         }),
       ),

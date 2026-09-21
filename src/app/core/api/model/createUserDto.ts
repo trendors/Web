@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { CampaignInfluencer } from './campaignInfluencer';
 
 
 export interface CreateUserDto { 
@@ -14,6 +15,7 @@ export interface CreateUserDto {
     phone_number?: string;
     email?: string;
     password?: string;
+    campaignInfluencers?: Array<CampaignInfluencer>;
     first_name?: string;
     last_name?: string;
     profileType?: CreateUserDto.ProfileTypeEnum;

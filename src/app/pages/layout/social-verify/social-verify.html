@@ -1,5 +1,5 @@
 <div class="card social-card">
-  <div class="section-label">Connected Accounts for {{ (user$ | async)?.creativeProfile?.last_name }}</div>
+  <div class="section-label">Connected Accounts for {{ displayName(user$ | async) }}</div>
   <div class="platform-list">
 
     <div class="platform-item">

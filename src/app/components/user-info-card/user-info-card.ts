@@ -1,13 +1,15 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 import { Store } from '@ngrx/store';
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { first, firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, map, Observable } from 'rxjs';
 import { Share } from '../../core/models/shares/shares.model';
 import { selectFilteredShares, selectTotals } from '../../store/shares/shares.selector';
 import { SharesActions } from '../../store/shares/shares.action';
 import { ActiveProfileService } from '../../core/services/activeprofile.service';
+import { hasBrandProfile, hasCreativeProfile } from '../../core/utils/user-display';
 
 @Component({
   selector: 'app-user-info-card',
@@ -18,6 +20,7 @@ import { ActiveProfileService } from '../../core/services/activeprofile.service'
 export class UserInfoCard {
   private store = inject(Store);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
   user$ = this.store.select(selectCurrentUser);
 
 
@@ -38,17 +41,17 @@ export class UserInfoCard {
 
   // Observable that emits whether both profiles exist
   hasBothProfiles$ = this.user$.pipe(
-    map((user) => !!user?.brandProfile && !!user?.creativeProfile),
+    map((user) => hasBrandProfile(user) && hasCreativeProfile(user)),
   );
 
   // Observable that emits whether only brand profile exists
   hasOnlyBrandProfile$ = this.user$.pipe(
-    map((user) => !!user?.brandProfile && !user?.creativeProfile),
+    map((user) => hasBrandProfile(user) && !hasCreativeProfile(user)),
   );
 
   // Observable that emits whether only creative profile exists
   hasOnlyCreativeProfile$ = this.user$.pipe(
-    map((user) => !user?.brandProfile && !!user?.creativeProfile),
+    map((user) => !hasBrandProfile(user) && hasCreativeProfile(user)),
   );
 
   setActiveProfile(profile: 'brand' | 'creative') {
@@ -68,26 +71,21 @@ export class UserInfoCard {
     this.totals$ = this.store.select(selectTotals);
     this.user$ = this.store.select(selectCurrentUser);
     this.loadShares();
-    this.user$.pipe(first()).subscribe(user => {
+    // Re-run profile selection on every user emission (not just the first):
+    // the login payload often lacks relations, which arrive later via refresh.
+    // init() keeps a stored choice whenever it is still valid, so manual
+    // toggles are never clobbered.
+    this.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       this.initializeActiveProfile(user);
     });
   }
 
 
   private initializeActiveProfile(user: any) {
-    const hasBrandProfile = !!user?.brandProfile;
-    const hasCreativeProfile = !!user?.creativeProfile;
-
-    if (hasBrandProfile && hasCreativeProfile) {
-      // Default to brand profile if both exist
-      this.profileService.setActiveProfile('brand');
-    } else if (hasBrandProfile) {
-      this.profileService.setActiveProfile('brand');
-    } else if (hasCreativeProfile) {
-      this.profileService.setActiveProfile('creative');
-    } else {
-      this.profileService.setActiveProfile('brand'); // or null if you prefer
-    }
+    // Single source of truth lives in the service: it re-evaluates the stored
+    // preference against this user's actual profiles (brand-only logins must
+    // not inherit a stale 'creative' choice and vice versa).
+    this.profileService.init(user);
   }
 
   async loadShares() {

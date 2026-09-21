@@ -64,7 +64,17 @@
       @for (campaign of campaigns; track campaign.id) {
       <article class="campaign-wide-card" (click)="openModal(campaign)">
         <div class="campaign-wide-left">
-          <div class="campaign-avatar">{{ campaign.name.charAt(0).toUpperCase() }}</div>
+          <div class="campaign-avatar-wrap">
+            <div class="campaign-avatar">{{ campaign.name.charAt(0).toUpperCase() }}</div>
+            @if (campaignImage(campaign)) {
+              <img
+                class="campaign-avatar-img"
+                [src]="campaignImage(campaign)"
+                [alt]="campaign.name"
+                (error)="onThumbError($event)"
+                loading="lazy" />
+            }
+          </div>
           <div class="campaign-wide-info">
             <div class="campaign-wide-name">{{ campaign.name }}</div>
           </div>

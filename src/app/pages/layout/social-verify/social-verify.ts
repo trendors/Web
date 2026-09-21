@@ -10,6 +10,7 @@ import { take } from 'rxjs/internal/operators/take';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
+import { userDisplayName } from '../../../core/utils/user-display';
 
 @Component({
   selector: 'app-social-verify',
@@ -32,6 +33,7 @@ export class SocialVerify {
   dmSent = false;
   user$ = this.store.select(selectCurrentUser);
   trendorsId: string | null = null;
+  protected readonly displayName = userDisplayName;
 
 
   async ngOnInit() {
