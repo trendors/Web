@@ -46,7 +46,9 @@ describe('InfluencerMetricsComponent', () => {
   });
 
   it('should fetch the campaign posts for the influencer', () => {
-    expect(postsApi.campaignInfluencerPostControllerFindByCampaign).toHaveBeenCalledWith(1);
+    expect(postsApi.campaignInfluencerPostControllerFindByCampaign).toHaveBeenCalledWith(1, 'body', false, {
+      transferCache: false,
+    });
     expect(component.loading()).toBe(false);
   });
 

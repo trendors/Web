@@ -17,7 +17,7 @@
   --accent-soft: rgba(184, 134, 11, 0.06);
 
   display: block;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* ── Page ── */
@@ -35,8 +35,8 @@
 }
 
 .page-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 28px;
+  font-family: var(--font-display);
+  font-size: var(--fs-page-title);
   font-weight: 400;
   color: var(--black);
   margin: 0 0 4px;
@@ -44,15 +44,15 @@
 }
 
 .page-sub {
-  font-size: 13px;
-  font-weight: 300;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--grey-mid);
   margin: 0;
 }
 
 .copy-btn{
  
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--grey-mid);
   border: 1px solid var(--divider);
   border-radius: 3px;
@@ -77,10 +77,10 @@
 
 /* ── Labels ── */
 .section-label {
-  font-size: 10px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   letter-spacing: 0.14em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--grey-mid);
   margin-bottom: 18px;
 }
@@ -102,16 +102,16 @@
 }
 
 .wallet-balance {
-  // font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 300;
+  // font-family: var(--font-display);
+  font-size: var(--fs-section);
+  font-weight: 400;
   color: var(--black);
   letter-spacing: -0.02em;
 }
 
 .wallet-tag {
-  font-size: 12px;
-  font-weight: 300;
+  font-size: var(--fs-caption);
+  font-weight: 400;
   color: var(--grey-mid);
 }
 
@@ -134,14 +134,14 @@
 
 .notice-icon {
   color: var(--gold);
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   flex-shrink: 0;
   margin-top: 1px;
 }
 
 .notice-text {
-  font-size: 12px;
-  font-weight: 300;
+  font-size: var(--fs-caption);
+  font-weight: 400;
   color: var(--grey-dark);
   line-height: 1.6;
 
@@ -175,10 +175,10 @@
 }
 
 .field-label {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--grey-dark);
   display: flex;
   align-items: center;
@@ -186,10 +186,10 @@
 }
 
 .field-badge {
-  font-size: 9px;
+  font-size: var(--fs-caption);
   font-weight: 400;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--grey-mid);
   border: 1px solid var(--divider);
   border-radius: 3px;
@@ -197,8 +197,8 @@
 }
 
 .field-hint {
-  font-size: 11px;
-  font-weight: 300;
+  font-size: var(--fs-caption);
+  font-weight: 400;
   color: var(--grey-mid);
   margin-top: 2px;
 }
@@ -210,9 +210,9 @@
   border: 1px solid var(--divider);
   border-radius: 6px;
   background: #fff;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 300;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--black);
   outline: none;
   transition: border-color 0.2s;
@@ -229,7 +229,7 @@
 
   &.pin-input {
     letter-spacing: 0.3em;
-    font-size: 16px;
+    font-size: var(--fs-body);
   }
 }
 
@@ -242,8 +242,8 @@
 .prefix {
   position: absolute;
   left: 14px;
-  font-size: 14px;
-  font-weight: 300;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--grey-mid);
   pointer-events: none;
 }
@@ -261,8 +261,8 @@
   color: var(--accent);
   border: 1px solid transparent; 
   border-radius: 6px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-secondary);
   font-weight: 500;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -298,8 +298,8 @@
   color: var(--black);
   border: 1px solid var(--divider);
   border-radius: 6px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-secondary);
   font-weight: 400;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -323,8 +323,8 @@
 .danger-label { color: var(--error); }
 
 .danger-text {
-  font-size: 13px;
-  font-weight: 300;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--grey-mid);
   margin: 0 0 18px;
   line-height: 1.6;
@@ -337,8 +337,8 @@
   color: var(--error);
   border: 1px solid rgba(192, 57, 43, 0.3);
   border-radius: 6px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-secondary);
   font-weight: 400;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -352,7 +352,7 @@
 
 .error-msg {
   margin-top: 12px;
-  font-size: 12px;
-  font-weight: 300;
+  font-size: var(--fs-caption);
+  font-weight: 400;
   color: var(--error);
 }

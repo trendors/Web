@@ -25,7 +25,7 @@
   --muted-foreground: #71717a;
 
   --font-body: 'DM Sans', sans-serif;
-  --font-heading: 'Space Grotesk', sans-serif;
+  --font-heading: var(--font-display);
 }
 
 * {
@@ -54,7 +54,7 @@
   border: 0;
   background: transparent;
   color: var(--muted-foreground);
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   cursor: pointer;
 }
 
@@ -91,14 +91,14 @@
 .name-row h1 {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: var(--fs-card-title);
   font-weight: 700;
 }
 
 .subtitle {
   margin: 2px 0 0;
   color: var(--muted-foreground);
-  font-size: 13px;
+  font-size: var(--fs-secondary);
 }
 
 .platform-row {
@@ -118,18 +118,18 @@
   border: 1px solid var(--border);
   border-radius: 5px;
   background: var(--input);
-  font-size: 13px;
+  font-size: var(--fs-secondary);
 }
 
 .platform-name {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   font-weight: 500;
 }
 
 .followers {
   margin-left: 4px;
   color: var(--muted-foreground);
-  font-size: 12px;
+  font-size: var(--fs-caption);
 }
 
 .status-badge {
@@ -138,7 +138,7 @@
   gap: 5px;
   padding: 3px 9px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 
@@ -173,14 +173,14 @@
 
 .summary-label {
   color: var(--muted-foreground);
-  font-size: 10px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 
 .summary-value {
   margin-top: 2px;
   font-family: var(--font-heading);
-  font-size: 17px;
+  font-size: var(--fs-card-title);
   font-weight: 700;
   text-align: center;
 }
@@ -204,7 +204,7 @@
 .completion-text {
   margin-top: 4px;
   color: var(--success);
-  font-size: 10px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 
@@ -221,7 +221,7 @@
   justify-content: center;
   gap: 4px;
   margin-top: 4px;
-  font-size: 10px;
+  font-size: var(--fs-caption);
 }
 
 .paid-text {
@@ -241,14 +241,14 @@
 .section-heading h2 {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 700;
 }
 
 .section-heading p {
   margin: 3px 0 0;
   color: var(--muted-foreground);
-  font-size: 13px;
+  font-size: var(--fs-secondary);
 }
 
 .content-list {
@@ -300,7 +300,7 @@
 
 .content-title {
   font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   font-weight: 600;
 }
 
@@ -309,7 +309,7 @@
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent);
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 
@@ -326,7 +326,7 @@
   gap: 4px;
   margin-left: 4px;
   color: var(--muted-foreground);
-  font-size: 11px;
+  font-size: var(--fs-caption);
 }
 
 .separator {
@@ -341,7 +341,7 @@
   border: 0;
   background: transparent;
   color: var(--info);
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   text-decoration: underline;
   cursor: pointer;
@@ -371,14 +371,14 @@
   justify-content: flex-end;
   gap: 3px;
   color: var(--muted-foreground);
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 
 .content-payout-value {
   margin-top: 2px;
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 700;
   line-height: 1.2;
 }
@@ -408,17 +408,17 @@
   align-items: center;
   gap: 5px;
   color: var(--muted-foreground);
-  font-size: 11px;
+  font-size: var(--fs-caption);
 }
 
 .metric-icon {
-  font-size: 12px;
+  font-size: var(--fs-caption);
 }
 
 .metric-value {
   margin-top: 2px;
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 700;
 }
 
@@ -448,14 +448,14 @@
 
 .empty-title {
   color: var(--foreground);
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   font-weight: 500;
 }
 
 .empty-state p {
   margin: 3px 0 0;
   color: var(--muted-foreground);
-  font-size: 13px;
+  font-size: var(--fs-secondary);
 }
 
 @media (max-width: 900px) {

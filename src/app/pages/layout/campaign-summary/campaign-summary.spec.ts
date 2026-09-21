@@ -80,12 +80,16 @@ describe('CampaignSummary', () => {
   });
 
   it('should load the roster for the routed campaign with posts populated', () => {
-    expect(rosterApi.campaignInfluencerControllerFindByCampaign).toHaveBeenCalledWith(1, true);
+    expect(rosterApi.campaignInfluencerControllerFindByCampaign).toHaveBeenCalledWith(1, true, 'body', false, {
+      transferCache: false,
+    });
     expect(component.influencers()).toHaveLength(5);
   });
 
   it('should populate posts and metrics from the posts endpoint', () => {
-    expect(postsApi.campaignInfluencerPostControllerFindByCampaign).toHaveBeenCalledWith(1);
+    expect(postsApi.campaignInfluencerPostControllerFindByCampaign).toHaveBeenCalledWith(1, 'body', false, {
+      transferCache: false,
+    });
     const ada = component.rosterInfluencers().find((i) => i.name === 'Ada Okafor');
     expect(ada?.posts).toHaveLength(3);
     expect(ada?.posts.find((p) => p.id === 301)?.latest?.views).toBe(12500);
@@ -225,5 +229,18 @@ describe('CampaignSummary when the posts endpoint never responds', () => {
     expect(component.influencers()).toHaveLength(5);
     expect(component.rosterInfluencers()).toHaveLength(4);
     expect(component.pendingInfluencers()).toHaveLength(1);
+  });
+
+  it('should parse hashtags from arrays, CSV and JSON strings', () => {
+    expect(component.hashTagList(mockCampaigns[0] as any)).toEqual(['#GlowSkin', '#Skincare']);
+    expect(component.hashTagList({ hash_tags: '#a,#b  #c' } as any)).toEqual(['#a', '#b', '#c']);
+    expect(component.hashTagList({ hash_tags: '["#x", "y"]' } as any)).toEqual(['#x', '#y']);
+    expect(component.hashTagList({ hash_tags: null } as any)).toEqual([]);
+  });
+
+  it('should detect campaign images and initials', () => {
+    expect(component.hasImage(mockCampaigns[0])).toBe(true);
+    expect(component.hasImage(mockCampaigns[1])).toBe(false);
+    expect(component.campaignInitial(mockCampaigns[1])).toBe('L');
   });
 });

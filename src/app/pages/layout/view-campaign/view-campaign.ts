@@ -1,83 +1,112 @@
-import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { AsyncPipe, CommonModule, DatePipe, NgClass, TitleCasePipe } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AsyncPipe, CommonModule } from '@angular/common';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
 import {
+  selectCampaignError,
   selectCampaignList,
   selectCampaignLoading,
-  selectCampaignError,
-  selectCampaignStats,
 } from '../../../store/campaign/campaign.selector';
-import { FormsModule } from '@angular/forms';
-import {
-  Campaign,
-  CampaignStatus,
-  FilterOption,
-} from '../../../core/models/campaign/campaign.model';
+import { CampaignInfluencerService } from '../../../core/api';
+import { Campaign } from '../../../core/models/campaign/campaign.model';
 import { environment } from '../../../../environments/environment';
-import { BehaviorSubject, combineLatest, map, Observable, Subject, takeUntil, tap } from 'rxjs';
+import { extractApiList } from '../../../core/utils/api-response';
+import { platformIconKey, platformLabel } from '../../../core/utils/platform-icon';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  forkJoin,
+  map,
+  Observable,
+  of,
+  Subject,
+  takeUntil,
+} from 'rxjs';
 
-export interface CampaignMetric {
-  val: string;
-  label: string;
+export interface CampaignCounts {
+  total: number;
+  active: number;
+  done: number;
 }
 
-export interface CampaignTimeline {
-  done: boolean;
-  text: string;
-}
+const ACTIVE_STATUSES = ['active', 'contracted'];
+const DONE_STATUSES = ['completed'];
 
 @Component({
   selector: 'app-view-campaign',
-  imports: [
-    AsyncPipe,
-    NgClass,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    CommonModule,
-    FormsModule,
-  ],
+  imports: [AsyncPipe, CommonModule],
   templateUrl: './view-campaign.html',
   styleUrl: './view-campaign.scss',
 })
 export class ViewCampaign implements OnInit, OnDestroy {
   private store = inject(Store);
   private router = inject(Router);
+  private campaignInfluencerApi = inject(CampaignInfluencerService);
   private destroy$ = new Subject<void>();
 
   campaigns$ = this.store.select(selectCampaignList);
   isLoading$ = this.store.select(selectCampaignLoading);
   error$ = this.store.select(selectCampaignError);
-  stats$ = this.store.select(selectCampaignStats);
   filteredCampaigns$ = new Observable<Campaign[]>();
+  platformOptions$: Observable<string[]> = of([]);
+  activeCount$: Observable<number> = of(0);
 
-  searchQuery = '';
-  activeFilter: FilterOption = 'all';
-  private searchQuery$ = new BehaviorSubject<string>('');
-  private activeFilter$ = new BehaviorSubject<FilterOption>('all');
-  selectedCampaign: Campaign | null = null;
-  isModalOpen = false;
+  private platformFilter$ = new BehaviorSubject<string>('all');
+  private sortDir$ = new BehaviorSubject<'newest' | 'oldest'>('newest');
 
-  filters: { label: string; value: FilterOption }[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Active', value: 'invite_only' },
-    { label: 'Ended', value: 'application' },
-  ];
+  counts = signal(new Map<number, CampaignCounts>());
+  enrolledTotal = computed(() =>
+    [...this.counts().values()].reduce((sum, counts) => sum + counts.total, 0),
+  );
+
+  platformFilter = 'all';
+  sortDir: 'newest' | 'oldest' = 'newest';
+  isPlatformOpen = false;
+
+  readonly iconKey = platformIconKey;
+  readonly platformName = platformLabel;
 
   constructor() {
+    this.platformOptions$ = this.campaigns$.pipe(
+      map((campaigns) => {
+        const seen = new Map<string, string>();
+        for (const campaign of campaigns) {
+          for (const platform of this.getPlatforms(campaign.platforms)) {
+            const key = platform.trim().toLowerCase();
+            if (key && !seen.has(key)) seen.set(key, platform);
+          }
+        }
+        return [...seen.keys()].sort();
+      }),
+    );
+    this.activeCount$ = this.campaigns$.pipe(
+      map((campaigns) => campaigns.filter((c) => this.isActiveCampaign(c)).length),
+    );
     this.filteredCampaigns$ = combineLatest([
       this.campaigns$,
-      this.searchQuery$,
-      this.activeFilter$,
-    ]).pipe(map(([campaigns, search, filter]) => this.filterCampaigns(campaigns, search, filter)));
+      this.platformFilter$,
+      this.sortDir$,
+    ]).pipe(
+      map(([campaigns, platform, sortDir]) => {
+        const wanted = platform.trim().toLowerCase();
+        const filtered =
+          wanted === 'all'
+            ? [...campaigns]
+            : campaigns.filter((campaign) =>
+                this.getPlatforms(campaign.platforms).some(
+                  (p) => p.trim().toLowerCase() === wanted,
+                ),
+              );
+        return filtered.sort((a, b) => {
+          const left = new Date(a.createdAt).getTime() || 0;
+          const right = new Date(b.createdAt).getTime() || 0;
+          return sortDir === 'newest' ? right - left : left - right;
+        });
+      }),
+    );
   }
 
   ngOnInit() {
@@ -89,6 +118,35 @@ export class ViewCampaign implements OnInit, OnDestroy {
           this.store.dispatch(CampaignActions.loadCampaigns({ userId: user.id }));
         }
       });
+
+    // Per-campaign influencer counts load independently: the list renders
+    // immediately and counts fill in on arrival (failures stay at zero).
+    this.campaigns$.pipe(takeUntil(this.destroy$)).subscribe((campaigns) => {
+      if (campaigns.length === 0) return;
+      forkJoin(
+        campaigns.map((campaign) =>
+          this.campaignInfluencerApi
+            .campaignInfluencerControllerFindByCampaign(campaign.id, false, 'body', false, {
+              transferCache: false,
+            })
+            .pipe(
+              map((res) => ({ id: campaign.id, rows: extractApiList(res) as any[] })),
+              catchError(() => of({ id: campaign.id, rows: [] as any[] })),
+            ),
+        ),
+      ).subscribe((results) => {
+        const next = new Map<number, CampaignCounts>();
+        for (const { id, rows } of results) {
+          const statuses = rows.map((row) => String(row?.status ?? '').trim().toLowerCase());
+          next.set(id, {
+            total: rows.length,
+            active: statuses.filter((s) => ACTIVE_STATUSES.includes(s)).length,
+            done: statuses.filter((s) => DONE_STATUSES.includes(s)).length,
+          });
+        }
+        this.counts.set(next);
+      });
+    });
   }
 
   ngOnDestroy() {
@@ -96,134 +154,84 @@ export class ViewCampaign implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  setFilter(value: FilterOption): void {
-    this.activeFilter = value;
-    this.activeFilter$.next(value);
+  setPlatform(value: string): void {
+    this.platformFilter = value;
+    this.platformFilter$.next(value);
+    this.isPlatformOpen = false;
   }
 
-  onSearchChange(value: string): void {
-    this.searchQuery = value;
-    this.searchQuery$.next(value);
+  togglePlatformDropdown(): void {
+    this.isPlatformOpen = !this.isPlatformOpen;
   }
 
-  private filterCampaigns(campaigns: Campaign[], search: string, filter: FilterOption): Campaign[] {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return campaigns.filter((campaign) => {
-      const matchesFilter = filter === 'all' || campaign.access === filter;
-      const matchesSearch =
-        !normalizedSearch ||
-        campaign.name.toLowerCase().includes(normalizedSearch) ||
-        campaign.description.toLowerCase().includes(normalizedSearch);
-
-      return matchesFilter && matchesSearch;
-    });
+  toggleSort(): void {
+    this.sortDir = this.sortDir === 'newest' ? 'oldest' : 'newest';
+    this.sortDir$.next(this.sortDir);
   }
 
-  getPlatforms(raw: string[]): string[] {
-    try {
-      return raw.flatMap((value) => {
-        const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed : [String(parsed)];
+  countsFor(campaignId: number): CampaignCounts {
+    return this.counts().get(campaignId) ?? { total: 0, active: 0, done: 0 };
+  }
+
+  isActiveCampaign(campaign: Campaign): boolean {
+    return campaign.access === 'open' || campaign.access === 'invite_only';
+  }
+
+  getPlatforms(raw: unknown): string[] {
+    const list = Array.isArray(raw) ? raw : [];
+    const out: string[] = [];
+    for (const value of list) {
+      if (typeof value !== 'string') continue;
+      const trimmed = value.trim();
+      if (!trimmed) continue;
+      if (trimmed.startsWith('[') || trimmed.startsWith('"')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            for (const entry of parsed) {
+              if (typeof entry === 'string' && entry.trim()) out.push(entry.trim());
+            }
+            continue;
+          }
+          if (typeof parsed === 'string' && parsed.trim()) {
+            out.push(parsed.trim());
+            continue;
+          }
+        } catch {
+          // not JSON, fall through
+        }
+      }
+      out.push(trimmed);
+    }
+    return out;
+  }
+
+  formatDateRange(campaign: Campaign): string {
+    const start = campaign.start_date ? new Date(campaign.start_date) : null;
+    const end = campaign.end_date ? new Date(campaign.end_date) : null;
+    const valid = (d: Date | null) => d instanceof Date && !Number.isNaN(d.getTime());
+    const fmt = (d: Date, withYear: boolean) =>
+      d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        ...(withYear ? { year: 'numeric' } : {}),
       });
-    } catch {
-      return raw;
-    }
+    if (valid(start) && valid(end)) return `${fmt(start!, false)} – ${fmt(end!, true)}`;
+    if (valid(start)) return `From ${fmt(start!, true)}`;
+    if (valid(end)) return `Until ${fmt(end!, true)}`;
+    return 'No dates set';
   }
 
-  openModal(campaign: Campaign): void {
-    this.router.navigate(['/home/view-campaign', campaign.id]);
-  }
-
-  closeModal(): void {
-    this.isModalOpen = false;
-    this.selectedCampaign = null;
-    document.body.style.overflow = '';
-  }
-
-  closeModalOutside(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.closeModal();
-    }
-  }
-
-  openNewCampaign(): void {
-    this.router.navigate(['/home/create-campaign']);
-  }
-
-  statusClass(access: string): string {
-    const map: Record<string, string> = {
-      open: 'status-active',
-      closed: 'status-ended',
-      draft: 'status-draft',
-      paused: 'status-paused',
-    };
-    return map[access] ?? 'status-draft';
-  }
-
-  capitalize(s: string): string {
-    return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
-  }
-
-  // Hardcoded placeholder click stats for open campaigns until real analytics are wired up.
-  getTotalClicks(campaign: Campaign): number {
-    // deterministic pseudo-random-ish number based on campaign id so it stays stable per render
-    return 1000 + ((campaign.id * 137) % 9000);
-  }
-
-  getTodayClicks(campaign: Campaign): number {
-    return 20 + ((campaign.id * 17) % 180);
-  }
-
-  // Hardcoded placeholder application stats until real applicant data is wired up.
-  getApplicantsCount(campaign: Campaign): number {
-    return 5 + ((campaign.id * 23) % 95);
-  }
-
-  getPendingReviewCount(campaign: Campaign): number {
-    const applicants = this.getApplicantsCount(campaign);
-    const pending = 1 + ((campaign.id * 11) % 20);
-    return Math.min(pending, applicants);
-  }
-
-  // Hardcoded placeholder negotiation stats until real negotiation data is wired up.
-  getNegotiationRound(campaign: Campaign): number {
-    return 1 + ((campaign.id * 7) % 4);
-  }
-
-  getAwaitingReplyCount(campaign: Campaign): number {
-    return 1 + ((campaign.id * 13) % 10);
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscape(): void {
-    if (this.isModalOpen) this.closeModal();
-  }
-
-  getBadgedClass(pkg: string): string {
-    return pkg?.toLowerCase() === 'paid' ? 'paid' : 'free';
-  }
-
-  createNew(): void {
-    this.router.navigate(['/home/create-campaign']);
-  }
-
-  trackById(_i: number, campaign: Campaign) {
-    return campaign.id;
-  }
-
-  /** First usable media URL, or null when the campaign has no (valid) files. */
   campaignImage(campaign: Campaign): string | null {
     const files = this.normalizeFiles((campaign as any)?.files);
-    for (const f of files) {
-      const url = this.resolveFileUrl(f);
+    for (const file of files) {
+      const url = this.resolveFileUrl(file);
       if (url) return url;
     }
     return null;
   }
 
   onThumbError(event: Event): void {
-    // Hide the broken <img> so the initial-letter avatar underneath shows.
     const img = event.target as HTMLImageElement | null;
     if (img) img.style.display = 'none';
   }
@@ -279,5 +287,13 @@ export class ViewCampaign implements OnInit, OnDestroy {
     const base = (environment.apiUrl ?? '').replace(/\/+$/, '');
     const path = trimmed.replace(/^\.?\//, '');
     return base ? `${base}/${path}` : `/${path}`;
+  }
+
+  openModal(campaign: Campaign): void {
+    this.router.navigate(['/home/view-campaign', campaign.id]);
+  }
+
+  trackById(_i: number, campaign: Campaign) {
+    return campaign.id;
   }
 }

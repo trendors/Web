@@ -26,21 +26,33 @@
   </div>
 
   <div class="drawer__section">
-    <p class="drawer__label">Campaign management</p>
-    <a class="drawer__item" routerLink="/campaigns" (click)="closeDrawer()">
-      <i class="ti ti-search" aria-hidden="true"></i>View campaigns
+    <a class="drawer__item" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeDrawer()">
+      <i class="ti ti-home" aria-hidden="true"></i>Home
     </a>
   </div>
 
+  @if (activeProfile() === 'brand') {
+  <div class="drawer__section">
+    <p class="drawer__label">Campaign management</p>
+    <a class="drawer__item" routerLink="/home/create-campaign" routerLinkActive="active" (click)="closeDrawer()">
+      <i class="ti ti-plus" aria-hidden="true"></i>Create campaign
+    </a>
+    <a class="drawer__item" routerLink="/home/view-campaign" routerLinkActive="active" (click)="closeDrawer()">
+      <i class="ti ti-search" aria-hidden="true"></i>View campaigns
+    </a>
+  </div>
+  }
+
+  @if (activeProfile() === 'creative') {
   <div class="drawer__section">
     <p class="drawer__label">Influencer hub</p>
-    <a class="drawer__item" routerLink="/shares" (click)="closeDrawer()">
+    <a class="drawer__item" routerLink="/home/shares" routerLinkActive="active" (click)="closeDrawer()">
       <i class="ti ti-chart-bar" aria-hidden="true"></i>My shares
     </a>
-    <a class="drawer__item" routerLink="/transactions" (click)="closeDrawer()">
+    <a class="drawer__item" routerLink="/home/transactions" routerLinkActive="active" (click)="closeDrawer()">
       <i class="ti ti-receipt" aria-hidden="true"></i>Transactions
     </a>
-    <a class="drawer__item drawer__item--highlight" routerLink="/invites" (click)="closeDrawer()">
+    <a class="drawer__item drawer__item--highlight" routerLink="/home/invites-and-applications" routerLinkActive="active" (click)="closeDrawer()">
       <i class="ti ti-mail" aria-hidden="true"></i>Invites and applications
 
       @if (pendingCount > 0) {
@@ -48,15 +60,19 @@
       }
     </a>
   </div>
+  }
 
   <div class="drawer__section">
     <p class="drawer__label">Account</p>
-    <a class="drawer__item" routerLink="/settings" (click)="closeDrawer()">
-      <i class="ti ti-settings" aria-hidden="true"></i>Settings
+    <a class="drawer__item" routerLink="/home/notifications" routerLinkActive="active" (click)="closeDrawer()">
+      <i class="ti ti-bell" aria-hidden="true"></i>Notifications
     </a>
-    <a class="drawer__item" routerLink="/logout" (click)="closeDrawer()">
+    <a class="drawer__item" routerLink="/home/profile" routerLinkActive="active" (click)="closeDrawer()">
+      <i class="ti ti-user" aria-hidden="true"></i>Profile
+    </a>
+    <button class="drawer__item drawer__logout" type="button" (click)="logout()">
       <i class="ti ti-logout" aria-hidden="true"></i>Logout
-    </a>
+    </button>
   </div>
 </aside>
 

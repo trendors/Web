@@ -12,6 +12,7 @@ import { CampaignActions } from '../../../store/campaign/campaign.action';
 import { environment } from '../../../../environments/environment';
 import { CampaignInfluencerPostService, CampaignInfluencerService } from '../../../core/api';
 import { extractApiList } from '../../../core/utils/api-response';
+import { platformIconKey, platformLabel } from '../../../core/utils/platform-icon';
 import { userDisplayName } from '../../../core/utils/user-display';
 import type { CampaignInfluencer } from '../../../core/api/model/campaignInfluencer';
 import type { CampaignInfluencerPost } from '../../../core/api/model/campaignInfluencerPost';
@@ -151,7 +152,9 @@ export class CampaignSummary implements OnInit, OnDestroy {
   /** Posts load independently of the roster and merge into rendered rows on arrival. */
   private loadPostsForCampaign(campaignId: number): void {
     this.influencerPostApi
-      .campaignInfluencerPostControllerFindByCampaign(campaignId)
+      .campaignInfluencerPostControllerFindByCampaign(campaignId, 'body', false, {
+        transferCache: false,
+      })
       .pipe(
         map((res) => this.groupPostsByAssignment(this.normalizePosts(res))),
         takeUntil(this.destroy$),
@@ -195,14 +198,7 @@ export class CampaignSummary implements OnInit, OnDestroy {
     ),
   );
 
-  // Hardcoded placeholder applicants until real applicant data is wired up.
-  applicants: Applicant[] = [
-    { id: 1, name: 'Ada Okafor', followerCount: 4200, tier: 'Nano', socialMedia: 'Instagram', status: 'pending' },
-    { id: 2, name: 'Chidi Umeh', followerCount: 18500, tier: 'Micro', socialMedia: 'TikTok', status: 'pending' },
-    { id: 3, name: 'Fatima Bello', followerCount: 75000, tier: 'Mid', socialMedia: 'X (Twitter)', status: 'accepted' },
-    { id: 4, name: 'Emeka Nwosu', followerCount: 250000, tier: 'Macro', socialMedia: 'YouTube', status: 'pending' },
-    { id: 5, name: 'Zainab Yusuf', followerCount: 9800, tier: 'Nano', socialMedia: 'Instagram', status: 'declined' },
-  ];
+
 
   // Active tab for switching between Influencers and Invites & Applications
   activeTab: 'influencers' | 'invites' = 'influencers';
@@ -322,7 +318,9 @@ export class CampaignSummary implements OnInit, OnDestroy {
   private rosterForCampaign(campaignId: number): Observable<CampaignInfluencer[]> {
     const fetch = (withPosts?: boolean) =>
       this.campaignInfluencerApi
-        .campaignInfluencerControllerFindByCampaign(campaignId, withPosts)
+        .campaignInfluencerControllerFindByCampaign(campaignId, withPosts, 'body', false, {
+          transferCache: false,
+        })
         .pipe(map((res) => this.normalizeRoster(res)));
     return fetch(true).pipe(
       catchError(() => fetch(undefined)),
@@ -561,17 +559,56 @@ export class CampaignSummary implements OnInit, OnDestroy {
 
   /** Normalize a platform name to an icon key (brand svg + readable label). */
   platformIcon(platform: string): string {
-    const key = (platform ?? '').trim().toLowerCase().replace(/[\s_-]+/g, '');
-    if (['twitter', 'x', 'xtwitter'].includes(key)) return 'x';
-    if (['instagram', 'ig'].includes(key)) return 'instagram';
-    if (['tiktok', 'tik-tok'].includes(key)) return 'tiktok';
-    if (['youtube', 'yt'].includes(key)) return 'youtube';
-    if (['facebook', 'fb', 'meta'].includes(key)) return 'facebook';
-    return 'other';
+    return platformIconKey(platform);
+  }
+
+  platformName(platform: string): string {
+    return platformLabel(platform);
   }
 
   campaignImage(campaign: Campaign): string {
-    return this.campaignImages(campaign)[0] ?? this.FALLBACK_IMAGE;
+    return this.campaignImages(campaign)[0] ?? '';
+  }
+
+  hasImage(campaign: Campaign): boolean {
+    return this.campaignImages(campaign).length > 0;
+  }
+
+  campaignInitial(campaign: Campaign): string {
+    return (campaign.name ?? '').trim().charAt(0).toUpperCase() || 'C';
+  }
+
+  /** Hashtags as a clean list whether the backend sends an array, CSV or JSON string. */
+  hashTagList(campaign: Campaign): string[] {
+    const raw: unknown = (campaign as unknown as Record<string, unknown>)['hash_tags'];
+    const out: string[] = [];
+    const pushText = (value: unknown): void => {
+      if (typeof value !== 'string') return;
+      for (const part of value.split(/[\s,]+/)) {
+        const tag = part.trim();
+        if (tag) out.push(tag.startsWith('#') ? tag : `#${tag}`);
+      }
+    };
+    if (Array.isArray(raw)) {
+      raw.forEach(pushText);
+      return [...new Set(out)];
+    }
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      if (trimmed.startsWith('[')) {
+        try {
+          const parsed: unknown = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(pushText);
+            return [...new Set(out)];
+          }
+        } catch {
+          // fall through to plain splitting
+        }
+      }
+      pushText(trimmed);
+    }
+    return [...new Set(out)];
   }
 
   readonly FALLBACK_IMAGE =

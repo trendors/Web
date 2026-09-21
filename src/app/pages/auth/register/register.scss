@@ -10,7 +10,7 @@
   grid-template-columns: 1fr 480px;
   min-height: 100vh;
   background: var(--bg);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   color: var(--text-black);
   -webkit-font-smoothing: antialiased;
 }
@@ -74,9 +74,9 @@
 }
 
 .brand-name {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-display);
   font-weight: 800;
-  font-size: 17px;
+  font-size: var(--fs-card-title);
   letter-spacing: -0.3px;
   color: var(--text-black);
 }
@@ -87,9 +87,9 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: var(--fs-caption);
   letter-spacing: 0.15em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--accent-dark);
   font-weight: 500;
   margin-bottom: 20px;
@@ -103,7 +103,7 @@
 }
 
 .hero-title {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(34px, 3.5vw, 52px);
   font-weight: 800;
   letter-spacing: -2px;
@@ -117,8 +117,8 @@
 }
 
 .hero-desc {
-  font-size: 14.5px;
-  font-weight: 300;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--text-secondary);
   line-height: 1.75;
   max-width: 380px;
@@ -131,15 +131,15 @@
 }
 
 .stat-value {
-  font-family: 'Syne', sans-serif;
-  font-size: 24px;
+  font-family: var(--font-display);
+  font-size: var(--fs-page-title);
   font-weight: 700;
   letter-spacing: -0.8px;
   color: var(--text-black);
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -160,8 +160,8 @@
 }
 
 .form-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 22px;
+  font-family: var(--font-display);
+  font-size: var(--fs-section);
   font-weight: 700;
   letter-spacing: -0.5px;
   color: var(--text-black);
@@ -169,9 +169,9 @@
 }
 
 .form-subtitle {
-  font-size: 13.5px;
+  font-size: var(--fs-secondary);
   color: var(--text-secondary);
-  font-weight: 300;
+  font-weight: 400;
 }
 
 // ── ERROR BANNER ──────────────────────────────
@@ -183,7 +183,7 @@
   border: 1px solid #fcc;
   border-radius: var(--radius);
   padding: 12px 14px;
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: #cc3333;
   margin-bottom: 20px;
 
@@ -203,10 +203,10 @@
   gap: 7px;
 
   label {
-    font-size: 11px;
+    font-size: var(--fs-caption);
     font-weight: 500;
     letter-spacing: 0.1em;
-    text-transform: uppercase;
+    text-transform: none;
     color: var(--text-muted);
     display: flex;
     align-items: center;
@@ -218,8 +218,8 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 12px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: var(--fs-secondary);
     color: var(--text-black);
     outline: none;
     width: 100%;
@@ -240,7 +240,7 @@
 }
 
 .optional {
-  font-size: 10px;
+  font-size: var(--fs-caption);
   font-weight: 400;
   letter-spacing: 0.04em;
   text-transform: none;
@@ -252,7 +252,7 @@
 }
 
 .field-error {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   color: #e05555;
   margin-top: -2px;
 }
@@ -280,8 +280,8 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 12px;
-  font-family: 'DM Sans', sans-serif;
+  font-size: var(--fs-caption);
+  font-family: 'Inter', sans-serif;
   padding: 4px;
   transition: color 0.2s;
 
@@ -300,8 +300,8 @@
   border: none;
   background: var(--text-black);
   color: var(--surface);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-secondary);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.22s ease;
@@ -337,7 +337,7 @@
 // ── SIGN IN LINK ──────────────────────────────
 .signin-link {
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: var(--text-muted);
   margin-top: 4px;
 
@@ -379,9 +379,9 @@
     &::before {
       content: 'trendors';
       display: block;
-      font-family: 'Syne', sans-serif;
+      font-family: var(--font-display);
       font-weight: 800;
-      font-size: 17px;
+      font-size: var(--fs-card-title);
       letter-spacing: -0.3px;
       color: var(--text-black);
       margin-bottom: 40px;

@@ -1,5 +1,5 @@
 i {
-  font-size: 24px;
+  font-size: var(--fs-page-title);
   color: #e1306c; /* any color you want */
 }
 
@@ -24,7 +24,7 @@ i {
 }
 
 .share-item span {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   margin-top: 8px;
   color: #1c1e21;
 }
@@ -68,7 +68,7 @@ margin-bottom: 5%;
 }
 
 .section-label {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: bold;
   color: #65676b;
   margin-bottom: 4px;
@@ -94,7 +94,7 @@ margin-bottom: 5%;
 
 .preview-text {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: #1c1e21;
   
   /* CLEANUP: Remove all truncation logic */
@@ -111,13 +111,13 @@ margin-bottom: 5%;
 }
 
 .version-label {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   color: #8a8d91;
 }
 
 .check-icon {
   color: #1877f2;
-  font-size: 20px;
+  font-size: var(--fs-section);
   width: 20px;
   height: 20px;
 }
@@ -125,7 +125,7 @@ margin-bottom: 5%;
 .trending-tags {
   margin-top: 8px;
   padding-top: 8px;
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   font-weight: 500;
   display: flex;
   flex-wrap: wrap;
@@ -143,7 +143,7 @@ margin-bottom: 5%;
   border-radius: 999px;
   background-color: #eef2ff;
   color: #1d1e21;
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 700;
   letter-spacing: 0.01em;
 }

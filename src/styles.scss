@@ -1,57 +1,80 @@
 @use '@angular/material' as mat;
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
+// Single bundled family: Inter Variable (see angular.json styles).
+// Fallback: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif.
+
+// ---------------------------------------------------------------------------
+// Single source of truth for tokens. (Previously split across two :root
+// blocks with duplicate/unused entries — consolidated here.)
+// ---------------------------------------------------------------------------
 :root {
-  --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;  // Headers
-  --font-body: 'Inter', -apple-system, sans-serif;                 // Body text
+  --font-sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--font-sans);  // Headers
+  --font-body: var(--font-sans);     // Body text
+
+  // Type scale (rem, html = 16px). Mobile-first defaults; desktop steps up
+  // in the media query below per the platform size guidance.
+  --fs-page-title: 1.75rem;    // 28px mobile H1 (range 20-34) / 600 / 1.2 / -0.02em
+  --fs-section: 1.25rem;       // 20px / 600 / 1.3
+  --fs-card-title: 1.0625rem;  // 17px / 500 / 1.35
+  --fs-body: 1rem;             // 16px / 400 / 1.5 (recommended body, no iOS zoom)
+  --fs-button: 1rem;           // 16px / 500
+  --fs-secondary: 0.875rem;    // 14px / 400
+  --fs-caption: 0.75rem;       // 12px / 500 (mobile caption range 11-12, never below 10px)
+
+  // Colors (consolidated — removed unused dark-mode/legacy tokens:
+  // --purple, --surface-hover, --text-primary, --text-secondary, --text-muted,
+  // --accent-dim, --border-light, --text-black, etc. Re-add only if actually used.)
+  --text: #111827;
+  --text2: #4a4a6a;
+  --muted: #6b7280;
+  --page-bg: #ffffff;
+  --bg: #f7f7f9;
+  --white: #ffffff;
+  --border: #e4e4ec;
+  --border-hover: #c4c4d8;
+  --accent: #ff6b35;
+  --accent-dark: #ff4f1a;
+  --accent-soft: rgba(255, 107, 53, 0.07);
+  --success: #16a34a;
+  --red: #ff4f4f;
+  --amber: #f5a623;
+  --blue: #5a9ef5;
+  --radius: 16px;
+  --radius-sm: 8px;
+
+  // Spacing
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;             // 16px side padding
+  --space-5: 1.25rem;          // 20px side padding
+  --space-6: 1.5rem;
+  --page-pad: clamp(1rem, 4vw, 1.25rem);
+
+  // Safe areas (0 on devices without a notch)
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  --sar: env(safe-area-inset-right);
 }
 
-
-
-* {
-  font-family: var(--font-body);
+// Desktop scale-up (desktop guidance: body 16-18, headings 24-48+,
+// captions/secondary 13-14, buttons 15-20).
+@media (min-width: 1024px) {
+  :root {
+    --fs-page-title: 2.5rem;   // 40px
+    --fs-section: 1.5rem;      // 24px
+    --fs-card-title: 1.125rem; // 18px
+    --fs-body: 1.0625rem;      // 17px
+    --fs-button: 1.0625rem;    // 17px
+    --fs-caption: 0.8125rem;   // 13px
+  }
 }
 
-h1, h2, h3, h4, .title, .heading {
-  font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  text-wrap: balance; // keeps headings from wrapping awkwardly
-  margin: 0;
-}
-
-h1, .title { font-size: var(--fs-h1); letter-spacing: -0.025em; }
-h2 { font-size: var(--fs-h2); }
-h3 { font-size: var(--fs-h3); letter-spacing: -0.015em; }
-h4 { font-size: var(--fs-h4); font-weight: 600; letter-spacing: -0.01em; }
-
-// ---- Body text ----
-p, span {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: var(--fs-body);
-  letter-spacing: -0.006em;
-  margin: 0;
-}
-
-// ---- Secondary / muted text ----
-.subtitle, .secondary, .date, .time {
-  font-family: var(--font-body);
-  font-weight: 500; // 300 often looks thin/blurry on mobile LCDs — 500 + muted color reads "light" without the fuzziness
-  font-size: var(--fs-secondary);
-  letter-spacing: 0.01em;
-  color: var(--text-muted, rgba(0, 0, 0, 0.56));
-  line-height: 1.4;
-}
-
-.category, .badge, .label {
-  font-family: var(--font-body);
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  font-size: 0.7rem;
-}
+// ---------------------------------------------------------------------------
+// Reset
+// ---------------------------------------------------------------------------
 *,
 *::before,
 *::after {
@@ -60,34 +83,147 @@ p, span {
   padding: 0;
 }
 
-:root {
-  --bg: #f7f7f9;
-  --white: #ffffff;
-  --border: #e4e4ec;
-  --border-hover: #c4c4d8;
-  --accent: #ff6b35;
-  --accent-dark: #ff4f1a;
-  --accent-soft: rgba(255, 107, 53, 0.07);
-  --purple: #7c5cbf;
-  --purple-soft: rgba(124, 92, 191, 0.07);
-  --text: #141420;
-  --text2: #4a4a6a;
-  --muted: #9898b8;
-  --success: #16a34a;
-  --surface-hover: #161616;
-  --border-light: #2a2a2a;
-  --text-primary: #f0f0f0;
-  --text-secondary: #888;
-  --text-muted: #444;
-  --accent-dim: rgba(200, 245, 90, 0.08);
-  --red: #ff4f4f;
-  --amber: #f5a623;
-  --blue: #5a9ef5;
-  --radius: 16px;
-  --radius-sm: 8px;
-  --text-black: #111111;
+// ---------------------------------------------------------------------------
+// Material theme
+// FIX 1: density 0 -> -2. Density 0 is Material's largest/default density —
+//   it inflates buttons, form fields, chips, etc. far past what a minimalist
+//   scale calls for. -2 is a good starting point; try -1..-3 to taste.
+// FIX 2: typography no longer takes a bare font-name string (which makes
+//   Material generate its own default M3 type scale — sized independently
+//   of --fs-*, and with higher specificity inside Material components).
+//   Feeding it our own family/weights keeps Material's internal type scale
+//   in the same family and weight system as the rest of the app.
+// ---------------------------------------------------------------------------
+html {
+  @include mat.theme((color: (primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: (
+        brand-family: 'Inter Variable',
+        bold-weight: 600,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
+      density: -2,
+    ));
+
+  font-size: 16px;
+  scroll-padding-top: 4rem;
 }
 
+// Bring Material's own M3 type-scale tokens down to match our scale, so
+// components (mat-button, mat-form-field, mat-card, etc.) that read these
+// tokens internally line up with the rest of the app instead of using M3
+// defaults. Extend this list if other Material components still look
+// mismatched after testing.
+html {
+  --mat-sys-body-large: var(--fs-body);
+  --mat-sys-body-medium: var(--fs-secondary);
+  --mat-sys-body-small: var(--fs-caption);
+  --mat-sys-title-large: var(--fs-section);
+  --mat-sys-title-medium: var(--fs-card-title);
+  --mat-sys-label-large: var(--fs-button);
+}
+
+* {
+  font-family: var(--font-body);
+}
+
+// ---------------------------------------------------------------------------
+// Headings
+// ---------------------------------------------------------------------------
+h1, h2, h3, h4, .title, .heading {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-wrap: balance; // keeps headings from wrapping awkwardly
+  margin: 0;
+}
+
+h1, .title { font-size: var(--fs-page-title); font-weight: 600; line-height: 1.2; }
+h2 { font-size: var(--fs-section); font-weight: 600; line-height: 1.3; }
+h3 { font-size: var(--fs-card-title); font-weight: 500; line-height: 1.35; }
+h4 { font-size: var(--fs-card-title); font-weight: 500; line-height: 1.35; }
+
+// ---------------------------------------------------------------------------
+// Body text
+// FIX 3: scoped instead of bare `p, span` — a bare `span` selector overrides
+//   font-size on Material's *internal* spans (button labels, form field
+//   text, badges), which is a separate source of "things look off" inside
+//   Material components. Use .body-text (or unclassed <p>) explicitly.
+// ---------------------------------------------------------------------------
+p:not([class]) {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.body-text {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+// ---------------------------------------------------------------------------
+// Secondary / muted text
+// ---------------------------------------------------------------------------
+.subtitle, .secondary, .date, .time {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-secondary);
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Captions
+// ---------------------------------------------------------------------------
+.caption {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+// Labels/badges: sentence case, never all-caps.
+.category, .badge, .label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-size: var(--fs-caption);
+  color: var(--muted);
+}
+
+// ---------------------------------------------------------------------------
+// Touch targets: buttons, inputs and list rows are at least 48px
+// ---------------------------------------------------------------------------
+button,
+input[type='button'],
+input[type='submit'] {
+  min-height: 48px;
+  font-family: var(--font-body);
+  font-size: var(--fs-button);
+  font-weight: 500;
+}
+
+input:not([type='checkbox']):not([type='radio']),
+textarea,
+select {
+  min-height: 48px;
+  font-size: 1rem; // 16px minimum: prevents iOS zoom on focus
+  font-family: var(--font-body);
+  scroll-margin-bottom: 6rem; // keep focused fields visible above the keyboard
+}
+
+// ---------------------------------------------------------------------------
+// Misc components
+// ---------------------------------------------------------------------------
 .card {
   background: var(--white);
   border: 1px solid var(--border);
@@ -95,40 +231,27 @@ p, span {
   padding: 22px;
 }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
-  min-height: 100vh;
-  line-height: 1.6;
-}
-
-html {
-  @include mat.theme((color: (primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
-      ),
-      typography: Roboto,
-      density: 0,
-    ));
-}
-
-
-
-body {
-  color-scheme: light;
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-  margin: 0;
-}
-
+// ---------------------------------------------------------------------------
+// Page / body
+// FIX 4: body was declared three separate times — merged into one block.
+// ---------------------------------------------------------------------------
 html,
 body {
   height: 100%;
 }
 
 body {
+  color-scheme: light;
+  background: var(--page-bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.5;
+  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+  padding-bottom: var(--sab);
 }

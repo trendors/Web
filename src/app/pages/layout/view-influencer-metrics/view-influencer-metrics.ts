@@ -140,7 +140,9 @@ export class InfluencerMetricsComponent implements OnInit, OnDestroy {
             return of(null);
         }
         return this.influencerPostApi
-            .campaignInfluencerPostControllerFindByCampaign(campaignId)
+            .campaignInfluencerPostControllerFindByCampaign(campaignId, 'body', false, {
+              transferCache: false,
+            })
             .pipe(
                 map((res) => this.normalizePosts(res)),
                 map((posts) =>

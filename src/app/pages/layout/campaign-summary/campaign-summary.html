@@ -4,7 +4,7 @@
       Back to campaigns
     </a>
 
-<div class="page">
+<div class="pag">
 @if (data$ | async; as data) {
 
   <main class="content">
@@ -12,7 +12,13 @@
     <!-- Campaign summary card -->
     <section class="campaign-card">
       <div class="campaign-card__top">
-        <img class="campaign-card__image" [src]="campaignImage(data)" [alt]="data.name" (error)="onImageError($event)" />
+        <div class="campaign-card__media">
+          @if (hasImage(data)) {
+            <img class="campaign-card__image" [src]="campaignImage(data)" [alt]="data.name" (error)="onImageError($event)" />
+          } @else {
+            <span class="campaign-card__initial">{{ campaignInitial(data) }}</span>
+          }
+        </div>
 
         <div class="campaign-card__info">
           <div class="campaign-card__heading">
@@ -25,9 +31,10 @@
 
           <p class="campaign-card__category">{{ accessLabel(data.access) }}@if (data.package) { · {{ data.package }} }</p>
 
-          <div class="campaign-card__meta">
+          <div class="campaign-card__platforms">
             @for (platform of getPlatforms(data.platforms); track platform) {
-              <span class="platform-icon" [title]="platform">
+              <span class="platform-chip" [title]="platformName(platform)">
+                <span class="platform-icon">
                 @switch (platformIcon(platform)) {
                   @case ('instagram') {
                     <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>
@@ -48,12 +55,16 @@
                     <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
                   }
                 }
+                </span>
+                <span class="platform-name">{{ platformName(platform) }}</span>
               </span>
-              <span class="meta-item platform-label">{{ platform }}</span>
             }
             @if (getPlatforms(data.platforms).length === 0) {
               <span class="meta-item">No platforms set</span>
             }
+          </div>
+
+          <div class="campaign-card__meta">
 
             <span class="meta-item">
               <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 2v4M16 2v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -67,20 +78,26 @@
             </span>
 
             @if (data.link) {
-              <span class="meta-item">
-                <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><rect x="2.5" y="6" width="19" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 6V4.5A1.5 1.5 0 0014.5 3h-5A1.5 1.5 0 008 4.5V6" stroke="currentColor" stroke-width="2"/></svg>
-                <a [href]="data.link" target="_blank" rel="noopener">{{ data.link }}</a>
-              </span>
+              <a class="meta-link" [href]="data.link" target="_blank" rel="noopener" [title]="data.link">
+                <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>{{ data.link }}</span>
+              </a>
             }
           </div>
-          @if (data.description) {
-            <p class="campaign-card__description">{{ data.description }}</p>
-          }
-          @if (data.hash_tags) {
-            <p class="campaign-card__hashtags">{{ data.hash_tags }}</p>
-          }
+       
         </div>
       </div>
+
+         @if (data.description) {
+            <p class="campaign-card__description">{{ data.description }}</p>
+          }
+          @if (hashTagList(data).length > 0) {
+            <div class="campaign-card__tags">
+              @for (tag of hashTagList(data); track tag) {
+                <span class="tag-chip">{{ tag }}</span>
+              }
+            </div>
+          }
 
       @if (campaignImages(data).length > 0) {
         <div class="campaign-card__gallery">
@@ -129,18 +146,18 @@
     <!-- Influencers table -->
     <section class="influencers" *ngIf="activeTab === 'influencers'">
       <div class="influencers__header">
-        <h2>Influencers <span class="influencers__count">({{ filteredInfluencers().length }} shown)</span></h2>
+        <h4>Influencers <span class="influencers__count">({{ filteredInfluencers().length }} shown)</span></h4>
 
         <div class="influencers__controls">
           <div class="filter-dropdown" [class.open]="isFilterOpen">
             <button class="filter-select" (click)="toggleFilter()">
               <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M4 5h16M7 12h10M10 19h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              {{ selectedFilter() || 'All Statuses' }}
+              {{ selectedFilter() || 'All' }}
               <svg viewBox="0 0 24 24" fill="none" width="12" height="12"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div class="filter-options" *ngIf="isFilterOpen">
-              <div class="filter-option" (click)="selectFilter('All Statuses')" [class.active]="selectedFilter() === 'All Statuses'">
-                All Statuses
+              <div class="filter-option" (click)="selectFilter('All')" [class.active]="selectedFilter() === 'All'">
+                All 
               </div>
               <div class="filter-option" (click)="selectFilter('Contracted')" [class.active]="selectedFilter() === 'Contracted'">
                 Contracted
@@ -283,18 +300,18 @@
     <!-- Invites & Applications table: pending pipeline (invited / applied) -->
     <section class="influencers" *ngIf="activeTab === 'invites'">
       <div class="influencers__header">
-        <h2>Invites & Applications <span class="influencers__count">({{ filteredPending().length }} shown)</span></h2>
+        <h4>Invites & Applications <span class="influencers__count">({{ filteredPending().length }} shown)</span></h4>
 
         <div class="influencers__controls">
           <div class="filter-dropdown" [class.open]="isPendingFilterOpen">
             <button class="filter-select" (click)="togglePendingFilter()">
               <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M4 5h16M7 12h10M10 19h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              {{ pendingFilter() || 'All Statuses' }}
+              {{ pendingFilter() || 'All' }}
               <svg viewBox="0 0 24 24" fill="none" width="12" height="12"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div class="filter-options" *ngIf="isPendingFilterOpen">
-              <div class="filter-option" (click)="selectPendingFilter('All Statuses')" [class.active]="pendingFilter() === 'All Statuses'">
-                All Statuses
+              <div class="filter-option" (click)="selectPendingFilter('All')" [class.active]="pendingFilter() === 'All'">
+                All
               </div>
               <div class="filter-option" (click)="selectPendingFilter('Invited')" [class.active]="pendingFilter() === 'Invited'">
                 Invited

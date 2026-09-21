@@ -20,12 +20,12 @@
 //  .name {
 //   display: block;
 //   font-weight: 600;
-//   font-size: 14px;
+//   font-size: var(--fs-secondary);
 //   color: #333;
 // }
 
 // .user-info .label {
-//   font-size: 12px;
+//   font-size: var(--fs-caption);
 //   color: #888;
 // }
 
@@ -49,14 +49,14 @@
 
 // .stat-value {
 //   font-weight: 700;
-//   font-size: 16px;
+//   font-size: var(--fs-body);
 //   color: var(--primary, #007bff);
 // }
 
 // .stat-label {
-//   font-size: 11px;
+//   font-size: var(--fs-caption);
 //   color: #777;
-//   text-transform: uppercase;
+//   text-transform: none;
 //   letter-spacing: 0.5px;
 // }
 
@@ -66,7 +66,7 @@
 //   background: #f8f9fa;
 //   border: 1px solid #ddd;
 //   border-radius: 6px;
-//   font-size: 12px;
+//   font-size: var(--fs-caption);
 //   font-weight: 600;
 //   cursor: pointer;
 //   transition: background 0.2s;
@@ -106,10 +106,10 @@
 //   /* Text Styling */
 //   color: white;
 //   /* Adjust based on your background */
-//   font-size: 14px;
+//   font-size: var(--fs-secondary);
 //   /* Size of the initials */
 //   font-weight: 600;
-//   text-transform: uppercase;
+//   text-transform: none;
 // }
 
 // .avatar-small.gray {
@@ -143,7 +143,7 @@
 //   gap: 4px;
 //   padding: 3px 10px;
 //   border-radius: $radius-pill;
-//   font-size: 11px;
+//   font-size: var(--fs-caption);
 //   font-weight: 500;
 //   letter-spacing: 0.01em;
 //   line-height: 1.4;
@@ -178,7 +178,7 @@
 //   border: 1px solid $hairline;
 //   border-radius: $radius-sm;
 //   background: $surface;
-//   font-size: 12px;
+//   font-size: var(--fs-caption);
 //   font-weight: 500;
 //   color: $muted;
 //   cursor: pointer;
@@ -277,7 +277,7 @@ $space-4: 16px;
   .name {
     display: block;
     font-weight: 600;
-    font-size: 14px;
+    font-size: var(--fs-secondary);
     color: $ink;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -285,7 +285,7 @@ $space-4: 16px;
   }
 
   .label {
-    font-size: 12px;
+    font-size: var(--fs-caption);
     color: $faint;
   }
 }
@@ -303,9 +303,9 @@ $space-4: 16px;
   justify-content: center;
 
   color: #fff;
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: none;
 
   &.gray {
     background: $surface-sunken;
@@ -319,7 +319,7 @@ $space-4: 16px;
   gap: $space-1;
   padding: 3px 10px;
   border-radius: $radius-pill;
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   letter-spacing: 0.01em;
   line-height: 1.4;
@@ -368,7 +368,7 @@ $space-4: 16px;
   background: transparent;
   padding: 5px 12px;
   border-radius: $radius-pill;
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   color: $muted;
   cursor: pointer;
@@ -438,13 +438,13 @@ $space-4: 16px;
 
 .stat-value {
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--fs-body);
   color: $ink;
   font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   color: $faint;
   // sentence case instead of tracked-out caps — quieter, still reads as metadata
 }
@@ -459,7 +459,7 @@ $space-4: 16px;
   background: $surface;
   border: 1px solid $hairline;
   border-radius: $radius-sm;
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: 600;
   color: $ink;
   cursor: pointer;

@@ -1,7 +1,7 @@
 :host {
   display: block;
   width: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
 }
 
 * {
@@ -16,10 +16,10 @@
 }
 
 .launcher__label {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 600;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  text-transform: none;
   color: #9aa39c;
   margin-bottom: 8px;
 }
@@ -38,7 +38,7 @@
 }
 
 .launcher__field-text {
-  font-size: 15px;
+  font-size: var(--fs-body);
   color: #111;
   font-weight: 500;
 
@@ -50,7 +50,7 @@
 
 .launcher__field-icon {
   color: #1D9E75;
-  font-size: 18px;
+  font-size: var(--fs-card-title);
 }
 
 /* --- overlay / sheet --- */
@@ -107,7 +107,7 @@
 }
 
 .sheet__title {
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: #111;
 }
@@ -119,7 +119,7 @@
   border: none;
   background: #f5f4ef;
   color: #666;
-  font-size: 16px;
+  font-size: var(--fs-body);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,7 +152,7 @@
   border-radius: 20px;
   border: 1px solid #e5e5e5;
   background: #fff;
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   font-weight: 500;
   color: #444;
   cursor: pointer;
@@ -188,8 +188,8 @@
 }
 
 .range-summary__label {
-  font-size: 10.5px;
-  text-transform: uppercase;
+  font-size: var(--fs-caption);
+  text-transform: none;
   letter-spacing: 0.03em;
   color: #9aa39c;
   margin-bottom: 3px;
@@ -197,7 +197,7 @@
 }
 
 .range-summary__value {
-  font-size: 14.5px;
+  font-size: var(--fs-secondary);
   font-weight: 600;
   color: #111;
 
@@ -209,13 +209,13 @@
 
 .range-summary__arrow {
   color: #ccc;
-  font-size: 16px;
+  font-size: var(--fs-body);
   flex-shrink: 0;
 }
 
 .duration-pill {
   text-align: center;
-  font-size: 12.5px;
+  font-size: var(--fs-caption);
   color: #3B6D11;
   background: #EAF3DE;
   border-radius: 8px;
@@ -237,7 +237,7 @@
 }
 
 .calendar__month {
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: #111;
 }
@@ -249,7 +249,7 @@
   background: #f5f4ef;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--fs-body);
   color: #444;
   display: flex;
   align-items: center;
@@ -267,7 +267,7 @@
 }
 
 .calendar__weekday {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   color: #aaa;
   text-align: center;
   padding: 4px 0 10px;
@@ -305,7 +305,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   color: #222;
   border-radius: 50%;
   border: none;
@@ -346,7 +346,7 @@
   color: #fff;
   border: none;
   border-radius: 12px;
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 600;
   cursor: pointer;
   font: inherit;

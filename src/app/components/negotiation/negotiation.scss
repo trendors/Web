@@ -21,16 +21,16 @@
 }
 
 .suitability-label {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   color: var(--muted-foreground);
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.3px;
 }
 
 .suitability-score {
-  font-family: var(--font-heading);
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: var(--fs-secondary);
   font-weight: 700;
   color: var(--success);
 }
@@ -65,13 +65,13 @@
 }
 
 .detail-label {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   color: var(--muted-foreground);
 }
 
 .detail-value {
-  font-family: var(--font-heading);
-  font-size: 13px;
+  font-family: var(--font-display);
+  font-size: var(--fs-secondary);
   font-weight: 600;
   color: var(--foreground);
 }
@@ -86,8 +86,8 @@
 }
 
 .negotiation-header .heading {
-  font-family: var(--font-heading);
-  font-size: 16px;
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
   font-weight: 700;
   color: var(--foreground);
 }
@@ -99,7 +99,7 @@
   gap: 4px;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 
@@ -129,10 +129,10 @@
 }
 
 .offer-label {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   color: var(--muted-foreground);
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.3px;
   margin-bottom: 6px;
 }
@@ -145,21 +145,21 @@
 }
 
 .offer-amount {
-  font-family: var(--font-heading);
-  font-size: 26px;
+  font-family: var(--font-display);
+  font-size: var(--fs-page-title);
   font-weight: 700;
   color: var(--foreground);
   letter-spacing: -0.5px;
 }
 
 .offer-type {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: var(--muted-foreground);
   font-weight: 400;
 }
 
 .offer-meta {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: var(--muted-foreground);
   margin-bottom: 16px;
 }
@@ -174,7 +174,7 @@
 .btn {
   height: 34px;
   padding: 0 14px;
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   font-weight: 500;
   border-radius: 8px;
   border: 1.5px solid transparent;
@@ -221,7 +221,7 @@
   gap: 8px;
   padding: 10px 12px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   font-weight: 500;
 }
 
@@ -256,8 +256,8 @@
 }
 
 .form-heading {
-  font-family: var(--font-heading);
-  font-size: 15px;
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--foreground);
   margin-bottom: 14px;
@@ -277,14 +277,14 @@
 }
 
 .form-label {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   color: var(--muted-foreground);
 }
 
 .form-input {
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--input);
@@ -311,7 +311,7 @@
 }
 
 .form-hint {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   color: var(--muted-foreground);
   font-style: italic;
 }
@@ -336,13 +336,13 @@
 }
 
 .summary-label {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: var(--muted-foreground);
 }
 
 .summary-value {
-  font-family: var(--font-heading);
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: var(--fs-secondary);
   font-weight: 600;
   color: var(--foreground);
 }
@@ -356,7 +356,7 @@
   flex: 1;
   height: 38px;
   padding: 0 16px;
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   font-weight: 600;
   border-radius: 8px;
   border: none;
@@ -373,7 +373,7 @@
 .btn-cancel {
   height: 38px;
   padding: 0 16px;
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   font-weight: 500;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -390,8 +390,8 @@
 
 /* Timeline */
 .heading {
-  font-family: var(--font-heading);
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: var(--fs-secondary);
   font-weight: 600;
   color: var(--foreground);
   margin-bottom: 10px;
@@ -437,7 +437,7 @@
   border-radius: 50%;
   background: var(--input);
   border: 1px solid var(--border);
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: 600;
   color: var(--foreground);
 }
@@ -449,7 +449,7 @@
 }
 
 .timeline-text {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: var(--foreground);
   white-space: nowrap;
   overflow: hidden;
@@ -457,8 +457,8 @@
 }
 
 .timeline-amount {
-  font-family: var(--font-heading);
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: var(--fs-secondary);
   font-weight: 600;
   color: var(--foreground);
   white-space: nowrap;

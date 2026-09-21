@@ -10,13 +10,13 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 13px;
+      font-size: var(--fs-secondary);
       font-weight: 500;
       color: #111;
       margin-bottom: 12px;
     }
  
-    .earnings__title i { font-size: 15px; color: #888; }
+    .earnings__title i { font-size: var(--fs-body); color: #888; }
  
     .earnings__stat {
     //   background: #f5f5f5;
@@ -26,13 +26,13 @@
     }
  
     .earnings__stat-value {
-      font-size: 22px;
+      font-size: var(--fs-section);
       font-weight: 500;
       color: #111;
     }
  
     .earnings__stat-label {
-      font-size: 11px;
+      font-size: var(--fs-caption);
       color: #888;
       margin-top: 2px;
     }
@@ -53,7 +53,7 @@
     }
  
     .earnings__hint {
-      font-size: 11px;
+      font-size: var(--fs-caption);
       color: #aaa;
       margin-top: 6px;
       margin-bottom: 12px;
@@ -72,7 +72,7 @@
       gap: 6px;
       width: 100%;
       padding: 8px;
-      font-size: 13px;
+      font-size: var(--fs-secondary);
       font-weight: 500;
       color: #111;
       background: transparent;
@@ -83,4 +83,4 @@
     }
  
     .earnings__withdraw-btn:hover { background: #f5f5f5; }
-    .earnings__withdraw-btn i { font-size: 15px; }
+    .earnings__withdraw-btn i { font-size: var(--fs-body); }

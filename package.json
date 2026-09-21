@@ -11,7 +11,8 @@
     "test": "ng test",
     "serve": "node dist/trendors-web-frontend/server/server.mjs",
     "serve:ssr:trendors-web-frontend": "node dist/trendors-web-frontend/server/server.mjs",
-"generate:sdk": "openapi-generator-cli generate --skip-validate-spec -i http://localhost:6001/api-json -g typescript-angular -o ./src/app/core/api --additional-properties=providedInRoot=true"  },
+    "generate:sdk": "openapi-generator-cli generate --skip-validate-spec -i http://localhost:6001/api-json -g typescript-angular -o ./src/app/core/api --additional-properties=providedInRoot=true"
+  },
   "prettier": {
     "printWidth": 100,
     "singleQuote": true,
@@ -42,6 +43,7 @@
     "@capacitor/cli": "^8.4.1",
     "@capacitor/core": "^8.4.1",
     "@capacitor/ios": "^8.4.1",
+    "@fontsource-variable/inter": "^5.3.0",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@ngrx/effects": "^21.0.1",

@@ -34,7 +34,7 @@
   }
 
   mat-card-title {
-    font-size: 18px;
+    font-size: var(--fs-card-title);
     font-weight: 600;
   }
 }

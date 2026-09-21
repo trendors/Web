@@ -30,7 +30,7 @@
 }
 
 .toast-icon {
-  font-size: 16px;
+  font-size: var(--fs-body);
   flex-shrink: 0;
   margin-top: 1px;
 
@@ -43,13 +43,13 @@
 .toast-body { flex: 1; min-width: 0; }
 
 .toast-title {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   font-weight: 500;
   line-height: 1.4;
 }
 
 .toast-desc {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   margin-top: 2px;
   opacity: 0.75;
   line-height: 1.4;
@@ -59,7 +59,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   opacity: 0.4;
   color: inherit;
   padding: 0;

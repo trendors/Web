@@ -25,7 +25,7 @@
   --muted-foreground: #71717a;
 
   --font-body: 'DM Sans', sans-serif;
-  --font-heading: 'Space Grotesk', sans-serif;
+  --font-heading: var(--font-display);
 }
 
 * {
@@ -54,12 +54,12 @@
   border: 0;
   background: transparent;
   color: var(--muted-foreground);
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   cursor: pointer;
 }
 
 .back-icon {
-  font-size: 16px;
+  font-size: var(--fs-body);
 }
 
 /* Influencer Card */
@@ -96,14 +96,14 @@
 .name-row h1 {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: var(--fs-card-title);
   font-weight: 700;
 }
 
 .subtitle {
   margin: 2px 0 0;
   color: var(--muted-foreground);
-  font-size: 13px;
+  font-size: var(--fs-secondary);
 }
 
 .total-followers {
@@ -117,13 +117,13 @@
 
 .followers-label {
   color: var(--muted-foreground);
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 
 .followers-value {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 700;
 }
 
@@ -158,18 +158,18 @@
 
 .social-followers {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 700;
 }
 
 .social-engagement {
   color: var(--muted-foreground);
-  font-size: 11px;
+  font-size: var(--fs-caption);
 }
 
 .social-handle {
   color: var(--muted-foreground);
-  font-size: 12px;
+  font-size: var(--fs-caption);
 }
 
 /* Content List */
@@ -220,7 +220,7 @@
 .content-title-row h3 {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   font-weight: 600;
 }
 
@@ -229,7 +229,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
-  font-size: 12px;
+  font-size: var(--fs-caption);
   color: var(--muted-foreground);
 }
 
@@ -248,13 +248,13 @@
 
 .stat-label {
   color: var(--muted-foreground);
-  font-size: 10px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 
 .stat-value {
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   font-weight: 600;
 }
 
@@ -268,13 +268,13 @@
 
 .payout-label {
   color: var(--muted-foreground);
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 
 .payout-value {
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 700;
 }
 
@@ -285,7 +285,7 @@
   gap: 4px;
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: var(--fs-caption);
   font-weight: 500;
 }
 

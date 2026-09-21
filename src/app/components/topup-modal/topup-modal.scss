@@ -40,14 +40,14 @@
 
 // .modal-title {
 //   font-family: 'Cormorant Garamond', serif;
-//   font-size: 22px;
+//   font-size: var(--fs-section);
 //   font-weight: 400;
 //   color: #0a0a0a;
 //   margin: 0 0 3px;
 // }
 
 // .modal-sub {
-//   font-size: 12px;
+//   font-size: var(--fs-caption);
 //   font-weight: 300;
 //   color: #888;
 //   margin: 0;
@@ -56,7 +56,7 @@
 // .close-btn {
 //   background: none;
 //   border: none;
-//   font-size: 13px;
+//   font-size: var(--fs-secondary);
 //   color: #aaa;
 //   cursor: pointer;
 //   padding: 2px 4px;
@@ -75,10 +75,10 @@
 
 // /* ── Labels ── */
 // .section-label {
-//   font-size: 10px;
+//   font-size: var(--fs-caption);
 //   font-weight: 500;
 //   letter-spacing: 0.14em;
-//   text-transform: uppercase;
+//   text-transform: none;
 //   color: #888;
 //   margin-bottom: 12px;
 // }
@@ -97,7 +97,7 @@
 //   border: 1px solid #ebebeb;
 //   border-radius: 8px;
 //   font-family: 'DM Sans', sans-serif;
-//   font-size: 13px;
+//   font-size: var(--fs-secondary);
 //   font-weight: 400;
 //   color: #333;
 //   cursor: pointer;
@@ -129,7 +129,7 @@
 // .currency-prefix {
 //   position: absolute;
 //   left: 14px;
-//   font-size: 15px;
+//   font-size: var(--fs-body);
 //   font-weight: 300;
 //   color: #888;
 //   pointer-events: none;
@@ -142,7 +142,7 @@
 //   border: 1px solid #ebebeb;
 //   border-radius: 8px;
 //   font-family: 'DM Sans', sans-serif;
-//   font-size: 16px;
+//   font-size: var(--fs-body);
 //   font-weight: 300;
 //   color: #0a0a0a;
 //   outline: none;
@@ -170,14 +170,14 @@
 // }
 
 // .summary-label {
-//   font-size: 12px;
+//   font-size: var(--fs-caption);
 //   font-weight: 300;
 //   color: #888;
 // }
 
 // .summary-amount {
 //   font-family: 'Cormorant Garamond', serif;
-//   font-size: 20px;
+//   font-size: var(--fs-section);
 //   font-weight: 500;
 //   color: #0a0a0a;
 //   letter-spacing: -0.01em;
@@ -193,7 +193,7 @@
 //   svg { stroke: #888; flex-shrink: 0; }
 
 //   span {
-//     font-size: 11px;
+//     font-size: var(--fs-caption);
 //     font-weight: 300;
 //     color: #888;
 
@@ -210,7 +210,7 @@
 //   border: none;
 //   border-radius: 8px;
 //   font-family: 'DM Sans', sans-serif;
-//   font-size: 14px;
+//   font-size: var(--fs-secondary);
 //   font-weight: 500;
 //   letter-spacing: 0.05em;
 //   cursor: pointer;
@@ -240,7 +240,7 @@
 
 // /* ── Error ── */
 // .error-msg {
-//   font-size: 12px;
+//   font-size: var(--fs-caption);
 //   font-weight: 300;
 //   color: #c0392b;
 //   margin: -12px 0 12px;
@@ -299,7 +299,7 @@ $font:    'Inter', sans-serif;
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: var(--fs-card-title);
   font-weight: 700;
   color: #0d0d0c;
   letter-spacing: -0.5px;
@@ -307,7 +307,7 @@ $font:    'Inter', sans-serif;
 }
 
 .modal-sub {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: #999896;
   margin: 3px 0 0;
 }
@@ -339,10 +339,10 @@ $font:    'Inter', sans-serif;
 
 // ── Section label ─────────────────────────────────────────────────────────
 .section-label {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 600;
   letter-spacing: 0.5px;
-  text-transform: uppercase;
+  text-transform: none;
   color: #b0aea6;
   margin-bottom: 10px;
 }
@@ -361,7 +361,7 @@ $font:    'Inter', sans-serif;
   border: 1.5px solid #e8e6e0;
   background: #faf9f7;
   color: #0d0d0c;
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   font-weight: 500;
   font-family: $font;
   cursor: pointer;
@@ -403,7 +403,7 @@ $font:    'Inter', sans-serif;
 
 .currency-prefix {
   padding: 0 4px 0 14px;
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: #0d0d0c;
   flex-shrink: 0;
@@ -414,7 +414,7 @@ $font:    'Inter', sans-serif;
   height: 100%;
   border: none;
   background: transparent;
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 500;
   font-family: $font;
   color: #0d0d0c;
@@ -444,12 +444,12 @@ $font:    'Inter', sans-serif;
 }
 
 .summary-label {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: #999896;
 }
 
 .summary-amount {
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 700;
   color: #0d0d0c;
   letter-spacing: -0.3px;
@@ -457,7 +457,7 @@ $font:    'Inter', sans-serif;
 
 // ── Error ─────────────────────────────────────────────────────────────────
 .error-msg {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   color: #c0392b;
   margin: 6px 0 0;
   padding-left: 2px;
@@ -468,7 +468,7 @@ $font:    'Inter', sans-serif;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-caption);
   color: #999896;
   margin-bottom: 16px;
 
@@ -483,7 +483,7 @@ $font:    'Inter', sans-serif;
   border-radius: $radius;
   background: $amber;
   color: #1a1200;
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 700;
   font-family: $font;
   letter-spacing: -0.1px;

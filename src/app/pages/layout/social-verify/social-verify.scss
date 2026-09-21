@@ -1,7 +1,7 @@
 /* ── Shared vars inherited from parent :host ── */
 .page-sub {
-  font-size: 13px;
-  font-weight: 300;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--grey-mid);
   margin: 0;
 }
@@ -23,8 +23,8 @@
 }
 
 .card-sub {
-  font-size: 13px;
-  font-weight: 300;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--grey-mid);
   margin: -10px 0 20px;
   line-height: 1.6;
@@ -85,20 +85,20 @@
 }
 
 .platform-name {
-  font-size: 14px;
+  font-size: var(--fs-secondary);
   font-weight: 400;
   color: var(--grey-dark);
 }
 
 .platform-handle {
-  font-size: 12px;
-  font-weight: 300;
+  font-size: var(--fs-caption);
+  font-weight: 400;
   color: var(--gold);
 }
 
 .platform-status {
-  font-size: 12px;
-  font-weight: 300;
+  font-size: var(--fs-caption);
+  font-weight: 400;
   color: var(--grey-mid);
 }
 
@@ -112,7 +112,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   letter-spacing: 0.05em;
   color: #2d9f6e;
@@ -130,8 +130,8 @@
   color: var(--accent);
   border: none;
   border-radius: 6px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-caption);
   font-weight: 500;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -147,8 +147,8 @@
   color: var(--grey-mid);
   border: 1px solid var(--divider);
   border-radius: 6px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-caption);
   font-weight: 400;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
@@ -183,7 +183,7 @@
 }
 
 .verify-title {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   font-weight: 500;
   color: var(--black);
   letter-spacing: 0.02em;
@@ -192,7 +192,7 @@
 .close-btn {
   background: none;
   border: none;
-  font-size: 11px;
+  font-size: var(--fs-caption);
   color: var(--grey-mid);
   cursor: pointer;
   padding: 4px;
@@ -218,8 +218,8 @@
   background: var(--grey-light);
   border: 1px solid var(--divider);
   border-radius: 6px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-caption);
   font-weight: 400;
   color: var(--grey-mid);
   cursor: pointer;
@@ -245,8 +245,8 @@
 }
 
 .method-desc {
-  font-size: 13px;
-  font-weight: 300;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--grey-mid);
   margin: 0 0 16px;
   line-height: 1.6;
@@ -271,15 +271,15 @@
 }
 
 .warning-title {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   color: var(--error);
   margin: 0 0 4px;
 }
 
 .warning-body {
-  font-size: 12px;
-  font-weight: 300;
+  font-size: var(--fs-caption);
+  font-weight: 400;
   color: var(--grey-dark);
   margin: 0;
   line-height: 1.6;
@@ -298,10 +298,10 @@
 }
 
 .field-label {
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--grey-dark);
   display: flex;
   align-items: center;
@@ -309,10 +309,10 @@
 }
 
 .field-badge {
-  font-size: 9px;
+  font-size: var(--fs-caption);
   font-weight: 400;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--grey-mid);
   border: 1px solid var(--divider);
   border-radius: 3px;
@@ -320,8 +320,8 @@
 }
 
 .field-hint {
-  font-size: 11px;
-  font-weight: 300;
+  font-size: var(--fs-caption);
+  font-weight: 400;
   color: var(--grey-mid);
 }
 
@@ -332,9 +332,9 @@
   border: 1px solid var(--divider);
   border-radius: 6px;
   background: #fff;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 300;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--black);
   outline: none;
   transition: border-color 0.2s;
@@ -353,8 +353,8 @@
 .prefix {
   position: absolute;
   left: 14px;
-  font-size: 14px;
-  font-weight: 300;
+  font-size: var(--fs-secondary);
+  font-weight: 400;
   color: var(--grey-mid);
   pointer-events: none;
 }
@@ -371,8 +371,8 @@
   color: var(--accent);
   border: none;
   border-radius: 6px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-secondary);
   font-weight: 500;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -393,8 +393,8 @@
   color: var(--black);
   border: 1px solid var(--divider);
   border-radius: 6px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-secondary);
   font-weight: 400;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
@@ -417,8 +417,8 @@
   svg { stroke: var(--gold); flex-shrink: 0; margin-top: 1px; }
 
   span {
-    font-size: 12px;
-    font-weight: 300;
+    font-size: var(--fs-caption);
+    font-weight: 400;
     color: var(--grey-dark);
     line-height: 1.6;
   }
@@ -435,7 +435,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--fs-caption);
   font-weight: 400;
   padding: 4px 10px;
   border-radius: 20px;
@@ -461,10 +461,10 @@
 }
 
 .status-chip {
-  font-size: 9px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   letter-spacing: 0.07em;
-  text-transform: uppercase;
+  text-transform: none;
   padding: 2px 7px;
   border-radius: 3px;
 }
@@ -483,14 +483,14 @@
 
 /* ── Followers ── */
 .platform-followers {
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: 400;
   color: var(--grey-mid);
   margin-top: 1px;
 
   &::before {
     content: '▲ ';
-    font-size: 8px;
+    font-size: var(--fs-caption);
     color: #2d9f6e;
   }
 }

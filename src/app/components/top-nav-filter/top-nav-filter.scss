@@ -21,7 +21,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 500;
   color: #111;
   text-decoration: none;
@@ -29,13 +29,13 @@
 }
 
 .topbar__brand i {
-  font-size: 20px;
+  font-size: var(--fs-section);
   color: #1D9E75;
 }
 
 
 .topbar__search i {
-  font-size: 16px;
+  font-size: var(--fs-body);
   color: #888;
   flex-shrink: 0;
 }
@@ -44,7 +44,7 @@
   border: none;
   background: transparent;
   outline: none;
-  font-size: 13px;
+  font-size: var(--fs-secondary);
   color: #111;
   width: 100%;
 }
@@ -68,7 +68,7 @@
 }
 
 .topbar__notif i {
-  font-size: 20px;
+  font-size: var(--fs-section);
   color: #555;
 }
 
@@ -89,14 +89,14 @@
   gap: 5px;
   background: #EAF3DE;
   color: #3B6D11;
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   padding: 5px 10px;
   border-radius: 20px;
 }
 
 .topbar__earn-pill i {
-  font-size: 13px;
+  font-size: var(--fs-secondary);
 }
 
 .topbar__avatar {
@@ -105,7 +105,7 @@
   border-radius: 50%;
   background: #E6F1FB;
   color: #185FA5;
-  font-size: 12px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -132,7 +132,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 19px;
+  font-size: var(--fs-section);
   color: var(--ink-soft, #54615a);
 }
 
@@ -150,7 +150,7 @@
   border-radius: 8px;
   background: var(--gold, #b8860b);
   color: #fff;
-  font-size: 9.5px;
+  font-size: var(--fs-caption);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -205,9 +205,9 @@
 }
 
 .drawer__title {
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-display);
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--fs-body);
   color: var(--ink, #14231c);
 }
 
@@ -228,8 +228,8 @@
 }
 
 .drawer__label {
-  font-size: 10.5px;
-  text-transform: uppercase;
+  font-size: var(--fs-caption);
+  text-transform: none;
   letter-spacing: 0.04em;
   color: var(--ink-faint, #9aa39c);
   margin: 0 0 8px;
@@ -239,15 +239,16 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 48px;
   padding: 9px 8px;
   border-radius: 8px;
-  font-size: 13.5px;
+  font-size: var(--fs-secondary);
   color: var(--ink-soft, #54615a);
   text-decoration: none;
 }
 
 .drawer__item i {
-  font-size: 16px;
+  font-size: var(--fs-body);
   width: 18px;
   text-align: center;
   flex-shrink: 0;
@@ -255,6 +256,20 @@
 
 .drawer__item:hover {
   background: var(--bg, #f5f4ef);
+}
+
+.drawer__item.active {
+  background: var(--bg, #f5f4ef);
+  font-weight: 600;
+}
+
+button.drawer__item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
 }
 
 .drawer__item--highlight {
@@ -266,7 +281,7 @@
   margin-left: auto;
   background: var(--gold, #b8860b);
   color: #fff;
-  font-size: 10px;
+  font-size: var(--fs-caption);
   font-weight: 600;
   padding: 1px 7px;
   border-radius: 10px;
@@ -310,6 +325,6 @@
   }
 
   .mobile-menu-button i {
-    font-size: 20px;
+    font-size: var(--fs-section);
   }
 }
