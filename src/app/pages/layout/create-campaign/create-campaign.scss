@@ -918,6 +918,19 @@ select {
   }
 }
 
+.checkout-btn--ghost {
+  background: transparent;
+  color: var(--text-secondary, #6b7280);
+  box-shadow: none;
+  border: 1px solid var(--border);
+
+  &:hover:not(:disabled) {
+    transform: none;
+    box-shadow: none;
+    background: var(--surface-hover, #f6f7f8);
+  }
+}
+
 .rv-section {
   margin-bottom: 22px;
 }

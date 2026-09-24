@@ -44,6 +44,7 @@ export * from './loadMoreDto';
 export * from './loadMoreOptions';
 export * from './paginatedResponseDto';
 export * from './paginationDataDto';
+export * from './payFromWalletDto';
 export * from './postMetrics';
 export * from './recordPostMetricsDto';
 export * from './resetPasswordDto';

@@ -78,6 +78,7 @@ model/loadMoreOptions.ts
 model/models.ts
 model/paginatedResponseDto.ts
 model/paginationDataDto.ts
+model/payFromWalletDto.ts
 model/postMetrics.ts
 model/recordPostMetricsDto.ts
 model/resetPasswordDto.ts

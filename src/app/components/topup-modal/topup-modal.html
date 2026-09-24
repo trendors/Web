@@ -64,6 +64,14 @@
     <p class="error-msg">{{ errorMsg() }}</p>
   }
 
+  <!-- Success status -->
+  @if (successMsg()) {
+    <div class="success-panel" role="status">
+      <span class="success-icon">✓</span>
+      <p class="success-msg">{{ successMsg() }}</p>
+    </div>
+  }
+
   <div class="modal-divider"></div>
 
   <!-- Secure notice -->
@@ -76,6 +84,28 @@
   </div>
 
   <!-- Pay Button -->
+<!-- Pay Button / Confirmation / Completed -->
+@if (successMsg()) {
+  <button class="btn-pay" type="button" disabled>
+    <span>✓</span>
+    Completed
+  </button>
+}
+ @else if (awaitingConfirmation()) {
+  <button
+    class="btn-pay"
+     (click)="confirmCompletion()" 
+    [disabled]="isProcessing()"
+    type="button">
+    @if (isProcessing()) {
+      <span class="spinner"></span>
+      Confirming...
+    } @else {
+      I've completed payment
+    }
+  </button>
+}
+ @else {
   <button
     class="btn-pay"
     (click)="initiatePayment()"
@@ -88,5 +118,6 @@
       Pay ₦{{ finalAmount > 0 ? (finalAmount | number) : '—' }}
     }
   </button>
+}
 
 </div>

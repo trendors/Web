@@ -13,7 +13,7 @@
 
   <div class="wallet-balance-row">
     <div class="wallet-info">
-      <span class="wallet-balance"> {{ (wallet$ | async)?.balance || 0 }} NGN</span>
+  {{ (wallet$ | async)?.balance | number:'1.0-2' }} NGN
       <span class="wallet-tag">Available balance</span>
     </div>
     <div class="wallet-actions">
@@ -27,17 +27,18 @@
     (topupSuccess)="onTopupSuccess($event)" />
   }
 
-  @if((wallet$ | async)?.balance < 5000){ <div class="notice">
+  <!-- @if((wallet$ | async)?.balance < 5000){ <div class="notice">
     <span class="notice-icon">◈</span>
     <span class="notice-text">
       Withdrawals are available once your balance reaches <strong>₦5,000.00</strong>.
     </span>
 </div>
-}
+} -->
 <div class="inner-divider"></div>
 
 <div class="section-label" style="margin-bottom: 14px;">Withdrawal Account</div>
 
+@if (savedBankDetails$ | async; as bankInfo) {
 <form [formGroup]="bankForm">
   <div class="field">
     <label class="field-label">Account Number</label>
@@ -87,7 +88,7 @@
     Update Withdrawal Account
   </button>
 </form>
-
+}
 
 </div>
 

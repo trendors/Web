@@ -1,4 +1,4 @@
-import { AsyncPipe, CurrencyPipe } from '@angular/common';
+import { AsyncPipe, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import {
   AbstractControl,
@@ -31,6 +31,7 @@ import { Alert } from "../../../components/alert/alert";
 import { ToastService } from '../../../components/toast/toast.service';
 import { SocialVerify } from "../social-verify/social-verify";
 import { UpdateUserDto, User } from '../../../core/api';
+import { WalletService as WalletApiService } from '../../../core/api';
 import { userFirstName, userLastName } from '../../../core/utils/user-display';
 
 @Component({
@@ -46,7 +47,8 @@ import { userFirstName, userLastName } from '../../../core/utils/user-display';
     CurrencyPipe,
     LoaderComponent,
     Alert,
-    SocialVerify
+    SocialVerify,
+    DecimalPipe,
 ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
@@ -55,6 +57,7 @@ export class Profile implements OnInit {
   private fb = inject(FormBuilder);
   private store = inject(Store);
   private walletService = inject(WalletService);
+  private walletApi = inject(WalletApiService);
   private toast = inject(ToastService);
 
   user$ = this.store.select(selectCurrentUser);
@@ -178,18 +181,22 @@ export class Profile implements OnInit {
     this.showDropdown = false;
   }
 
-  wallet$ = this.user$.pipe(
-    take(1),
-    switchMap(user =>
-      user
-        ? this.walletService.getUserWallet(user.trendors_id as string).pipe(
-          map((res: any) => res.data ?? { balance: 0 }),
-          catchError(() => of({ balance: 0 })),
-          shareReplay(1)
-        )
-        : of({ balance: 0 })
-    )
-  );
+  wallet$ = this.buildWallet$();
+
+  private buildWallet$(): Observable<{ balance: number }> {
+    return this.user$.pipe(
+      take(1),
+      switchMap((user) =>
+        user?.trendors_id
+          ? this.walletApi.walletControllerGetUserWallet(String(user.trendors_id)).pipe(
+              map((res: any) => res?.data ?? { balance: 0 }),
+              catchError(() => of({ balance: 0 })),
+              shareReplay(1),
+            )
+          : of({ balance: 0 }),
+      ),
+    );
+  }
   user: User | null = null;
 
 
@@ -197,10 +204,9 @@ export class Profile implements OnInit {
  
 
 
-  onTopupSuccess(amount: number): void {
-    // this.walletBalance += amount; 
-    // your store dispatch here e.g:
-    // this.store.dispatch(WalletActions.topupSuccess({ amount }))
+  onTopupSuccess(data:any): void {
+    // The modal already credited the wallet; reload so the new balance shows.
+    this.wallet$ = this.buildWallet$();
   }
 
   getAccountDetails() {

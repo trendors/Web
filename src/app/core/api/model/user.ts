@@ -18,6 +18,8 @@ export interface User {
      * Unique identifier for the entity
      */
     id?: number;
+    first_name?: string;
+    last_name?: string;
     user_name?: string;
     trendors_id?: string;
     phone_number?: string;

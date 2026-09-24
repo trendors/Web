@@ -11,13 +11,13 @@ import { CampaignInfluencer } from './campaignInfluencer';
 
 
 export interface CreateUserDto { 
+    first_name?: string;
+    last_name?: string;
     user_name?: string;
     phone_number?: string;
     email?: string;
     password?: string;
     campaignInfluencers?: Array<CampaignInfluencer>;
-    first_name?: string;
-    last_name?: string;
     profileType?: CreateUserDto.ProfileTypeEnum;
 }
 export namespace CreateUserDto {

@@ -4,9 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
-import { Observable, take, firstValueFrom, debounceTime, distinctUntilChanged, switchMap, catchError, of, Subject } from 'rxjs';
+import { Observable, take, firstValueFrom, debounceTime, distinctUntilChanged, switchMap, catchError, of, Subject, timeout } from 'rxjs';
 import { Alert } from '../../../components/alert/alert';
 import { Actions, ofType } from '@ngrx/effects';
+import { ToastService } from '../../../components/toast/toast.service';
 import { Invitation } from '../../../core/models/invitation/invitation.model';
 import {
   selectActiveMembers,
@@ -16,7 +17,7 @@ import {
 import { InvitationActions } from '../../../store/invitation/invitation.action';
 import { Calender } from "../../../components/calender/calender";
 import { TopupModalComponent } from "../../../components/topup-modal/topup-modal";
-import { CreateInvitationDto, InfluencerProfilesService, InvitationsService } from '../../../core/api';
+import { CreateInvitationDto, InfluencerProfilesService, InvitationsService, WalletService as WalletApiService } from '../../../core/api';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIcon } from "@angular/material/icon";
 
@@ -66,8 +67,8 @@ export class CreateCampaign {
   steps: Step[] = [
     { label: 'Basics', sub: 'Name, dates, link' },
     { label: 'Plan & Access', sub: 'Subscription & sharers' },
-    { label: 'Media', sub: 'Media ' },
-    { label: 'Platforms', sub: 'Select platforms' },
+    { label: 'Platforms & Media', sub: 'Platforms and media' },
+    { label: 'Deliverables', sub: 'Content creators must post' },
     { label: 'Review', sub: 'Confirm & launch' },
   ];
 
@@ -129,15 +130,125 @@ export class CreateCampaign {
     this.selectedAccess = id;
   }
 
-  onTopupSuccess(amount: number): void {
+  onTopupSuccess(): void {
+    // Refresh the balance shown in the payment alert.
+    void this.refreshWalletBalance();
+  }
+
+  /** Shortfall shown next to the top-up shortcut. */
+  get topupShortfall(): number {
+    const balance = this.walletBalance() ?? 0;
+    return Math.max(0, Math.ceil((this.computedBudget - balance) / 100) * 100);
+  }
+
+  openPayAlert(): void {
+    this.payError.set('');
+    this.showPayAlert.set(true);
+    void this.refreshWalletBalance();
+  }
+
+  /** Only open campaigns take payment up front; other access types create directly. */
+  onCheckout(): void {
+    if (this.selectedAccess === 'open') {
+      this.openPayAlert();
+    } else {
+      void this.createCampaign();
+    }
+  }
+
+  closePayAlert(): void {
+    if (this.isSubmitting()) return;
+    this.showPayAlert.set(false);
+  }
+
+  private async refreshWalletBalance(): Promise<void> {
+    try {
+      const user = await firstValueFrom(this.user$);
+      if (!user?.trendors_id) {
+        this.walletBalance.set(null);
+        return;
+      }
+      this.walletLoading.set(true);
+      const res: any = await firstValueFrom(
+        this.walletApi.walletControllerGetUserWallet(String(user.trendors_id)).pipe(
+          timeout(20000),
+          catchError(() => of(null)),
+        ),
+      );
+      const balance = Number(res?.data?.balance ?? res?.balance);
+      this.walletBalance.set(Number.isFinite(balance) ? balance : null);
+    } catch {
+      this.walletBalance.set(null);
+    } finally {
+      this.walletLoading.set(false);
+    }
+  }
+
+  payFromWallet(): void {
+    if (this.isSubmitting()) return;
+    this.payError.set('');
+    this.isSubmitting.set(true);
+    void (async () => {
+      try {
+        const user = await firstValueFrom(this.user$);
+        const trendorsId = String((user as any)?.trendors_id ?? '');
+        if (!trendorsId) {
+          throw new Error('We could not confirm your account. Please log in again.');
+        }
+        const receipt: any = await firstValueFrom(
+          this.walletApi
+            .walletControllerPayFromWallet({
+              trendorsId,
+              amount: this.computedBudget,
+              description: `Campaign: ${this.campaignTitle() || 'Untitled'}`,
+            })
+            .pipe(timeout(30000)),
+        );
+        if (receipt?.error === true) {
+          throw new Error(receipt?.message || 'Wallet payment failed.');
+        }
+        this.showPayAlert.set(false);
+        await this.createCampaign();
+      } catch (error: any) {
+        console.error('Wallet payment error:', error);
+        this.isSubmitting.set(false);
+        this.payError.set(
+          error?.name === 'TimeoutError'
+            ? 'Wallet payment timed out. Please try again.'
+            : (error?.error?.message ?? error?.message ?? 'Wallet payment failed.'),
+        );
+      }
+    })();
   }
 
   tierSlots = signal<Record<string, number>>(
     this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
   );
 
+  // Content types creators must deliver (matches the backend deliverable enum),
+  // tracked per selected social media platform.
+  deliverableTypes = [
+    { value: 'reel', label: 'Reels', icon: '🎬' },
+    { value: 'story', label: 'Stories', icon: '📸' },
+    { value: 'post', label: 'Posts', icon: '📝' },
+    { value: 'video', label: 'Videos', icon: '🎥' },
+  ];
+
+  deliverableQtyByPlatform = signal<Record<string, Record<string, number>>>({});
+
   private store = inject(Store);
   private actions$ = inject(Actions);
+  private toast = inject(ToastService);
+  private walletApi = inject(WalletApiService);
+
+  submitStatus = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  submitMessage = signal('');
+
+  // Payment-method alert state.
+  showPayAlert = signal(false);
+  walletBalance = signal<number | null>(null);
+  walletLoading = signal(false);
+  payError = signal('');
 
   user$ = this.store.select(selectCurrentUser);
   pendingApplicants$: Observable<Invitation[]> = this.store.select(selectPendingApplicants);
@@ -391,6 +502,7 @@ export class CreateCampaign {
     this.tierSlots.set(
       this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
     );
+    this.deliverableQtyByPlatform.set({});
   }
 
   get estimatedClicks(): number {
@@ -422,7 +534,6 @@ export class CreateCampaign {
   getTierSlots(name: string): number {
     return this.tierSlots()[name] ?? 0;
   }
-
   setTierSlots(name: string, value: number | string): void {
     const n = Math.max(0, Math.floor(Number(value) || 0));
     this.tierSlots.update((cur) => ({ ...cur, [name]: n }));
@@ -437,6 +548,53 @@ export class CreateCampaign {
       (sum, t) => sum + this.parseTierAmount(t.amount) * this.getTierSlots(t.name),
       0,
     );
+  }
+
+  getDeliverableQty(platform: string, type: string): number {
+    return this.deliverableQtyByPlatform()[platform]?.[type] ?? 0;
+  }
+
+  setDeliverableQty(platform: string, type: string, value: number | string): void {
+    const n = Math.max(0, Math.floor(Number(value) || 0));
+    this.deliverableQtyByPlatform.update((cur) => ({
+      ...cur,
+      [platform]: { ...(cur[platform] ?? {}), [type]: n },
+    }));
+  }
+
+  platformDisplayName(platformId: string): string {
+    return this.platforms.find((p) => p.id === platformId)?.name ?? platformId;
+  }
+
+  get totalDeliverables(): number {
+    return Object.values(this.deliverableQtyByPlatform()).reduce(
+      (sum, perType) => sum + Object.values(perType).reduce((s, n) => s + (n || 0), 0),
+      0,
+    );
+  }
+
+  /** Non-zero entries shaped for the backend deliverable DTO. */
+  get deliverablesPayload(): { content_type: string; platform: string; quantity: number }[] {
+    const out: { content_type: string; platform: string; quantity: number }[] = [];
+    for (const [platform, perType] of Object.entries(this.deliverableQtyByPlatform())) {
+      for (const t of this.deliverableTypes) {
+        const quantity = perType[t.value] ?? 0;
+        if (quantity > 0) out.push({ content_type: t.value, platform, quantity });
+      }
+    }
+    return out;
+  }
+
+  get deliverablesSummary(): string {
+    const groups: string[] = [];
+    for (const platform of this.selectedPlatforms) {
+      const parts = this.deliverableTypes
+        .map((t) => ({ label: t.label, qty: this.getDeliverableQty(platform, t.value) }))
+        .filter((d) => d.qty > 0)
+        .map((d) => `${d.qty} ${d.qty === 1 ? d.label.replace(/s$/, '') : d.label}`);
+      if (parts.length > 0) groups.push(`${this.platformDisplayName(platform)}: ${parts.join(', ')}`);
+    }
+    return groups.length > 0 ? groups.join(' · ') : 'None set';
   }
 
   selectTier(): void {
@@ -516,6 +674,7 @@ export class CreateCampaign {
       }
 
       this.selectedImages().forEach((img) => formData.append('files', img.file));
+      formData.append('deliverables', JSON.stringify(this.deliverablesPayload));
 
       this.store.dispatch(
         CampaignActions.createCampaign({
@@ -524,12 +683,39 @@ export class CreateCampaign {
         }),
       );
 
-      this.resetForm();
+      this.submitStatus.set('loading');
+      this.submitMessage.set('Creating your campaign…');
+
+      // The effect answers exactly once for this dispatch.
+      this.actions$
+        .pipe(
+          ofType(CampaignActions.createCampaignSuccess, CampaignActions.createCampaignFailure),
+          take(1),
+        )
+        .subscribe((result) => {
+          this.isSubmitting.set(false);
+          if (result.type === CampaignActions.createCampaignSuccess.type) {
+            this.submitStatus.set('success');
+            this.submitMessage.set('Campaign created successfully.');
+            this.toast.show('Campaign created successfully.', 'success');
+            this.resetForm();
+          } else {
+            const message =
+              (result as ReturnType<typeof CampaignActions.createCampaignFailure>)?.error ||
+              'Failed to create campaign';
+            this.submitStatus.set('error');
+            this.submitMessage.set(message);
+            this.toast.show(message, 'error');
+          }
+        });
     } catch (error: any) {
       console.error(error);
-      alert(`❌ Error: ${error.message || 'Failed to create campaign'}`);
-    } finally {
-      this.isSubmitting.set(false); // always unblocks the UI
+      const message = error?.message || 'Failed to create campaign';
+      this.isSubmitting.set(false);
+      this.submitStatus.set('error');
+      this.submitMessage.set(message);
+      this.toast.show(message, 'error');
+      // Replaced the blocking window.alert with toast + inline status.
     }
   }
 }

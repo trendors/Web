@@ -340,6 +340,21 @@
     }
   </div>
   <div class="page-content" *ngIf="currentStep === 2">
+
+    <div class="section">
+      <div class="section-title">Platforms</div>
+      <div class="card">
+        <div class="platform-grid">
+          <div class="platform-item" *ngFor="let p of platforms">
+            <input type="checkbox" [id]="'p-' + p.id" [(ngModel)]="p.selected" />
+            <label class="platform-label" [for]="'p-' + p.id">
+              <span class="platform-emoji">{{ p.emoji }}</span>
+              <span class="platform-name">{{ p.name }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="section">
       <div class="section-title">Campaign Media</div>
       <div class="card">
@@ -374,19 +389,43 @@
 
 
   <div class="page-content" *ngIf="currentStep === 3">
-
     <div class="section">
-      <div class="section-title">Platforms</div>
-      <div class="card">
-        <div class="platform-grid">
-          <div class="platform-item" *ngFor="let p of platforms">
-            <input type="checkbox" [id]="'p-' + p.id" [(ngModel)]="p.selected" />
-            <label class="platform-label" [for]="'p-' + p.id">
-              <span class="platform-emoji">{{ p.emoji }}</span>
-              <span class="platform-name">{{ p.name }}</span>
-            </label>
+      <div class="section-title">Deliverables</div>
+      <div class="hint" style="margin-bottom:12px">
+        For each selected platform, how many of each content type must creators post?
+      </div>
+
+      @if (selectedPlatforms.length === 0) {
+        <div class="card">
+          <span class="empty">No platforms selected yet.</span>
+          <span class="rv-edit" (click)="goTo(2)">Choose platforms →</span>
+        </div>
+      }
+
+      @for (platform of selectedPlatforms; track platform) {
+        <div class="section" style="margin-top:12px">
+          <div class="section-title">{{ platformDisplayName(platform) }}</div>
+          <div class="tier-picker-list">
+            <div class="tier-picker-row" *ngFor="let d of deliverableTypes">
+              <div class="tier-dot">{{ d.icon }}</div>
+              <div class="tier-main">
+                <div class="tier-name">{{ d.label }}</div>
+              </div>
+              <div class="tier-slot-input">
+                <button type="button" class="tier-slot-btn"
+                  (click)="setDeliverableQty(platform, d.value, getDeliverableQty(platform, d.value) - 1)">−</button>
+                <input type="number" min="0" class="tier-slot-count" [value]="getDeliverableQty(platform, d.value)"
+                  (input)="setDeliverableQty(platform, d.value, $any($event.target).value)" />
+                <button type="button" class="tier-slot-btn"
+                  (click)="setDeliverableQty(platform, d.value, getDeliverableQty(platform, d.value) + 1)">+</button>
+              </div>
+            </div>
           </div>
         </div>
+      }
+
+      <div class="tier-summary">
+        <span>{{ totalDeliverables }} item{{ totalDeliverables === 1 ? '' : 's' }} required</span>
       </div>
     </div>
   </div>
@@ -477,6 +516,13 @@
             }}
           </div>
         </div>
+        <div class="rv-row">
+          <div class="rv-key">Deliverables</div>
+          <div class="rv-val" [class.empty]="totalDeliverables === 0">
+            {{ deliverablesSummary }}
+            <span class="rv-edit" (click)="goTo(3)">Edit →</span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="rv-section">
@@ -502,15 +548,28 @@
     </div>
     @if (showTopup) {
 
-    <app-topup-modal [amount]="5000" [fixedAmount]="true" (topupSuccess)="onTopupSuccess($event)">
+    <app-topup-modal [amount]="topupShortfall > 0 ? topupShortfall : 5000" [fixedAmount]="true" (topupSuccess)="onTopupSuccess()">
     </app-topup-modal>
     }
-    <button class="checkout-btn checkout-btn-full" (click)="createCampaign()" [disabled]="isSubmitting()">
-      <!-- @if (isSubmitting() === true) {
-      <app-alert></app-alert>
-      } -->
+    <button class="checkout-btn checkout-btn-full" (click)="onCheckout()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+      <span>Creating campaign…</span>
+      } @else {
       <span>Checkout →</span>
+      }
     </button>
+    @if (submitStatus() === 'success') {
+    <div class="rv-note">
+      <span class="rv-note-icon">✅</span>
+      <span>{{ submitMessage() }}</span>
+    </div>
+    }
+    @if (submitStatus() === 'error') {
+    <div class="rv-note">
+      <span class="rv-note-icon">⚠️</span>
+      <span>{{ submitMessage() }}</span>
+    </div>
+    }
   </div>
   <div>
     <div class="pager">
@@ -525,3 +584,50 @@
     </div>
   </div>
 </div>
+
+@if (showPayAlert()) {
+<div class="modal-overlay" (click)="closePayAlert()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <h3>Confirm payment</h3>
+      <button class="btn-close" (click)="closePayAlert()">✕</button>
+    </div>
+
+    <div class="rv-card" style="margin-bottom:12px">
+      <div class="rv-row">
+        <div class="rv-key">Campaign cost</div>
+        <div class="rv-val">₦{{ computedBudget | number }}</div>
+      </div>
+      <div class="rv-row">
+        <div class="rv-key">Wallet balance</div>
+        <div class="rv-val">
+          @if (walletLoading()) {
+            <span class="empty">Checking…</span>
+          } @else if (walletBalance() == null) {
+            <span class="empty">Unavailable</span>
+          } @else {
+            ₦{{ walletBalance() | number }}
+          }
+        </div>
+      </div>
+    </div>
+
+    <button class="checkout-btn checkout-btn-full" (click)="payFromWallet()" [disabled]="walletLoading() || isSubmitting()">
+      @if (isSubmitting()) {
+        <span>Processing payment…</span>
+      } @else {
+        <span>Pay ₦{{ computedBudget | number }}</span>
+      }
+    </button>
+    <button class="checkout-btn checkout-btn-full checkout-btn--ghost" (click)="closePayAlert()" [disabled]="isSubmitting()" type="button">
+      <span>Cancel</span>
+    </button>
+    @if (payError()) {
+      <div class="rv-note">
+        <span class="rv-note-icon">⚠️</span>
+        <span>{{ payError() }}</span>
+      </div>
+    }
+  </div>
+</div>
+}
