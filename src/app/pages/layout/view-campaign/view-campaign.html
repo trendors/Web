@@ -42,7 +42,6 @@
   @if (isLoading$ | async) {
     <p class="list-state">Loading campaigns…</p>
   } @else if (error$ | async; as error) {
-    <p class="list-state list-state--error">{{ error }}</p>
   } @else if (filteredCampaigns$ | async; as campaigns) {
     @if (campaigns.length === 0) {
       <p class="list-state">No campaigns match this filter.</p>

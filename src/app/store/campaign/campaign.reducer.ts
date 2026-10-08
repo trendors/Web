@@ -32,6 +32,10 @@ export const campaignReducer = createReducer(
     isLoading: false,
     list: [...state.list, campaign],
   })),
+  on(CampaignActions.updateCampaignSuccess, (state, { campaign }) => ({
+    ...state,
+    list: state.list.map((c) => (c.id === campaign.id ? { ...c, ...campaign } : c)),
+  })),
   on(CampaignActions.createCampaignFailure, (state, { error }) => ({
     ...state,
     isLoading: false,

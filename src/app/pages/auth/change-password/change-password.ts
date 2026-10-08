@@ -1,11 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Store } from '@ngrx/store';
 import {
   selectAuthError,
@@ -18,18 +12,8 @@ import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-change-password',
-  imports: [
-    ReactiveFormsModule,
-    MatCardModule,
-    MatInputModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatProgressSpinnerModule,
-    MatIconModule,
-    AsyncPipe,
-  ],
+  imports: [ReactiveFormsModule, AsyncPipe],
   templateUrl: './change-password.html',
-  styleUrl: './change-password.scss',
 })
 export class ChangePassword {
   private fb = inject(FormBuilder);
@@ -40,28 +24,30 @@ export class ChangePassword {
   currentUser$ = this.store.select(selectCurrentUser);
 
   hideOld = true;
-  hideNew = false;
+  hideNew = true;
 
   form = this.fb.group({
     oldPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    newPassword: ['', [Validators.required, Validators.minLength(8)]],
   });
 
   onSubmit() {
-    if (this.form.valid) {
-      this.currentUser$.pipe(take(1)).subscribe((user) => {
-        if (user && user.id) {
-          this.store.dispatch(
-            PasswordChangeActions.changePasswordRequest({
-              userId: user.id,
-              oldPassword: this.form.value.oldPassword!,
-              newPassword: this.form.value.newPassword!,
-            }),
-          );
-        } else {
-          console.error('User ID missing');
-        }
-      });
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
     }
+    this.currentUser$.pipe(take(1)).subscribe((user) => {
+      if (user && user.id) {
+        this.store.dispatch(
+          PasswordChangeActions.changePasswordRequest({
+            userId: user.id,
+            oldPassword: this.form.value.oldPassword!,
+            newPassword: this.form.value.newPassword!,
+          }),
+        );
+      } else {
+        console.error('User ID missing');
+      }
+    });
   }
 }

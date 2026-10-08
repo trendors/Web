@@ -33,17 +33,22 @@ export const notificationsReducer = createReducer(
     isLoading: false,
     error,
   })),
-  on(NotificationActions.markAsRead, (state) => ({ ...state, isLoading: true, error: null })),
+  // Marking as read is a background update; it must not flash the list's loader.
   on(NotificationActions.markAsReadSuccess, (state, { notificationId }) => ({
     ...state,
-    isLoading: false,
     notifications: state.notifications.map((n) =>
       n.id === notificationId ? { ...n, isRead: true } : n,
     ),
   })),
-  on(NotificationActions.markAsReadFailure, (state, { error }) => ({
+  on(NotificationActions.markAsReadFailure, (state, { error }) => ({ ...state, error })),
+  // Newest first; a reconnect reload can race a push, so never duplicate.
+  on(NotificationActions.notificationReceived, (state, { notification }) =>
+    state.notifications.some((n) => n.id === notification.id)
+      ? state
+      : { ...state, notifications: [notification, ...state.notifications] },
+  ),
+  on(NotificationActions.notificationReadElsewhere, (state, { notificationId }) => ({
     ...state,
-    isLoading: false,
-    error,
+    notifications: state.notifications.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)),
   })),
 );

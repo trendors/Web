@@ -110,13 +110,19 @@ export function userLastName(user: unknown): string {
 export function userDisplayName(user: unknown): string {
   const record = asRecord(user);
   const brand = firstPresent(record, BRAND_KEYS);
-  const full = `${userFirstName(user)} ${userLastName(user)}`.trim();
+  const creative = firstPresent(record, CREATIVE_KEYS);
+  const [contactFirst, contactLast] = splitContactName(brand['contact_name'] ?? brand['contactName']);
+  // Real person names first, then the brand, and only then handles/email:
+  // a brand account must not show up as its email prefix.
+  const first =
+    pickText(creative, FIRST_NAME_KEYS) || pickText(record, FIRST_NAME_KEYS) || contactFirst;
+  const last =
+    pickText(creative, LAST_NAME_KEYS) || pickText(record, LAST_NAME_KEYS) || contactLast;
+  const full = `${first} ${last}`.trim();
   return (
     full ||
     text(brand['brand_name']) ||
     text(brand['brandName']) ||
-    text(brand['contact_name']) ||
-    text(brand['contactName']) ||
     text(record['user_name']) ||
     text(record['userName']) ||
     text(record['email']) ||

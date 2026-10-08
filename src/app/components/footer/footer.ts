@@ -1,28 +1,19 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Router } from 'express';
+import { AsyncPipe } from '@angular/common';
 import { selectUnreadCount } from '../../store/notification/notification.selector';
-import { AsyncPipe, CommonModule } from '@angular/common';
-import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
+import { ActiveProfileService } from '../../core/services/activeprofile.service';
 
 @Component({
   selector: 'app-footer',
-  standalone: true,
-  imports: [RouterLink, RouterLinkActive, AsyncPipe, CommonModule],
+  imports: [RouterLink, RouterLinkActive, AsyncPipe],
   templateUrl: './footer.html',
   styleUrl: './footer.scss',
 })
-export class Footer implements OnInit {
-
-
+export class Footer {
   private store = inject(Store);
 
   unreadCount$ = this.store.select(selectUnreadCount);
-  currentUser$ = this.store.select(selectCurrentUser);
-
-  ngOnInit() {
-
-  }
-
+  activeProfile = inject(ActiveProfileService).activeProfile;
 }

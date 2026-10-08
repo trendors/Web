@@ -1,224 +1,189 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, DestroyRef, Inject, inject, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { firstValueFrom, map, Observable, tap } from 'rxjs';
+import { catchError, map, Observable, of, shareReplay, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UtilService } from '../../core/services/utility/utility.service';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { AsyncPipe } from '@angular/common';
-import { SeoService } from '../../core/services/utility/seoservice';
 import { Store } from '@ngrx/store';
 import { SharesActions } from '../../store/shares/shares.action';
 import { CreateShare, SocialMedia } from '../../core/models/shares/shares.model';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
-import { LoaderComponent } from "../loader/loader";
-import { environment } from '../../../environments/environment.development';
-
-
+import { LoaderComponent } from '../loader/loader';
+import { ToastService } from '../toast/toast.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-share-sheet',
-  imports: [
-    MatListModule, MatIconModule, AsyncPipe,
-    LoaderComponent
-],
+  imports: [MatListModule, MatIconModule, AsyncPipe, LoaderComponent],
   standalone: true,
   templateUrl: './share-sheet.html',
   styleUrl: './share-sheet.scss',
 })
-export class ShareSheet {
+export class ShareSheet implements OnInit {
   private utilService = inject(UtilService);
+  private sheetRef = inject(MatBottomSheetRef<ShareSheet>);
+  private toast = inject(ToastService);
+  private destroyRef = inject(DestroyRef);
   baseurl = environment.baseUrl;
 
-
-  constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { post: any },
-    private store: Store) { }
+  constructor(
+    @Inject(MAT_BOTTOM_SHEET_DATA) public data: { post: any },
+    private store: Store,
+  ) {}
 
   selectedPost: string | null = null;
   shareVersions$!: Observable<any[]>;
-  trends$!: Observable<any[]>
-  user$!: Observable<any>;
+  trends$!: Observable<any[]>;
   isAiLoading = false;
-
+  /** Latest trends, read synchronously when a share button is clicked. */
+  private trendNames: string[] = [];
+  private user: any = null;
 
   ngOnInit() {
-    this.user$ = this.store.select(selectCurrentUser);
+    this.store
+      .select(selectCurrentUser)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => (this.user = user));
     this.selectedPost = this.data.post.text;
-    this.fetchAireWrite()
-    this.fetchXtrends()
-
+    this.fetchAiRewrite();
+    this.fetchXtrends();
   }
-
 
   selectVersion(post: string) {
     this.selectedPost = post;
   }
 
+  private fetchAiRewrite() {
+    const text = this.data.post.text;
+    if (!text) return;
 
-fetchAireWrite() {
-  const text = this.data.post.text;
-  if (!text) return;
+    this.isAiLoading = true;
+    this.shareVersions$ = this.utilService.fetchAiRewrite(text).pipe(
+      tap({
+        next: () => (this.isAiLoading = false),
+        error: (err) => {
+          console.error('AI Rewrite failed:', err);
+          this.isAiLoading = false;
+        },
+      }),
+      catchError(() => of([])),
+    );
+  }
 
-  this.isAiLoading = true; 
-  this.shareVersions$ = this.utilService.fetchAiRewrite(text).pipe(
-    tap({
-      next: () => {
-        this.isAiLoading = false; 
-      },
-      error: (err) => {
-        console.error('AI Rewrite failed:', err);
-        this.isAiLoading = false; 
-      }
-    })
-  );
-}
-
-  fetchXtrends() {
+  private fetchXtrends() {
     this.trends$ = this.utilService.fetchTrends().pipe(
-      map(data => {
-        return data.trends
-      })
-    )
+      map((data) => data?.trends ?? []),
+      tap((trends) => (this.trendNames = trends.slice(0, 4).map((t: any) => `${t.name}`))),
+      catchError(() => of([])),
+      shareReplay(1),
+    );
   }
 
-  copyLink(data: any) { }
+  private get post() {
+    return this.data.post;
+  }
 
-  shareTo(url?: string) { }
+  private get postLink(): string {
+    return `${this.baseurl}/post/${this.post.id}`;
+  }
 
-  async getIPAddress() {
+  private get shareText(): string {
+    return this.selectedPost || this.post.text || '';
+  }
+
+  async copyLink(): Promise<void> {
     try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip as string;
-    } catch (error) {
-      console.error("Error fetching IP:", error);
-      return ""
+      await navigator.clipboard.writeText(this.postLink);
+      this.toast.show('Link copied.', 'success');
+    } catch {
+      this.toast.show('Could not copy the link.', 'error');
     }
   }
-  getOrCreateDeviceId() {
-    let deviceId = localStorage.getItem('device_id');
-    if (!deviceId) {
-      deviceId = crypto.randomUUID();
-      localStorage.setItem('device_id', deviceId);
-    }
-    return deviceId;
+
+  close(): void {
+    this.sheetRef.dismiss();
   }
 
-  close() { }
+  shareToX() {
+    const text = [this.shareText, '', `View more: ${this.postLink}`, this.trendNames.join(' ')]
+      .join('\n')
+      .trim();
+    this.openAndRecord(
+      `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`,
+      SocialMedia.X,
+    );
+  }
 
-  async shareToX(post: any) {
-    const currentUser = await firstValueFrom(this.user$);
-    let trendText = this.trends$.pipe(map(trends => trends.slice(0, 4).map((t: any) => `${t.name}`).join(' ')));
-    const baseUrl = 'https://twitter.com/intent/tweet';
-    const params = new URLSearchParams({
-      text: `${this.selectedPost}\n \nView more: ${this.baseurl}/post/${post.id} \n${await trendText.toPromise()}`
-    });
-    const shareUrl = `${baseUrl}?${params.toString()}`;
-    const twitterwindow = window.open(shareUrl, '_blank', 'width=550,height=420')
-    if (!twitterwindow || twitterwindow.closed || typeof twitterwindow.closed === 'undefined') {
+  shareToFacebook() {
+    this.openAndRecord(
+      `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: this.postLink })}`,
+      SocialMedia.FACEBOOK,
+    );
+  }
 
-    } else {
-      let share: CreateShare = {
-        postId: this.data.post.id,
-        sharers_trendorsId: currentUser?.trendors_id ?? '',
-        sharers_userId: String(currentUser?.id ?? ''),
-        deviceId: this.getOrCreateDeviceId(),
-        ipAddress: await this.getIPAddress(),
-        external_post_url: "string",
-        social_media: SocialMedia.X
+  shareToLinkedIn() {
+    this.openAndRecord(
+      `https://www.linkedin.com/sharing/share-offsite/?${new URLSearchParams({ url: this.postLink })}`,
+      SocialMedia.LINKEDIN,
+    );
+  }
+
+  shareToTelegram() {
+    this.openAndRecord(
+      `https://t.me/share/url?${new URLSearchParams({ url: this.postLink, text: this.shareText })}`,
+      SocialMedia.TELEGRAM,
+    );
+  }
+
+  shareToWhatsApp() {
+    const text = `${this.shareText}\n\nView more: ${this.postLink}`;
+    this.openAndRecord(
+      `https://api.whatsapp.com/send?${new URLSearchParams({ text })}`,
+      SocialMedia.WHATSAPP,
+    );
+  }
+
+  /**
+   * Open the share window synchronously inside the click handler (anything
+   * awaited first loses the user gesture and gets popup-blocked), then record
+   * the share in the background.
+   */
+  private openAndRecord(shareUrl: string, socialMedia: SocialMedia): void {
+    const win = window.open(shareUrl, '_blank', 'width=550,height=420');
+    if (!win || win.closed) {
+      this.toast.show('Allow pop-ups for this site to share.', 'error');
+      return;
+    }
+    this.recordShare(shareUrl, socialMedia);
+  }
+
+  private recordShare(shareUrl: string, socialMedia: SocialMedia): void {
+    // Sharer identity and IP are taken server-side from the token/connection;
+    // these fields stay for API compatibility only.
+    const share: CreateShare = {
+      postId: this.post.id,
+      sharers_trendorsId: this.user?.trendors_id ?? '',
+      sharers_userId: String(this.user?.id ?? ''),
+      deviceId: this.getOrCreateDeviceId(),
+      ipAddress: '',
+      external_post_url: shareUrl,
+      social_media: socialMedia,
+    };
+    this.store.dispatch(SharesActions.createShares({ data: share }));
+  }
+
+  private getOrCreateDeviceId(): string {
+    try {
+      let deviceId = localStorage.getItem('device_id');
+      if (!deviceId) {
+        deviceId = crypto.randomUUID();
+        localStorage.setItem('device_id', deviceId);
       }
-      this.store.dispatch(SharesActions.createShares({ data: share }))
+      return deviceId;
+    } catch {
+      return '';
     }
   }
-
-  async shareToFacebook(post: any) {
-    const currentUser = await firstValueFrom(this.user$);
-    const baseUrl = 'https://www.facebook.com/sharer/sharer.php';
-    const params = new URLSearchParams({
-      u: `${this.baseurl}/post/${post.id}`,
-      quote: post.text
-    });
-    const shareUrl = `${baseUrl}?${params.toString()}`;
-    const win = window.open(shareUrl, '_blank', 'width=550,height=420');
-    if (win && !win.closed) {
-      const share: CreateShare = {
-        postId: post.id,
-        sharers_trendorsId: currentUser?.trendors_id ?? '',
-        sharers_userId: String(currentUser?.id ?? ''),
-        deviceId: this.getOrCreateDeviceId(),
-        ipAddress: await this.getIPAddress(),
-        external_post_url: shareUrl,
-        social_media: SocialMedia.FACEBOOK
-      };
-      this.store.dispatch(SharesActions.createShares({ data: share }));
-    }
-  }
-
-  async shareToLinkedIn(post: any) {
-    const currentUser = await firstValueFrom(this.user$);
-    const baseUrl = 'https://www.linkedin.com/sharing/share-offsite/';
-    const params = new URLSearchParams({
-      url: `${this.baseurl}/post/${post.id}`
-    });
-    const shareUrl = `${baseUrl}?${params.toString()}`;
-    const win = window.open(shareUrl, '_blank', 'width=550,height=420');
-    if (win && !win.closed) {
-      const share: CreateShare = {
-        postId: post.id,
-        sharers_trendorsId: currentUser?.trendors_id ?? '',
-        sharers_userId: String(currentUser?.id ?? ''),
-        deviceId: this.getOrCreateDeviceId(),
-        ipAddress: await this.getIPAddress(),
-        external_post_url: shareUrl,
-        social_media: SocialMedia.LINKEDIN
-      };
-      this.store.dispatch(SharesActions.createShares({ data: share }));
-    }
-  }
-
-  async shareToTelegram(post: any) {
-    const currentUser = await firstValueFrom(this.user$);
-    const baseUrl = 'https://t.me/share/url';
-    const params = new URLSearchParams({
-      url: `${this.baseurl}/post/${post.id}`,
-      text: post.text
-    });
-    const shareUrl = `${baseUrl}?${params.toString()}`;
-    const win = window.open(shareUrl, '_blank', 'width=550,height=420');
-    if (win && !win.closed) {
-      const share: CreateShare = {
-        postId: post.id,
-        sharers_trendorsId: currentUser?.trendors_id ?? '',
-        sharers_userId: String(currentUser?.id ?? ''),
-        deviceId: this.getOrCreateDeviceId(),
-        ipAddress: await this.getIPAddress(),
-        external_post_url: shareUrl,
-        social_media: SocialMedia.TELEGRAM
-      };
-      this.store.dispatch(SharesActions.createShares({ data: share }));
-    }
-  }
-
-  async shareToWhatsApp(post: any) {
-    const currentUser = await firstValueFrom(this.user$);
-    const baseUrl = 'https://api.whatsapp.com/send';
-    const params = new URLSearchParams({
-      text: `${post.text}\n\nView more: ${this.baseurl}/post/${post.id}`
-    });
-    const shareUrl = `${baseUrl}?${params.toString()}`;
-    const win = window.open(shareUrl, '_blank', 'width=550,height=420');
-    if (win && !win.closed) {
-      const share: CreateShare = {
-        postId: post.id,
-        sharers_trendorsId: currentUser?.trendors_id ?? '',
-        sharers_userId: String(currentUser?.id ?? ''),
-        deviceId: this.getOrCreateDeviceId(),
-        ipAddress: await this.getIPAddress(),
-        external_post_url: shareUrl,
-        social_media: SocialMedia.WHATSAPP
-      };
-      this.store.dispatch(SharesActions.createShares({ data: share }));
-    }
-  }
-
-
 }

@@ -23,13 +23,43 @@
         <div class="campaign-card__info">
           <div class="campaign-card__heading">
             <h1>{{ data.name }}</h1>
-            <button class="btn btn--ghost">
-              <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Edit
-            </button>
+            <span class="campaign-status" [ngClass]="'campaign-status--' + campaignStatusOf(data)">
+              <span class="campaign-status__dot"></span>{{ capitalize(campaignStatusOf(data)) }}
+            </span>
           </div>
 
           <p class="campaign-card__category">{{ accessLabel(data.access) }}@if (data.package) { · {{ data.package }} }</p>
+
+          <div class="campaign-actions">
+            <button type="button" class="btn btn--ghost" (click)="openEdit(data)">
+              <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
+            </button>
+            <button type="button" class="btn btn--dark" [disabled]="campaignStatusOf(data) !== 'active'"
+                    [title]="campaignStatusOf(data) === 'active' ? 'Invite influencers to this campaign' : 'Resume or reopen the campaign to invite influencers'"
+                    (click)="openInvite()">
+              <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Invite influencers
+            </button>
+            @if (campaignStatusOf(data) === 'active') {
+              <button type="button" class="btn btn--ghost" [disabled]="campaignBusy()" (click)="setCampaignStatus(data, 'paused')">Pause</button>
+            } @else if (campaignStatusOf(data) === 'paused') {
+              <button type="button" class="btn btn--ghost" [disabled]="campaignBusy()" (click)="setCampaignStatus(data, 'active')">Resume</button>
+            }
+            @if (campaignStatusOf(data) === 'closed') {
+              <button type="button" class="btn btn--ghost" [disabled]="campaignBusy()" (click)="setCampaignStatus(data, 'active')">Reopen</button>
+            } @else {
+              <button type="button" class="btn btn--danger-ghost" [disabled]="campaignBusy()" (click)="confirmCloseOpen.set(true)">Close campaign</button>
+            }
+          </div>
+
+          @if (campaignStatusOf(data) !== 'active') {
+            <p class="campaign-notice">
+              {{ campaignStatusOf(data) === 'paused'
+                ? 'Paused: no new invites or applications until you resume. Existing work continues.'
+                : 'Closed: this campaign is not taking new invites or applications.' }}
+            </p>
+          }
 
           <div class="campaign-card__platforms">
             @for (platform of getPlatforms(data.platforms); track platform) {
@@ -58,23 +88,23 @@
                 </span>
                 <span class="platform-name">{{ platformName(platform) }}</span>
               </span>
-            }
-            @if (getPlatforms(data.platforms).length === 0) {
+            } @empty {
               <span class="meta-item">No platforms set</span>
             }
           </div>
 
           <div class="campaign-card__meta">
-
             <span class="meta-item">
               <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 2v4M16 2v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              @if (data.start_date || data.end_date) {
-                @if (data.start_date) { {{ data.start_date | date:'MMM d, y' }} }
-                @if (data.start_date && data.end_date) { – }
-                @if (data.end_date) { {{ data.end_date | date:'MMM d, y' }} }
-              } @else {
-                Dates TBD · Created {{ data.createdAt | date:'MMM d, y' }}
-              }
+              <span>
+                @if (data.start_date || data.end_date) {
+                  @if (data.start_date) { {{ data.start_date | date:'MMM d, y' }} }
+                  @if (data.start_date && data.end_date) { – }
+                  @if (data.end_date) { {{ data.end_date | date:'MMM d, y' }} }
+                } @else {
+                  Dates TBD · Created {{ data.createdAt | date:'MMM d, y' }}
+                }
+              </span>
             </span>
 
             @if (data.link) {
@@ -84,11 +114,8 @@
               </a>
             }
           </div>
-       
-        </div>
-      </div>
 
-         @if (data.description) {
+          @if (data.description) {
             <p class="campaign-card__description">{{ data.description }}</p>
           }
           @if (hashTagList(data).length > 0) {
@@ -98,10 +125,12 @@
               }
             </div>
           }
+        </div>
+      </div>
 
-      @if (campaignImages(data).length > 0) {
+      @if (galleryMedia(data).length > 0) {
         <div class="campaign-card__gallery">
-          @for (media of campaignImages(data); track media) {
+          @for (media of galleryMedia(data); track media) {
             @if (isVideoUrl(media)) {
               <video class="campaign-card__gallery-item" [src]="media" controls preload="metadata"></video>
             } @else {
@@ -201,51 +230,60 @@
         </div>
 
         <div class="table__row-group" *ngFor="let inf of filteredInfluencers(); trackBy: trackInfluencerRow">
-        <div class="table__row" (click)="toggleInfluencerPosts(inf)" [class.expanded]="isInfluencerExpanded(inf)" style="cursor: pointer;">
+        <div class="table__row" (click)="toggleInfluencerPosts(inf)" [class.expanded]="isInfluencerExpanded(inf)" [style.cursor]="hasProfile(inf) ? 'pointer' : 'default'">
           <div class="col col--influencer">
-            <span class="avatar-fallback">{{ inf.name.charAt(0).toUpperCase() }}</span>
-            @if (inf.avatar) {
-              <img class="avatar avatar--overlay" [src]="inf.avatar" [alt]="inf.name" (error)="onAvatarError($event)" />
+            <span class="avatar-fallback">{{ displayName(inf).charAt(0).toUpperCase() }}</span>
+            @if (avatarOf(inf)) {
+              <img class="avatar avatar--overlay" [src]="avatarOf(inf)" [alt]="displayName(inf)" (error)="onAvatarError($event)" />
             }
             <div class="influencer-name">
-              <span class="influencer-name__full">{{ inf.name }}</span>
-              <span class="influencer-name__handle">{{ inf.handle }}</span>
+              <span class="influencer-name__full">{{ displayName(inf) }}</span>
+              @if (hasProfile(inf)) {
+                <span class="influencer-name__handle">{{ handleOf(inf) }}</span>
+              } @else {
+                <span class="influencer-name__note">No influencer profile</span>
+              }
             </div>
           </div>
 
           <div class="col col--status">
-            <span class="status-pill" [ngClass]="'status-pill--' + inf.statusClass">
+            <span class="status-pill" [ngClass]="'status-pill--' + statusClassOf(inf)">
               <span class="status-pill__dot"></span>
-              {{ inf.status }}
+              {{ capitalize(statusOf(inf)) }}
             </span>
           </div>
 
           <div class="col col--progress">
             <div class="progress">
+              <span class="progress__label">
+                <strong>{{ doneOf(inf) }} / {{ totalOf(inf) }}</strong> posts
+                <span class="progress__pct">{{ totalOf(inf) > 0 ? ((doneOf(inf) / totalOf(inf)) * 100 | number: '1.0-0') : 0 }}%</span>
+              </span>
               <div class="progress__track">
-                <div class="progress__fill" [style.width.%]="inf.total > 0 ? (inf.done / inf.total) * 100 : 0"></div>
+                <div class="progress__fill" [style.width.%]="totalOf(inf) > 0 ? (doneOf(inf) / totalOf(inf)) * 100 : 0"></div>
               </div>
-              <span class="progress__label">{{ inf.done }} / {{ inf.total }}</span>
             </div>
-            <svg class="chevron" [class.open]="isInfluencerExpanded(inf)" viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            @if (hasProfile(inf)) {
+              <svg class="chevron" [class.open]="isInfluencerExpanded(inf)" viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            }
           </div>
         </div>
 
-        @if (isInfluencerExpanded(inf)) {
+        @if (isInfluencerExpanded(inf) && hasProfile(inf)) {
         <div class="table__detail">
           <div class="detail-summary">
-            <span class="detail-summary__item"><strong>{{ inf.posts.length }}</strong> posts</span>
-            <span class="detail-summary__item"><strong>{{ inf.totalViews | number }}</strong> views</span>
-            <span class="detail-summary__item"><strong>{{ inf.totalLikes | number }}</strong> likes</span>
-            <span class="detail-summary__item"><strong>{{ inf.totalComments | number }}</strong> comments</span>
-            <span class="detail-summary__item"><strong>{{ inf.totalShares | number }}</strong> shares</span>
-            <button class="btn-action btn-view-more" [disabled]="!canViewFullMetrics(inf)" [title]="canViewFullMetrics(inf) ? 'Open full metrics' : 'No posts submitted yet'" (click)="$event.stopPropagation(); viewInfluencerMetrics(inf)">Full metrics</button>
+            <span class="detail-summary__item"><strong>{{ postTotals(inf).count }}</strong> posts</span>
+            <span class="detail-summary__item"><strong>{{ postTotals(inf).views | number }}</strong> views</span>
+            <span class="detail-summary__item"><strong>{{ postTotals(inf).likes | number }}</strong> likes</span>
+            <span class="detail-summary__item"><strong>{{ postTotals(inf).comments | number }}</strong> comments</span>
+            <span class="detail-summary__item"><strong>{{ postTotals(inf).shares | number }}</strong> shares</span>
+            <button class="btn-action btn-view-more" [disabled]="!canViewFullMetrics(inf)" [title]="canViewFullMetrics(inf) ? 'Open full metrics' : 'No posts submitted yet'" (click)="$event.stopPropagation(); viewInfluencerMetrics(inf, data.name)">Full metrics</button>
           </div>
 
-          @if (inf.posts.length === 0) {
+          @if (postsOf(inf).length === 0) {
             <p class="influencers__state">No posts submitted by this influencer yet.</p>
           } @else {
-            @for (post of inf.posts; track post.id ?? post.title) {
+            @for (post of postsOf(inf); track post.id ?? post.title) {
             <article class="post-card">
               @if (post.thumbnailUrl) {
                 <img class="post-card__thumb" [src]="post.thumbnailUrl" [alt]="post.title" (error)="onAvatarError($event)" loading="lazy" />
@@ -348,37 +386,287 @@
           <span class="col col--actions">Actions</span>
         </div>
 
-        <div class="table__row" *ngFor="let invite of filteredPending(); trackBy: trackInfluencerRow">
-          <div class="col col--influencer">
-            <span class="avatar-fallback">{{ invite.name.charAt(0).toUpperCase() }}</span>
-            @if (invite.avatar) {
-              <img class="avatar avatar--overlay" [src]="invite.avatar" [alt]="invite.name" (error)="onAvatarError($event)" />
-            }
+        <div class="table__row table__row--invite" *ngFor="let invite of filteredPending(); trackBy: trackInfluencerRow">
+          <div class="col col--influencer" [class.col--influencer--clickable]="hasProfile(invite)" (click)="openDetails(invite)" role="button" [attr.tabindex]="hasProfile(invite) ? 0 : -1" (keydown.enter)="openDetails(invite)" [title]="displayName(invite)">
+            <span class="avatar-wrap">
+              <span class="avatar-fallback">{{ displayName(invite).charAt(0).toUpperCase() }}</span>
+              @if (avatarOf(invite)) {
+                <img class="avatar avatar--overlay" [src]="avatarOf(invite)" [alt]="displayName(invite)" (error)="onAvatarError($event)" />
+              }
+              <span class="avatar-badge" [title]="platformOf(invite)" [ngSwitch]="platformOf(invite)">
+                <svg *ngSwitchCase="'Instagram'" viewBox="0 0 24 24" fill="none" width="10" height="10"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2.4"/></svg>
+                <svg *ngSwitchCase="'X'" viewBox="0 0 24 24" fill="none" width="10" height="10"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+                <svg *ngSwitchCase="'Facebook'" viewBox="0 0 24 24" fill="none" width="10" height="10"><path d="M15 3h-2.5A3.5 3.5 0 009 6.5V9H6.5v3H9v9h3v-9h2.5l.5-3H12V6.8c0-.5.4-.8.8-.8H15V3z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
+                <svg *ngSwitchDefault viewBox="0 0 24 24" fill="none" width="10" height="10"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.4"/></svg>
+              </span>
+            </span>
             <div class="influencer-name">
-              <span class="influencer-name__full">{{ invite.name }}</span>
-              <span class="influencer-name__handle">{{ invite.handle }}</span>
+              <span class="influencer-name__full">{{ displayName(invite) }}</span>
+              @if (!hasProfile(invite)) {
+                <span class="influencer-name__note">No influencer profile</span>
+              }
             </div>
           </div>
 
           <div class="col col--status">
-            <span class="status-pill" [ngClass]="'status-pill--' + invite.statusClass">
+            <span class="status-pill" [ngClass]="'status-pill--' + statusClassOf(invite)">
               <span class="status-pill__dot"></span>
-              {{ invite.status }}
+              {{ capitalize(statusOf(invite)) }}
             </span>
           </div>
 
           <div class="col col--actions">
-            <div class="action-buttons">
-              <button class="btn-action btn-accept" (click)="acceptInvite(invite)">Accept</button>
-              <button class="btn-action btn-negotiate" (click)="negotiateWith(invite)">Negotiate</button>
-              <button class="btn-action btn-decline" (click)="declineInvite(invite)">Decline</button>
-              <button class="btn-action btn-view-more" (click)="viewMore(invite)">View More</button>
-            </div>
+            @if (hasProfile(invite)) {
+              <div class="action-buttons">
+                @if (isAppliedInvite(invite)) {
+                  <button class="btn-action btn-accept" (click)="acceptInvite(invite)">Accept</button>
+                  <button class="btn-action btn-decline" (click)="declineInvite(invite)">Decline</button>
+                } @else if (isInvitedInvite(invite)) {
+                  <button class="btn-action btn-negotiate" (click)="viewNegotiation(invite)">View negotiation</button>
+                }
+              </div>
+            }
           </div>
         </div>
       </div>
       }
     </section>
+
+    <!-- Influencer details drawer -->
+    @if (drawerRow(); as detail) {
+      <div class="drawer-overlay" (click)="closeDetails()"></div>
+      <aside class="profile-drawer" role="dialog" aria-label="Influencer details">
+        <div class="drawer-head">
+          <div class="drawer-identity">
+            <span class="avatar-wrap avatar-wrap--lg">
+              <span class="avatar-fallback">{{ displayName(detail).charAt(0).toUpperCase() }}</span>
+              @if (avatarOf(detail)) {
+                <img class="avatar avatar--overlay" [src]="avatarOf(detail)" [alt]="displayName(detail)" (error)="onAvatarError($event)" />
+              }
+            </span>
+            <div class="influencer-name">
+              <span class="influencer-name__full">{{ displayName(detail) }}</span>
+              <span class="influencer-name__handle">{{ handleOf(detail) }} · {{ platformOf(detail) }}</span>
+            </div>
+          </div>
+          <button class="drawer-close" type="button" aria-label="Close details" (click)="closeDetails()">✕</button>
+        </div>
+
+        <div class="drawer-status-row">
+          <span class="status-pill" [ngClass]="'status-pill--' + statusClassOf(detail)">
+            <span class="status-pill__dot"></span>
+            {{ capitalize(statusOf(detail)) }}
+          </span>
+          @if (profileText(detail, ['averageEngagementRate', 'averageEngagement', 'engagementRate', 'engagement_rate'])) {
+            <span class="stat-chip">{{ profileText(detail, ['averageEngagementRate', 'averageEngagement', 'engagementRate', 'engagement_rate']) }} eng.</span>
+          }
+          @if (profileText(detail, ['professionalHeadline', 'professional_headline'])) {
+            <span class="stat-chip stat-chip--tag">{{ profileText(detail, ['professionalHeadline', 'professional_headline']) }}</span>
+          }
+        </div>
+
+        <div class="drawer-section">
+          <h4>Rate card</h4>
+          <div class="rate-grid">
+            <div class="rate-item"><span>Agreed fee</span><strong>₦{{ feeAgreedOf(detail) | number }}</strong></div>
+            <div class="rate-item"><span>Paid so far</span><strong>₦{{ amountPaidOf(detail) | number }}</strong></div>
+            <div class="rate-item"><span>Outstanding</span><strong>₦{{ (feeAgreedOf(detail) - amountPaidOf(detail)) | number }}</strong></div>
+          </div>
+          @if (profileText(detail, ['estimatedRates', 'estimated_rates'])) {
+            <p class="drawer-muted">Listed rates: {{ profileText(detail, ['estimatedRates', 'estimated_rates']) }}</p>
+          }
+        </div>
+
+        @if (profileText(detail, ['bio']) || profileText(detail, ['location'])) {
+          <div class="drawer-section">
+            <h4>About</h4>
+            @if (profileText(detail, ['bio'])) {
+              <p>{{ profileText(detail, ['bio']) }}</p>
+            }
+            @if (profileText(detail, ['location'])) {
+              <p class="drawer-muted">{{ profileText(detail, ['location']) }}</p>
+            }
+          </div>
+        }
+
+        @if (profileText(detail, ['audienceGenderSplit', 'audience_gender_split']) || profileText(detail, ['audienceAgeRange', 'audience_age_range']) || profileList(detail, ['topAudienceLocations', 'top_audience_locations']).length > 0) {
+          <div class="drawer-section">
+            <h4>Audience</h4>
+            <div class="rate-grid">
+              @if (profileText(detail, ['audienceGenderSplit', 'audience_gender_split'])) {
+                <div class="rate-item"><span>Gender split</span><strong>{{ profileText(detail, ['audienceGenderSplit', 'audience_gender_split']) }}</strong></div>
+              }
+              @if (profileText(detail, ['audienceAgeRange', 'audience_age_range'])) {
+                <div class="rate-item"><span>Age range</span><strong>{{ profileText(detail, ['audienceAgeRange', 'audience_age_range']) }}</strong></div>
+              }
+              @if (profileList(detail, ['topAudienceLocations', 'top_audience_locations']).length > 0) {
+                <div class="rate-item"><span>Top locations</span><strong>{{ profileList(detail, ['topAudienceLocations', 'top_audience_locations']).join(', ') }}</strong></div>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="drawer-section">
+          <h4>Content samples ({{ postsOf(detail).length }})</h4>
+          @if (postsOf(detail).length === 0) {
+            <p class="drawer-muted">No posts submitted yet.</p>
+          } @else {
+            @for (post of postsOf(detail); track post.id ?? post.title) {
+              <div class="sample-row">
+                @if (post.thumbnailUrl) {
+                  <img [src]="post.thumbnailUrl" [alt]="post.title" (error)="onAvatarError($event)" loading="lazy" />
+                }
+                <div class="sample-info">
+                  <span class="sample-title">{{ post.title }}</span>
+                  <span class="sample-meta">{{ post.contentType }} · {{ post.platform }} · {{ post.status }}</span>
+                  @if (post.latest) {
+                    <span class="sample-meta">{{ post.latest.views | number }} views · {{ post.latest.likes | number }} likes</span>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        @if (profileText(detail, ['pastCollaborations', 'past_collaborations'])) {
+          <div class="drawer-section">
+            <h4>Past collaborations</h4>
+            <p>{{ profileText(detail, ['pastCollaborations', 'past_collaborations']) }}</p>
+          </div>
+        }
+
+        <div class="drawer-actions">
+          @if (isAppliedInvite(detail)) {
+
+<!-- 
+            <button class="btn-action btn-accept" (click)="acceptInvite(detail); closeDetails()">Accept</button>
+            <button class="btn-action btn-decline" (click)="declineInvite(detail); closeDetails()">Decline</button>
+ -->
+
+
+          } @else if (isInvitedInvite(detail)) {
+            <button class="btn-action btn-negotiate" (click)="viewNegotiation(detail)">View negotiation</button>
+          }
+          <button class="btn-action btn-view-more" (click)="menuViewProfile(detail)">View full profile</button>
+        </div>
+      </aside>
+    }
+
+    <!-- Edit campaign -->
+    @if (editOpen()) {
+      <div class="cm-overlay" (click)="closeEdit()">
+        <div class="cm-dialog" role="dialog" aria-modal="true" aria-labelledby="cm-edit-title" (click)="$event.stopPropagation()">
+          <h2 id="cm-edit-title" class="cm-title">Edit campaign</h2>
+          <form class="cm-form" (ngSubmit)="saveEdit(data)">
+            <label class="cm-field">
+              <span>Name</span>
+              <input type="text" name="name" [(ngModel)]="editForm.name" maxlength="120" required />
+            </label>
+            <label class="cm-field">
+              <span>Description</span>
+              <textarea name="description" rows="4" [(ngModel)]="editForm.description"></textarea>
+            </label>
+            <label class="cm-field">
+              <span>Campaign link</span>
+              <input type="url" name="link" placeholder="https://" [(ngModel)]="editForm.link" />
+            </label>
+            <div class="cm-row">
+              <label class="cm-field">
+                <span>Start date</span>
+                <input type="date" name="start_date" [(ngModel)]="editForm.start_date" />
+              </label>
+              <label class="cm-field">
+                <span>End date</span>
+                <input type="date" name="end_date" [(ngModel)]="editForm.end_date" [min]="editForm.start_date" />
+              </label>
+            </div>
+            <label class="cm-field">
+              <span>Hashtags</span>
+              <input type="text" name="hash_tags" placeholder="#summer #sale" [(ngModel)]="editForm.hash_tags" />
+              <small>Separate with spaces or commas.</small>
+            </label>
+            @if (editError()) {
+              <p class="cm-error" role="alert">{{ editError() }}</p>
+            }
+            <div class="cm-actions">
+              <button type="button" class="btn btn--ghost" [disabled]="editSaving()" (click)="closeEdit()">Cancel</button>
+              <button type="submit" class="btn btn--dark" [disabled]="editSaving()">{{ editSaving() ? 'Saving…' : 'Save changes' }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Invite influencers -->
+    @if (inviteOpen()) {
+      <div class="cm-overlay" (click)="closeInvite()">
+        <div class="cm-dialog" role="dialog" aria-modal="true" aria-labelledby="cm-invite-title" (click)="$event.stopPropagation()">
+          <h2 id="cm-invite-title" class="cm-title">Invite influencers</h2>
+          <p class="cm-sub">They'll appear under Invites &amp; Applications, where you can negotiate terms.</p>
+
+          <input class="cm-search" type="search" placeholder="Search influencers by name…"
+                 [ngModel]="pickerQuery()" (ngModelChange)="onPickerSearch($event)" />
+
+          @if (pickerSelected().length > 0) {
+            <div class="cm-chips">
+              @for (p of pickerSelected(); track pickerUserId(p)) {
+                <button type="button" class="cm-chip" (click)="togglePicked(p)" [title]="'Remove ' + pickerName(p)">
+                  {{ pickerName(p) }} <span aria-hidden="true">×</span>
+                </button>
+              }
+            </div>
+          }
+
+          <ul class="cm-results">
+            @if (pickerSearching()) {
+              <li class="cm-empty">Searching…</li>
+            } @else {
+              @for (p of pickerResults(); track $index) {
+                @if (pickerUserId(p) != null) {
+                  <li class="cm-result">
+                    <div class="cm-result__who">
+                      <span class="cm-result__name">{{ pickerName(p) }}</span>
+                      @if (p.user?.user_name) { <span class="cm-result__handle">&#64;{{ p.user.user_name }}</span> }
+                    </div>
+                    @if (pickerInCampaign(p)) {
+                      <span class="cm-result__tag">Already in campaign</span>
+                    } @else {
+                      <button type="button" class="btn-action" [class.btn-accept]="!pickerIsSelected(p)" [class.btn-decline]="pickerIsSelected(p)" (click)="togglePicked(p)">
+                        {{ pickerIsSelected(p) ? 'Remove' : 'Add' }}
+                      </button>
+                    }
+                  </li>
+                }
+              } @empty {
+                <li class="cm-empty">{{ pickerQuery().trim() ? 'No influencers found.' : 'Search to find influencers.' }}</li>
+              }
+            }
+          </ul>
+
+          <div class="cm-actions">
+            <button type="button" class="btn btn--ghost" [disabled]="inviteSending()" (click)="closeInvite()">Cancel</button>
+            <button type="button" class="btn btn--dark" [disabled]="inviteSending() || pickerSelected().length === 0" (click)="sendInvites(data)">
+              {{ inviteSending() ? 'Sending…' : 'Send ' + (pickerSelected().length || '') + ' invite' + (pickerSelected().length === 1 ? '' : 's') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Confirm close -->
+    @if (confirmCloseOpen()) {
+      <div class="cm-overlay" (click)="confirmCloseOpen.set(false)">
+        <div class="cm-dialog cm-dialog--small" role="alertdialog" aria-modal="true" aria-labelledby="cm-close-title" (click)="$event.stopPropagation()">
+          <h2 id="cm-close-title" class="cm-title">Close this campaign?</h2>
+          <p class="cm-sub">It will stop taking new invites and applications. Influencers already working on it keep their deals, and you can reopen it any time.</p>
+          <div class="cm-actions">
+            <button type="button" class="btn btn--ghost" [disabled]="campaignBusy()" (click)="confirmCloseOpen.set(false)">Keep open</button>
+            <button type="button" class="btn btn--danger" [disabled]="campaignBusy()" (click)="setCampaignStatus(data, 'closed')">{{ campaignBusy() ? 'Closing…' : 'Close campaign' }}</button>
+          </div>
+        </div>
+      </div>
+    }
+
 
   </main>
 } @else {

@@ -59,10 +59,11 @@
         <h1>What should we call you?</h1>
         <p class="sub">This is how you'll appear across Trendors.</p>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="firstName">First name</label>
+        <div class="ui-row">
+          <div class="ui-field">
+            <label class="ui-label" for="firstName">First name</label>
             <input
+              class="ui-input"
               id="firstName"
               type="text"
               [(ngModel)]="data.firstName"
@@ -70,9 +71,10 @@
               autocomplete="given-name"
             />
           </div>
-          <div class="field">
-            <label for="lastName">Last name</label>
+          <div class="ui-field">
+            <label class="ui-label" for="lastName">Last name</label>
             <input
+              class="ui-input"
               id="lastName"
               type="text"
               [(ngModel)]="data.lastName"
@@ -87,9 +89,10 @@
         <h1>Tell us about your brand</h1>
         <p class="sub">You can add more details to your profile later.</p>
 
-        <div class="field">
-          <label for="brandName">Brand name</label>
+        <div class="ui-field">
+          <label class="ui-label" for="brandName">Brand name</label>
           <input
+            class="ui-input"
             id="brandName"
             type="text"
             [(ngModel)]="data.brandName"
@@ -97,9 +100,10 @@
             autocomplete="organization"
           />
         </div>
-        <div class="field">
-          <label for="contactName">Contact person</label>
+        <div class="ui-field">
+          <label class="ui-label" for="contactName">Contact person</label>
           <input
+            class="ui-input"
             id="contactName"
             type="text"
             [(ngModel)]="data.contactName"
@@ -109,45 +113,53 @@
         </div>
       </ng-template>
 
-      <div class="field">
-        <label for="phone">Phone number</label>
+      <div class="ui-field">
+        <label class="ui-label" for="phone">Phone number</label>
         <input
+          class="ui-input"
           id="phone"
           type="tel"
+          inputmode="tel"
           [(ngModel)]="data.phoneNumber"
           placeholder="0803 000 1914"
           autocomplete="tel"
         />
       </div>
 
-      <div class="field">
-        <label for="email">Email address</label>
+      <div class="ui-field">
+        <label class="ui-label" for="email">Email address</label>
         <input
+          class="ui-input"
           id="email"
           type="email"
+          inputmode="email"
+          autocapitalize="none"
+          spellcheck="false"
           [(ngModel)]="data.email"
           placeholder="you@example.com"
           autocomplete="email"
         />
       </div>
 
-      <div class="field">
-        <label for="password">Password</label>
+      <div class="ui-field">
+        <label class="ui-label" for="password">Password</label>
         <input
+          class="ui-input"
           id="password"
           type="password"
           [(ngModel)]="data.password"
-          placeholder="At least 6 characters"
+          placeholder="At least 8 characters"
           autocomplete="new-password"
         />
       </div>
       </div>
 
+      <p class="ui-alert" role="alert" *ngIf="saveError">{{ saveError }}</p>
       <div class="actions">
-      <p class="form-error" *ngIf="saveError">{{ saveError }}</p>
+      
       <button
         type="button"
-        class="btn btn--ghost"
+        class="ui-btn ghost"
         *ngIf="currentStep !== 'welcome' && !isSaving"
         (click)="back()"
       >
@@ -155,7 +167,7 @@
       </button>
        <button
         type="button"
-        class="btn btn--ghost"
+        class="ui-btn ghost"
         *ngIf="currentStep == 'welcome' "
         (click)="login()"
       >
@@ -163,11 +175,11 @@
       </button>
       <button
         type="button"
-        class="btn btn--primary"
+        class="ui-btn"
         [disabled]="!canContinue || isSaving"
         (click)="next()"
       >
-        <span *ngIf="isSaving" class="spinner" aria-hidden="true"></span>
+        <span *ngIf="isSaving" class="ui-spinner" aria-hidden="true"></span>
         {{ isSaving ? 'Creating your account...' : (isLastStep ? 'Enter Trendors' : 'Continue') }}
       </button>
       </div>

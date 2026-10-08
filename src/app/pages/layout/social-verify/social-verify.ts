@@ -1,16 +1,17 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Store } from '@ngrx/store';
-import { take } from 'rxjs/internal/operators/take';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { firstValueFrom } from 'rxjs';
+import { take } from 'rxjs';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { userDisplayName } from '../../../core/utils/user-display';
+import { environment } from '../../../../environments/environment';
+import { UserAction } from '../../../store/user/user.action';
+import { ToastService } from '../../../components/toast/toast.service';
 
 @Component({
   selector: 'app-social-verify',
@@ -25,68 +26,54 @@ import { userDisplayName } from '../../../core/utils/user-display';
 })
 export class SocialVerify {
   private store = inject(Store);
+  private toast = inject(ToastService);
+  private destroyRef = inject(DestroyRef);
 
-  activeVerify: 'twitter' | 'instagram' | 'tiktok' | null = null;
-  verifyMethod: 'oauth' | 'dm' = 'oauth';
-  dmHandle = '';
-  dmCode = '';
-  dmSent = false;
   user$ = this.store.select(selectCurrentUser);
-  trendorsId: string | null = null;
   protected readonly displayName = userDisplayName;
+  private messageListener: ((event: MessageEvent) => void) | null = null;
 
-
-  async ngOnInit() {
-    console.log('SocialVerify initialized');
-    await this.loadUser();
+  constructor() {
+    this.destroyRef.onDestroy(() => this.removeMessageListener());
   }
 
-  async loadUser() {
-    const user = await firstValueFrom(this.user$);
-    if (!user) {
+  /** Twitter/X OAuth runs in a popup on the API; it posts back when linked. */
+  openTwitter(): void {
+    let user: any = null;
+    this.user$.pipe(take(1)).subscribe((u) => (user = u));
+    const trendorsId = user?.trendors_id;
+    if (!trendorsId) {
+      this.toast.show('Please log in again to connect your account.', 'error');
       return;
     }
-    this.trendorsId = user.trendors_id?.toString() ?? null;
-  }
 
+    const apiOrigin = new URL(environment.apiUrl).origin;
+    const popup = window.open(
+      `${environment.apiUrl}/user/twitter?${new URLSearchParams({ trendors_id: String(trendorsId) })}`,
+      'twitterAuth',
+      'width=500,height=600',
+    );
+    if (!popup) {
+      this.toast.show('Allow pop-ups for this site to connect X.', 'error');
+      return;
+    }
 
-
-  twitter = { verified: false, handle: 'johndoe', followers: 12400 };
-  instagram = { verified: false, handle: '', followers: 0 };
-  tiktok = { verified: false, handle: '', followers: 0 };
-
-
-
-  get connectedCount() {
-    return [this.twitter, this.instagram, this.tiktok]
-      .filter(p => p.verified).length;
-  }
-
-  openTwitter() {
-    const popup = window.open(`http://127.0.0.1:6001/user/twitter?trendors_id=${this.trendorsId}`, 'twitterAuth', 'width=500,height=600');
-    window.addEventListener('message', (event) => {
-      if (event.origin !== 'http://localhost:6001' && event.origin !== window.location.origin) return;
-      if (event.data.type === 'twitter-connected') {
+    this.removeMessageListener();
+    this.messageListener = (event: MessageEvent) => {
+      if (event.origin !== apiOrigin || event.data?.type !== 'twitter-connected') return;
+      this.removeMessageListener();
+      this.toast.show('X account connected.', 'success');
+      if (typeof user?.id === 'number') {
+        this.store.dispatch(UserAction.loadCurrentUser({ userId: user.id }));
       }
-    });
-
+    };
+    window.addEventListener('message', this.messageListener);
   }
 
-  openVerify(platform: 'twitter' | 'instagram' | 'tiktok') {
-    this.activeVerify = platform;
-    this.verifyMethod = 'oauth';
-    this.dmHandle = '';
-    this.dmCode = '';
-    this.dmSent = false;
+  private removeMessageListener(): void {
+    if (this.messageListener) {
+      window.removeEventListener('message', this.messageListener);
+      this.messageListener = null;
+    }
   }
-
-  closeVerify() { this.activeVerify = null; }
-
-  requestDM() { this.dmSent = true; }
-
-  connectOAuth() { /* trigger OAuth flow */ }
-
-  verifyDMCode() { /* call API to verify code */ }
-
-  disconnect(platform: string) { /* call API */ }
 }

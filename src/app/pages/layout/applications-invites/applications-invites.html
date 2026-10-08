@@ -16,13 +16,18 @@
     <div class="layout">
         <div class="list-col">
             @if (tab() === 'applications') {
+            @if (applicationsLoading()) {
+              <p class="list-state">Loading your applications…</p>
+            }
+          
             <app-applications-lists [applications]="applications" [selectedId]="selectedApplicationId()"
                 (selectApplication)="selectApplication($event)"></app-applications-lists>
             }
 
             @if (tab() === 'invites') {
             <app-invites-lists [invites]="invites" [selectedId]="selectedInviteId()"
-                (selectInvite)="selectInvite($event)"></app-invites-lists>
+                (selectInvite)="selectInvite($event)"
+                (respond)="respondToInvitation($event)"></app-invites-lists>
             }
         </div>
     </div>

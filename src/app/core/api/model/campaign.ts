@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { CampaignDeliverable } from './campaignDeliverable';
 import { CampaignTier } from './campaignTier';
 import { CampaignInfluencer } from './campaignInfluencer';
 
@@ -28,6 +29,10 @@ export interface Campaign {
      * Access type for the campaign
      */
     access?: string;
+    /**
+     * Lifecycle: paused/closed campaigns take no new invites or applications
+     */
+    status?: Campaign.StatusEnum;
     /**
      * ID of the user who created the campaign
      */
@@ -73,5 +78,13 @@ export interface Campaign {
      */
     campaignTier?: Array<CampaignTier>;
     campaignInfluencers?: Array<CampaignInfluencer>;
+    deliverables?: Array<CampaignDeliverable>;
 }
-
+export namespace Campaign {
+    export type StatusEnum = 'active' | 'paused' | 'closed';
+    export const StatusEnum = {
+        Active: 'active' as StatusEnum,
+        Paused: 'paused' as StatusEnum,
+        Closed: 'closed' as StatusEnum
+    };
+}

@@ -11,19 +11,23 @@
 
 export interface CreateCampaignDeliverableDto { 
     /**
-     * Parent CampaignInfluencer ID
+     * Parent Campaign ID
      */
-    campaignInfluencerId: number;
+    campaignId: number;
     content_type: CreateCampaignDeliverableDto.ContentTypeEnum;
     platform: CreateCampaignDeliverableDto.PlatformEnum;
     /**
-     * Number of posts agreed
+     * Number of posts required
      */
     quantity?: number;
     /**
-     * Amount per post
+     * Guide amount per post
      */
     rate_per_post?: number;
+    /**
+     * When these outputs are due (ISO date)
+     */
+    due_date?: string;
 }
 export namespace CreateCampaignDeliverableDto {
     export const ContentTypeEnum = {
@@ -37,6 +41,8 @@ export namespace CreateCampaignDeliverableDto {
         Instagram: 'instagram',
         Tiktok: 'tiktok',
         Youtube: 'youtube',
+        Facebook: 'facebook',
+        X: 'x',
     } as const;
     export type PlatformEnum = typeof PlatformEnum[keyof typeof PlatformEnum];
 }

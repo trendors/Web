@@ -1,0 +1,26 @@
+// Mobile-first breakpoints. Base styles target phones; step up with `up()`.
+//   @use 'breakpoints' as bp;
+//   .grid { grid-template-columns: 1fr; @include bp.up(tablet) { grid-template-columns: 1fr 1fr; } }
+// `down()` exists for the rare phone-only override; prefer `up()`.
+
+$tablet: 600px;
+$desktop: 1024px;
+$wide: 1280px;
+
+$_map: (
+  tablet: $tablet,
+  desktop: $desktop,
+  wide: $wide,
+);
+
+@mixin up($name) {
+  @media (min-width: map-get($_map, $name)) {
+    @content;
+  }
+}
+
+@mixin down($name) {
+  @media (max-width: map-get($_map, $name) - 0.02px) {
+    @content;
+  }
+}

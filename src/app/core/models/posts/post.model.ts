@@ -24,6 +24,7 @@ export interface GenericFilter {
   orderBy?: string;
   order?: OrderType;
   relations?: string[];
+  campaignType?: 'open' | 'invite_only' | 'application';
 }
 
 export interface Pagination {

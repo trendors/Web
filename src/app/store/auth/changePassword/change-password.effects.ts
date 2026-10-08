@@ -27,7 +27,7 @@ export class ChangePasswordEffects {
           catchError((error) =>
             of(
               PasswordChangeActions.changePasswordFailure({
-                error: error.error?.message || 'Change password request failed',
+                error: error?.message || 'Change password request failed',
               }),
             ),
           ),

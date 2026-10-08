@@ -23,7 +23,6 @@ import { environment } from '../../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class PostService {
   private http = inject(HttpClient);
-  // private apiUrl = 'http://localhost:3000/posts';
   private apiUrl = `${environment.apiUrl}/posts`;
 
   findAll(query: FetchPostDto): Observable<FetchPostsResponse> {

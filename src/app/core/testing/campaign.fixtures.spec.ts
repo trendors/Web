@@ -20,7 +20,7 @@ describe('campaign fixtures', () => {
     const userIds = new Set([mockBrandUser.id, ...mockInfluencerUsers.map((u) => u.id)]);
     for (const assignment of mockAssignments) {
       expect(campaignIds.has(assignment.campaign?.id ?? -1)).toBe(true);
-      expect(userIds.has(assignment.influencer?.id ?? -1)).toBe(true);
+      expect(userIds.has(assignment.user?.id ?? -1)).toBe(true);
       expect(assignment.influencerPosts).toBeDefined();
     }
   });

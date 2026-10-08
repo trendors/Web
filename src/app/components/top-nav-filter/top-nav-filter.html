@@ -1,79 +1,112 @@
-<div class="mobile-menu">
+<header class="topbar">
+  <a class="topbar__brand" routerLink="/home" aria-label="Trendors home">
+    <img src="logo6.png" alt="" />
+    <span>trend<b>ors</b></span>
+  </a>
 
-<nav class="topbar">
-  <div class="topbar__avatar" role="button" aria-label="User profile">{{ userInitials }}</div>
   <div class="topbar__actions">
-    <div class="topbar__earn-pill">
-      <i class="ti ti-coin" aria-hidden="true"></i>
-      {{ earned }} earned
-    </div>
+    <a class="topbar__wallet tabular" routerLink="/home/profile" aria-label="Wallet balance">
+      <i class="ti ti-wallet" aria-hidden="true"></i>
+      {{ balance() }}
+    </a>
 
-    <button aria-label="Menu" (click)="toggleDrawer()"
-      style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;background:transparent;border:1px solid #ccc;border-radius:8px;cursor:pointer;">
-      <i class="ti ti-menu-2" style="font-size:20px;"></i>
+    <button class="ui-icon-btn topbar__menu" type="button" aria-label="Open menu" (click)="toggleDrawer()">
+      <i class="ti ti-menu-2" aria-hidden="true"></i>
+      @if (pendingCount > 0) {
+        <span class="topbar__dot" aria-hidden="true"></span>
+      }
     </button>
   </div>
-</nav>
+</header>
 
 <div class="drawer-overlay" [class.open]="drawerOpen" (click)="closeDrawer()"></div>
 
-<aside class="drawer" [class.open]="drawerOpen" role="dialog" aria-label="Menu" [attr.aria-hidden]="!drawerOpen">
+<aside
+  class="drawer"
+  [class.open]="drawerOpen"
+  role="dialog"
+  aria-label="Menu"
+  [attr.aria-hidden]="!drawerOpen"
+  [attr.inert]="drawerOpen ? null : ''"
+>
   <div class="drawer__header">
-    <span class="drawer__title">Trendors</span>
-    <button class="drawer__close" aria-label="Close menu" (click)="closeDrawer()">
+    <div class="drawer__user">
+      <span class="drawer__avatar" aria-hidden="true">{{ userInitials }}</span>
+      <div>
+        <span class="drawer__name">{{ userName }}</span>
+        @if (activeProfile()) {
+          <span class="drawer__role">{{ activeProfile() === 'brand' ? 'Brand' : 'Creator' }} account</span>
+        }
+      </div>
+    </div>
+    <button class="ui-icon-btn" type="button" aria-label="Close menu" (click)="closeDrawer()">
       <i class="ti ti-x" aria-hidden="true"></i>
     </button>
   </div>
 
-  <div class="drawer__section">
-    <a class="drawer__item" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeDrawer()">
-      <i class="ti ti-home" aria-hidden="true"></i>Home
-    </a>
-  </div>
-
-  @if (activeProfile() === 'brand') {
-  <div class="drawer__section">
-    <p class="drawer__label">Campaign management</p>
-    <a class="drawer__item" routerLink="/home/create-campaign" routerLinkActive="active" (click)="closeDrawer()">
-      <i class="ti ti-plus" aria-hidden="true"></i>Create campaign
-    </a>
-    <a class="drawer__item" routerLink="/home/view-campaign" routerLinkActive="active" (click)="closeDrawer()">
-      <i class="ti ti-search" aria-hidden="true"></i>View campaigns
-    </a>
-  </div>
+  @if (hasBothProfiles()) {
+    <div class="drawer__switch" role="radiogroup" aria-label="Active profile">
+      <button
+        type="button"
+        role="radio"
+        [class.active]="activeProfile() === 'creative'"
+        [attr.aria-checked]="activeProfile() === 'creative'"
+        (click)="setProfile('creative')"
+      >
+        Creator
+      </button>
+      <button
+        type="button"
+        role="radio"
+        [class.active]="activeProfile() === 'brand'"
+        [attr.aria-checked]="activeProfile() === 'brand'"
+        (click)="setProfile('brand')"
+      >
+        Brand
+      </button>
+    </div>
   }
 
-  @if (activeProfile() === 'creative') {
-  <div class="drawer__section">
-    <p class="drawer__label">Influencer hub</p>
-    <a class="drawer__item" routerLink="/home/shares" routerLinkActive="active" (click)="closeDrawer()">
-      <i class="ti ti-chart-bar" aria-hidden="true"></i>My shares
+  <nav class="drawer__nav">
+    <a class="drawer__item" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeDrawer()">
+      <i class="ti ti-home" aria-hidden="true"></i>Home
     </a>
+
+    @if (activeProfile() === 'brand') {
+      <p class="drawer__label">Campaign management</p>
+      <a class="drawer__item" routerLink="/home/create-campaign" routerLinkActive="active" (click)="closeDrawer()">
+        <i class="ti ti-plus" aria-hidden="true"></i>Create campaign
+      </a>
+      <a class="drawer__item" routerLink="/home/view-campaign" routerLinkActive="active" (click)="closeDrawer()">
+        <i class="ti ti-layout-list" aria-hidden="true"></i>My campaigns
+      </a>
+    }
+
+    @if (activeProfile() === 'creative') {
+      <p class="drawer__label">Creator hub</p>
+      <a class="drawer__item" routerLink="/home/shares" routerLinkActive="active" (click)="closeDrawer()">
+        <i class="ti ti-chart-bar" aria-hidden="true"></i>My shares
+      </a>
+      <a class="drawer__item" routerLink="/home/invites-and-applications" routerLinkActive="active" (click)="closeDrawer()">
+        <i class="ti ti-mail" aria-hidden="true"></i>Invites and applications
+        @if (pendingCount > 0) {
+          <span class="drawer__count">{{ pendingCount }}</span>
+        }
+      </a>
+    }
+
+    <p class="drawer__label">Account</p>
     <a class="drawer__item" routerLink="/home/transactions" routerLinkActive="active" (click)="closeDrawer()">
       <i class="ti ti-receipt" aria-hidden="true"></i>Transactions
     </a>
-    <a class="drawer__item drawer__item--highlight" routerLink="/home/invites-and-applications" routerLinkActive="active" (click)="closeDrawer()">
-      <i class="ti ti-mail" aria-hidden="true"></i>Invites and applications
-
-      @if (pendingCount > 0) {
-      <span class="drawer__count">{{ pendingCount }}</span>
-      }
-    </a>
-  </div>
-  }
-
-  <div class="drawer__section">
-    <p class="drawer__label">Account</p>
     <a class="drawer__item" routerLink="/home/notifications" routerLinkActive="active" (click)="closeDrawer()">
       <i class="ti ti-bell" aria-hidden="true"></i>Notifications
     </a>
     <a class="drawer__item" routerLink="/home/profile" routerLinkActive="active" (click)="closeDrawer()">
-      <i class="ti ti-user" aria-hidden="true"></i>Profile
+      <i class="ti ti-user" aria-hidden="true"></i>Profile and wallet
     </a>
     <button class="drawer__item drawer__logout" type="button" (click)="logout()">
-      <i class="ti ti-logout" aria-hidden="true"></i>Logout
+      <i class="ti ti-logout" aria-hidden="true"></i>Log out
     </button>
-  </div>
+  </nav>
 </aside>
-
-</div>

@@ -20,7 +20,6 @@ export class UserEffects {
  updateUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserAction.updateUser), 
-      tap(({ userId, updateData }) => console.log('Update User action caught in effect:', { userId, updateData })), 
       mergeMap(({ userId, updateData }) =>
         this.userService.updateUser(userId, updateData).pipe(
           map((response) => {
@@ -57,7 +56,11 @@ loadCurrentUser$ = createEffect(() =>
     ofType(UserAction.loadCurrentUser),
     mergeMap(({ userId }) =>
       this.authService.getUserById(userId).pipe(
-        map((user: User | undefined) => updateCurrentUser({ user: user as User })),
+        map((user: User | undefined) =>
+          user
+            ? updateCurrentUser({ user })
+            : UserAction.loadCurrentUserFailure({ error: 'User not found' }),
+        ),
         catchError((error) =>
           of(UserAction.loadCurrentUserFailure({ error: error.message }))
         )
@@ -72,7 +75,7 @@ loadCurrentUser$ = createEffect(() =>
       mergeMap(({ userId }) =>
         this.userService.deleteUser(userId).pipe(
           map((response) =>
-            response.data
+            !response.error
               ? UserAction.deleteUserSuccess({
                 message: response.message || 'User deleted successfully',
               })

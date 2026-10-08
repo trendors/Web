@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { CampaignDeliverable } from './campaignDeliverable';
 import { CampaignTier } from './campaignTier';
 import { CampaignInfluencer } from './campaignInfluencer';
 
@@ -27,6 +28,10 @@ export interface UpdateCampaignDto {
     /**
      * ID of the user who created the campaign
      */
+    /**
+     * Lifecycle: paused/closed campaigns take no new invites or applications
+     */
+    status?: 'active' | 'paused' | 'closed';
     creator_id?: number;
     /**
      * Link associated with the campaign
@@ -69,5 +74,6 @@ export interface UpdateCampaignDto {
      */
     campaignTier?: Array<CampaignTier>;
     campaignInfluencers?: Array<CampaignInfluencer>;
+    deliverables?: Array<CampaignDeliverable>;
 }
 

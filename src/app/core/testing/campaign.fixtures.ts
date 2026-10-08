@@ -33,6 +33,17 @@ export const mockInfluencerAda: User = {
   instagram_handle: 'ada.okafor',
   twitter_image: 'https://cdn.example.com/avatars/ada.jpg',
   creativeProfile: { first_name: 'Ada', last_name: 'Okafor' },
+  influncerProfile: {
+    id: 501,
+    professionalHeadline: 'Beauty creator',
+    bio: 'Skincare storyteller testing honest routines.',
+    location: 'Lagos, Nigeria',
+    estimatedRates: '₦40,000 per post',
+    audienceGenderSplit: '70% female · 30% male',
+    audienceAgeRange: '18–34',
+    topAudienceLocations: ['Lagos', 'Abuja'],
+    pastCollaborations: 'GlowSkin',
+  },
 };
 
 export const mockInfluencerChidi: User = {
@@ -66,6 +77,11 @@ export const mockInfluencerZainab: User = {
   id: 105,
   user_name: 'zainab.y',
   email: 'zainab@example.com',
+  influncerProfile: {
+    id: 505,
+    professionalHeadline: 'Lifestyle creator',
+    bio: 'New creator building an honest community.',
+  },
 };
 
 export const mockInfluencerUsers: User[] = [
@@ -162,7 +178,7 @@ function assignment(
   return {
     id,
     campaign: campaign as unknown as CampaignInfluencer['campaign'],
-    influencer,
+    user: influencer,
     influencerPosts: [],
     ...rest,
   };

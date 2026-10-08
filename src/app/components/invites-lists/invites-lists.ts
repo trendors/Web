@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
-import { InviteNegotiate } from '../invite-negotiate/invite-negotiate';
 
 @Component({
   selector: 'app-invites-lists',
@@ -13,15 +11,11 @@ import { InviteNegotiate } from '../invite-negotiate/invite-negotiate';
 export class InvitesLists {
   @Input() invites: any[] = [];
   @Input() selectedId: string | null = null;
-  @Output() selectInvite = new EventEmitter<string>();
-  private dialog = inject(MatDialog);
+ @Output() selectInvite = new EventEmitter<string>();
+  /** Accept/decline for invitation entities (they have no negotiation thread). */
+  @Output() respond = new EventEmitter<{ id: number; accept: boolean }>();
   private router = inject(Router);
 
-
-  constructor() {
-    console.log(this.invites, 'InvitesLists component initialized');
-  }
- 
 
   needsAction(status: any): boolean {
     return status === 'awaiting_response' || status === 'negotiating';
@@ -50,7 +44,7 @@ export class InvitesLists {
   }
 
   initials(name: string): string {
-    return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    return (name ?? '').split(' ').map(w => w[0] ?? '').join('').slice(0, 2).toUpperCase();
   }
 
   sorted(): any[] {
@@ -62,19 +56,11 @@ export class InvitesLists {
 
   // route to InviteNegotiate
   openInviteDetail(invite: any): void {
-    this.router.navigate(['/invite-negotiate', invite.id]);
+    // Only campaign assignments have a negotiation thread; invitation entities
+    // are answered inline with Accept/Decline.
+    if (invite?.kind !== 'assignment' || invite.assignmentId == null) return;
+    this.router.navigate(['/home/invite-negotiate', invite.assignmentId], {
+      queryParams: { campaignId: invite.campaign?.id ?? null },
+    });
   }
-
-
-    // openInviteDetail(invite: any): void {
-    //   const dialogRef = this.dialog.open(InviteNegotiate, {
-    //     data:  invite,
-    //   });
-  
-    //   dialogRef.afterClosed().subscribe(result => {
-    //     if (result) {
-    //       // Handle the result from the dialog if needed
-    //     }
-    //   });
-    // }
 }

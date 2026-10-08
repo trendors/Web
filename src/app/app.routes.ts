@@ -55,7 +55,7 @@ export const routes: Routes = [
       },
 
       {
-        path: 'invite-negotiate',
+        path: 'invite-negotiate/:id',
         loadComponent: () =>
           import('./components/invite-negotiate/invite-negotiate').then((m) => m.InviteNegotiate),
       },
@@ -80,6 +80,10 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/layout/transaction/transaction').then((m) => m.Transaction),
       },
+      {
+        path:'negotiations',
+        loadComponent: () => import('./components/negotiation/negotiation').then((m) => m.Negotiation),
+      }
     ],
   },
 

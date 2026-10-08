@@ -1,224 +1,264 @@
-<div class="page">
-  <div class="tab-nav">
-    <button class="tab-btn" [class.active]="activeTab === 'wallet'" (click)="activeTab = 'wallet'">Wallet</button>
-    <button class="tab-btn" [class.active]="activeTab === 'profile'" (click)="activeTab = 'profile'">Profile</button>
-    <button class="tab-btn" [class.active]="activeTab === 'security'" (click)="activeTab = 'security'">Security</button>
-    <button class="tab-btn" [class.active]="activeTab === 'socials'" (click)="activeTab = 'socials'">Socials</button>
+<section class="profile-page">
+  <div class="ui-tabs" role="tablist" aria-label="Account sections">
+    @for (t of tabs; track t.id) {
+      <button
+        type="button"
+        role="tab"
+        class="ui-tab"
+        [class.active]="activeTab === t.id"
+        [attr.aria-selected]="activeTab === t.id"
+        (click)="activeTab = t.id"
+      >
+        {{ t.label }}
+      </button>
+    }
   </div>
-</div>
 
-
-<div class="card" [class.tab-hidden]="activeTab !== 'wallet'">
-  <div class="section-label">Wallet</div>
-
-  <div class="wallet-balance-row">
-    <div class="wallet-info">
-  {{ (wallet$ | async)?.balance | number:'1.0-2' }} NGN
-      <span class="wallet-tag">Available balance</span>
+  <!-- Wallet -->
+  @if (activeTab === 'wallet') {
+    <div class="ui-card balance-card">
+      <span class="balance-label">Available balance</span>
+      <span class="balance tabular">₦{{ ((wallet$ | async)?.balance ?? 0) | number: '1.0-2' }}</span>
+      <button class="ui-btn block" type="button" (click)="showTopup = true">
+        <i class="ti ti-plus" aria-hidden="true"></i> Top up
+      </button>
     </div>
-    <div class="wallet-actions">
-      <button class="btn-outline" type="button">Withdraw</button>
-      <button class="btn-accent" type="button" (click)="showTopup = true">Top Up</button>
-    </div>
-  </div>
 
-  @if (showTopup) {
-  <app-topup-modal [userEmail]="user?.email || 'sayil@mail.com'" (closed)="showTopup = false"
-    (topupSuccess)="onTopupSuccess($event)" />
-  }
+    @if (showTopup && user?.email) {
+      <app-topup-modal
+        [userEmail]="user!.email!"
+        (closed)="showTopup = false"
+        (topupSuccess)="onTopupSuccess($event)"
+      />
+    }
 
-  <!-- @if((wallet$ | async)?.balance < 5000){ <div class="notice">
-    <span class="notice-icon">◈</span>
-    <span class="notice-text">
-      Withdrawals are available once your balance reaches <strong>₦5,000.00</strong>.
-    </span>
-</div>
-} -->
-<div class="inner-divider"></div>
+    <div class="ui-card">
+      <h2 class="card-title">Withdrawal account</h2>
+      <p class="card-sub">Payouts are sent to this bank account.</p>
 
-<div class="section-label" style="margin-bottom: 14px;">Withdrawal Account</div>
+      @if (loadingBank()) {
+        <div class="ui-empty"><span class="ui-spinner" aria-hidden="true"></span>Loading bank details…</div>
+      } @else {
+        <form class="ui-form" [formGroup]="bankForm" (ngSubmit)="onSaveBankAccount()" novalidate>
+          <div class="ui-field bank-field">
+            <label class="ui-label" for="bank">Bank</label>
+            <div class="ui-input-group">
+              <input
+                id="bank"
+                class="ui-input"
+                type="text"
+                autocomplete="off"
+                placeholder="Search for your bank"
+                [formControl]="bankSearchCtrl"
+                (focus)="showDropdown = true"
+                (blur)="showDropdown = false"
+                role="combobox"
+                [attr.aria-expanded]="showDropdown"
+                aria-controls="bank-list"
+              />
+              <i class="ti ti-search search-icon" aria-hidden="true"></i>
+            </div>
+            @if (showDropdown) {
+              @if (banks$ | async; as bankList) {
+                <ul id="bank-list" class="bank-list" role="listbox">
+                  @for (bank of bankList; track bank.code) {
+                    <li
+                      role="option"
+                      [attr.aria-selected]="bank.code === selectedBankCode"
+                      [class.selected]="bank.code === selectedBankCode"
+                      (mousedown)="$event.preventDefault(); onSelectBank(bank)"
+                    >
+                      {{ bank.name }}
+                    </li>
+                  } @empty {
+                    <li class="empty">No banks found</li>
+                  }
+                </ul>
+              }
+            }
+          </div>
 
-@if (savedBankDetails$ | async; as bankInfo) {
-<form [formGroup]="bankForm">
-  <div class="field">
-    <label class="field-label">Account Number</label>
-    <input formControlName="accountNumber" class="field-input locked" type="text" placeholder="0123456789"
-      maxlength="10" />
-  </div>
+          <div class="ui-field">
+            <label class="ui-label" for="accountNumber">Account number</label>
+            <input
+              id="accountNumber"
+              class="ui-input tabular"
+              formControlName="accountNumber"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              pattern="[0-9]*"
+              placeholder="0123456789"
+              maxlength="10"
+            />
+            @if (bankForm.get('accountNumber')?.touched && bankForm.get('accountNumber')?.invalid) {
+              <span class="ui-error">Enter your 10-digit account number</span>
+            }
+          </div>
 
-  <div class="field" style="margin-top: 16px;">
-    <label class="field-label">Account Name</label>
-    <input formControlName="accountName" class="field-input locked" type="text" placeholder="" maxlength="10" />
-  </div>
+          <div class="ui-field">
+            <label class="ui-label" for="accountName">Account name</label>
+            <input
+              id="accountName"
+              class="ui-input"
+              formControlName="accountName"
+              type="text"
+              autocomplete="name"
+              autocapitalize="words"
+              placeholder="As it appears on your bank account"
+            />
+            @if (bankForm.get('accountName')?.touched && bankForm.get('accountName')?.invalid) {
+              <span class="ui-error">Account name is required</span>
+            }
+          </div>
 
-  <div class="field" style="position: relative; margin-top: 16px;">
-    <label class="field-label">Bank Name</label>
-
-    <input type="text" class="field-input" placeholder="Type to search bank..." [formControl]="bankSearchCtrl"
-      (focus)="showDropdown = true" />
-
-    @if (showDropdown && (banks$ | async); as bankList) {
-    <div class="custom-dropdown-panel"
-      style="position: absolute; width: 100%; max-height: 200px; overflow-y: auto; background: #fff; border: 1px solid #ccc; z-index: 1000;">
-      @for (bank of bankList; track bank.code) {
-      <div class="dropdown-item" style="padding: 10px; cursor: pointer;" (mousedown)="onSelectBank(bank)">
-        {{ bank.name }}
-      </div>
-      } @empty {
-      <div style="padding: 10px; color: #999;">No banks found</div>
+          <button class="ui-btn block" type="submit" [disabled]="updatingAccount()">
+            @if (updatingAccount()) {
+              <span class="ui-spinner" aria-hidden="true"></span> Saving…
+            } @else {
+              Save withdrawal account
+            }
+          </button>
+        </form>
       }
     </div>
-    }
-  </div>
-
-  <div class="field" style="margin-top: 16px;">
-    <label class="field-label">
-      Transaction PIN
-      <span class="field-badge">Required</span>
-    </label>
-    <input class="field-input pin-input" type="password" placeholder="• • • • " maxlength="4" />
-    <span class="field-hint">Enter your 4-digit PIN to confirm account changes</span>
-  </div>
-  @if (updatingAccount) {
-  <app-loader></app-loader>
-
   }
 
-  <button class="btn-accent full-width" style="margin-top: 20px;" type="button" (click)="onSaveBankAccount()">
-    Update Withdrawal Account
-  </button>
-</form>
-}
+  <!-- Profile -->
+  @if (activeTab === 'profile') {
+    <div class="ui-card">
+      <div class="id-row">
+        <div>
+          <span class="ui-label">Trendors ID</span>
+          <span class="id-value tabular">{{ user?.trendors_id }}</span>
+        </div>
+        <button class="ui-btn secondary sm" type="button" (click)="copyTrendorsId()">
+          <i class="ti ti-copy" aria-hidden="true"></i> Copy
+        </button>
+      </div>
 
-</div>
+      <form class="ui-form" [formGroup]="profileForm" (ngSubmit)="onSave()" novalidate>
+        <div class="ui-row">
+          <div class="ui-field">
+            <label class="ui-label" for="first_name">First name</label>
+            <input id="first_name" class="ui-input" formControlName="first_name" type="text" autocomplete="given-name" autocapitalize="words" />
+            @if (profileForm.get('first_name')?.touched && profileForm.get('first_name')?.invalid) {
+              <span class="ui-error">First name is required</span>
+            }
+          </div>
+          <div class="ui-field">
+            <label class="ui-label" for="last_name">Last name</label>
+            <input id="last_name" class="ui-input" formControlName="last_name" type="text" autocomplete="family-name" autocapitalize="words" />
+            @if (profileForm.get('last_name')?.touched && profileForm.get('last_name')?.invalid) {
+              <span class="ui-error">Last name is required</span>
+            }
+          </div>
+        </div>
 
-<div [class.tab-hidden]="activeTab !== 'profile'">
+        <div class="ui-field">
+          <label class="ui-label" for="user_name">Username</label>
+          <input id="user_name" class="ui-input" formControlName="user_name" type="text" readonly />
+          <span class="ui-hint">Your username can't be changed.</span>
+        </div>
 
-  <div class="card">
-    <div class="section-label">Personal Info</div>
+        <div class="ui-field">
+          <label class="ui-label" for="email">Email</label>
+          <input id="email" class="ui-input" formControlName="email" type="email" readonly />
+          <span class="ui-hint">Contact support to change your email.</span>
+        </div>
 
-    <div class="section-label danger-label ">Trendors ID : {{ user?.trendors_id }} <span
-        class="field-badge copy-btn">copy</span>
+        <div class="ui-field">
+          <label class="ui-label" for="phone_number">Phone number</label>
+          <input
+            id="phone_number"
+            class="ui-input"
+            formControlName="phone_number"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            placeholder="0803 000 0000"
+          />
+        </div>
+
+        <button class="ui-btn block" type="submit" [disabled]="isLoading$ | async">
+          @if (isLoading$ | async) {
+            <span class="ui-spinner" aria-hidden="true"></span> Saving…
+          } @else {
+            Save changes
+          }
+        </button>
+      </form>
     </div>
 
-
-    <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="form">
-      <div class="form-row">
-        <div class="field">
-          <label class="field-label">First Name</label>
-          <input class="field-input" formControlName="first_name" type="text" placeholder="John" />
-        </div>
-        <div class="field">
-          <label class="field-label">Last Name</label>
-          <input class="field-input" formControlName="last_name" type="text" placeholder="Doe" />
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label">
-          User Name
-          <span class="field-badge">Locked</span>
-        </label>
-        <input class="field-input locked" formControlName="user_name" type="text" readonly />
-      </div>
-
-      <div class="field">
-        <label class="field-label">
-          Email Address
-          <span class="field-badge">Locked</span>
-        </label>
-        <input class="field-input locked" formControlName="email" type="email" readonly />
-      </div>
-
-      <div class="field">
-        <label class="field-label">Phone Number</label>
-        <input class="field-input" formControlName="phone_number" type="tel" placeholder="+234 000 0000" />
-      </div>
-    </form>
-
-
-  </div>
-
-  <div class="card actions-card">
-    <button class="btn-accent full-width" type="submit" (click)="onSave()"
-      [disabled]="profileForm.invalid || (isLoading$ | async)">
-      {{ (isLoading$ | async) ? 'Saving...' : 'Save Changes' }}
-    </button>
-  </div>
-  <div class="card danger-card">
-    <div class="section-label danger-label">Danger Zone</div>
-    <p class="danger-text">Deleting your account is permanent and cannot be undone.</p>
-    <button class="btn-danger" type="button" (click)="onDelete()">Delete Account</button>
-
-    @if (userError$ | async) {
-    <p class="error-msg">{{ userError$ | async }}</p>
-    }
-  </div>
-
-</div>
-
-
-
-
-<div class="card" [class.tab-hidden]="activeTab !== 'security'">
-  <div class="section-label">Security</div>
-  <p class="security-note">Update your password to keep your account safe.</p>
-
-  <form [formGroup]="passwordForm" class="form">
-    <div class="field">
-      <label class="field-label">Current Password</label>
-      <input class="field-input" formControlName="oldPassword" type="password" placeholder="Enter current password" />
-      @if (passwordForm.get('oldPassword')?.invalid && passwordForm.get('oldPassword')?.touched) {
-      <span class="error-msg">Current password is required.</span>
+    <div class="ui-card danger-card">
+      <h2 class="card-title">Delete account</h2>
+      <p class="card-sub">Deleting your account is permanent and cannot be undone.</p>
+      @if (userError$ | async; as userError) {
+        <div class="ui-alert" role="alert">{{ userError }}</div>
       }
+      <button class="ui-btn danger block" type="button" (click)="onDelete()">Delete account</button>
     </div>
+  }
 
-    <div class="form-row">
-      <div class="field">
-        <label class="field-label">New Password</label>
-        <input class="field-input" formControlName="newPassword" type="password" placeholder="At least 6 characters" />
-        @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched) {
-        <span class="error-msg">New password is required.</span>
-        }
-        @if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched) {
-        <span class="error-msg">Password must be at least 6 characters.</span>
-        }
-      </div>
+  <!-- Security -->
+  @if (activeTab === 'security') {
+    <div class="ui-card">
+      <h2 class="card-title">Change password</h2>
+      <p class="card-sub">Update your password to keep your account safe.</p>
 
-      <div class="field">
-        <label class="field-label">Confirm Password</label>
-        <input class="field-input" formControlName="confirmPassword" type="password"
-          placeholder="Re-enter new password" />
-        @if (passwordForm.get('confirmPassword')?.hasError('required') && passwordForm.get('confirmPassword')?.touched)
-        {
-        <span class="error-msg">Please confirm your new password.</span>
+      <form class="ui-form" [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" novalidate>
+        <div class="ui-field">
+          <label class="ui-label" for="oldPassword">Current password</label>
+          <input id="oldPassword" class="ui-input" formControlName="oldPassword" type="password" autocomplete="current-password" />
+          @if (passwordForm.get('oldPassword')?.invalid && passwordForm.get('oldPassword')?.touched) {
+            <span class="ui-error">Current password is required</span>
+          }
+        </div>
+
+        <div class="ui-field">
+          <label class="ui-label" for="newPassword">New password</label>
+          <input
+            id="newPassword"
+            class="ui-input"
+            formControlName="newPassword"
+            type="password"
+            autocomplete="new-password"
+            placeholder="At least 8 characters"
+          />
+          @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched) {
+            <span class="ui-error">New password is required</span>
+          } @else if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched) {
+            <span class="ui-error">Must be at least 8 characters</span>
+          }
+        </div>
+
+        <div class="ui-field">
+          <label class="ui-label" for="confirmPassword">Confirm new password</label>
+          <input id="confirmPassword" class="ui-input" formControlName="confirmPassword" type="password" autocomplete="new-password" />
+          @if (passwordForm.get('confirmPassword')?.hasError('required') && passwordForm.get('confirmPassword')?.touched) {
+            <span class="ui-error">Please confirm your new password</span>
+          } @else if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched) {
+            <span class="ui-error">Passwords do not match</span>
+          }
+        </div>
+
+        @if (authError$ | async; as authError) {
+          <div class="ui-alert" role="alert">{{ authError }}</div>
         }
-      </div>
+
+        <button class="ui-btn block" type="submit" [disabled]="authIsLoading$ | async">
+          @if (authIsLoading$ | async) {
+            <span class="ui-spinner" aria-hidden="true"></span> Updating…
+          } @else {
+            Update password
+          }
+        </button>
+      </form>
     </div>
+  }
 
-    @if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched) {
-    <span class="error-msg">Passwords do not match.</span>
-    }
-
-    @if (authError$ | async; as authError) {
-    <span class="error-msg">{{ authError }}</span>
-    }
-
-    <button class="btn-accent full-width" type="submit" [disabled]="passwordForm.invalid || (authIsLoading$ | async)"
-      (click)="onChangePassword()">
-      {{ (authIsLoading$ | async) ? 'Updating...' : 'Update Password' }}
-    </button>
-  </form>
-</div>
-
-<div [class.tab-hidden]="activeTab !== 'socials'">
-  <app-social-verify></app-social-verify>
-</div>
-
-<div>
-
-</div>
-
-<div class="buttom">
-
-</div>
+  <!-- Socials -->
+  @if (activeTab === 'socials') {
+    <app-social-verify></app-social-verify>
+  }
+</section>

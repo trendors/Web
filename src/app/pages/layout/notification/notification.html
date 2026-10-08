@@ -8,9 +8,11 @@
         </div>
       } @else {
         @for (notification of notifs; track notification.id) {
-          <div class="notification-item" 
+          <div class="notification-item"
+               role="button" tabindex="0"
                [ngClass]="notification.isRead ? 'read' : 'unread'"
-               (click)="onNotificationClick(notification)">
+               (click)="onNotificationClick(notification)"
+               (keydown.enter)="onNotificationClick(notification)">
             
             <div class="notification-icon">
               <i class="ti" [ngClass]="getIconClass(notification.type)" aria-hidden="true"></i>
@@ -19,10 +21,7 @@
             <div class="notification-content">
               <div class="notification-header">
                 <div>
-                  <span class="notification-type">{{ notification.type }}</span>
-                  <span class="badge" [ngClass]="'badge-' + notification.targetType">
-                    {{ notification.targetType }}
-                  </span>
+                  <span class="notification-type">{{ typeLabel(notification.type) }}</span>
                 </div>
                 <span class="notification-timestamp">
                   {{ notification.createdAt | date:'short' }}
@@ -31,9 +30,11 @@
               
               <p class="notification-message">{{ notification.message }}</p>
               
-              <div class="notification-meta">
-                <span>{{ notification.targetType }} #{{ notification.targetId }}</span>
-              </div>
+              @if (notification.data?.link) {
+                <div class="notification-meta">
+                  <span>Open →</span>
+                </div>
+              }
             </div>
 
             <div class="unread-indicator" *ngIf="!notification.isRead"></div>

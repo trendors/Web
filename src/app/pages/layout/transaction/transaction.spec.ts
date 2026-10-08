@@ -1,3 +1,4 @@
+import { provideTestDefaults } from '../../../core/testing/test-providers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Transaction } from './transaction';
@@ -8,7 +9,10 @@ describe('Transaction', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Transaction]
+      imports: [Transaction],
+      providers: [
+        ...provideTestDefaults(),
+      ],
     })
     .compileComponents();
 

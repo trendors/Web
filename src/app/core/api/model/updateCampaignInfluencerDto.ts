@@ -40,6 +40,9 @@ export namespace UpdateCampaignInfluencerDto {
         Active: 'active',
         Completed: 'completed',
         Cancelled: 'cancelled',
+        Rejected: 'rejected',
+        Withdrawn: 'withdrawn',
+        Applied: 'applied',
     } as const;
     export type StatusEnum = typeof StatusEnum[keyof typeof StatusEnum];
     export const PaymentStatusEnum = {

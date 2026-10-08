@@ -1,3 +1,4 @@
+import { provideTestDefaults } from '../../core/testing/test-providers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Fab } from './fab';
@@ -8,7 +9,10 @@ describe('Fab', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Fab]
+      imports: [Fab],
+      providers: [
+        ...provideTestDefaults(),
+      ],
     })
     .compileComponents();
 

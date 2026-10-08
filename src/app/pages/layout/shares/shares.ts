@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ShareService } from '../../../core/services/shares/share.service';
 import { ToastService } from '../../../components/toast/toast.service';
 import { Store } from '@ngrx/store';
-import { first, firstValueFrom, interval, Observable, Subscription } from 'rxjs';
+import { firstValueFrom, interval, Observable } from 'rxjs';
 import { Share } from '../../../core/models/shares/shares.model';
 import {
   selectFilteredShares,
@@ -33,8 +34,9 @@ export class SharesDashboard {
   private store = inject(Store);
   private shareService = inject(ShareService);
   private toast = inject(ToastService);
+  private destroyRef = inject(DestroyRef);
 
-  claimingShareId: string | number | null = null;
+  claimingShareId = signal<string | number | null>(null);
 
   shares$!: Observable<Share[]>;
   totals$ = this.store.select(selectTotals);
@@ -43,18 +45,19 @@ export class SharesDashboard {
   user$!: Observable<any>;
 
   async loadShares() {
-    let user = await firstValueFrom(this.user$);
+    const user = await firstValueFrom(this.user$);
+    if (typeof user?.id !== 'number') return;
     this.store.dispatch(SharesActions.loadShares({ userId: user.id }));
   }
 
 
-  viewModels: ShareViewModel[] = [];
+  /** Signal so the per-second countdown re-renders without zone.js. */
+  viewModels = signal<ShareViewModel[]>([]);
 
   HOLD_HOURS = 24;
   private HOLD_MS = this.HOLD_HOURS * 60 * 60 * 1000;
 
   private rawShares: Share[] = [];
-  private timerSub?: Subscription;
 
 
   ngOnInit(): void {
@@ -63,23 +66,19 @@ export class SharesDashboard {
     this.user$ = this.store.select(selectCurrentUser);
     this.loadShares();
 
-    this.shares$.subscribe((shares) => {
+    this.shares$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((shares) => {
       this.rawShares = shares;
       this.rebuildViewModels();
     });
 
-    this.timerSub = interval(1000).subscribe(() => {
-      this.rebuildViewModels();
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.timerSub?.unsubscribe();
+    interval(1000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.rebuildViewModels());
   }
 
   private rebuildViewModels(): void {
     const now = Date.now();
-    this.viewModels = this.rawShares.map((share) => {
+    this.viewModels.set(this.rawShares.map((share) => {
       const sharedAt = new Date(share.createdAt).getTime();
       const elapsed = now - sharedAt;
       const remaining = Math.max(0, this.HOLD_MS - elapsed);
@@ -93,7 +92,7 @@ export class SharesDashboard {
         canClaim,
         countdownDisplay: this.formatCountdown(Math.floor(remaining / 1000)),
       };
-    });
+    }));
   }
 
   private formatCountdown(totalSeconds: number): string {
@@ -105,18 +104,18 @@ export class SharesDashboard {
 
   claimReward(share: ShareViewModel): void {
     if (!share.canClaim) return;
-    this.claimingShareId = share.id;
+    this.claimingShareId.set(share.id);
     this.shareService.claimReward(share.id).subscribe({
       next: (res) => {
         this.toast.show(res?.message || 'Claim submitted', 'success');
-        this.claimingShareId = null;
+        this.claimingShareId.set(null);
         this.loadShares();
       },
       error: (err: any) => {
         console.error('Claim reward failed', err);
         const msg = err?.error?.message || err?.message || 'Failed to claim reward';
         this.toast.show(msg, 'error');
-        this.claimingShareId = null;
+        this.claimingShareId.set(null);
         this.loadShares();
       }
     });
@@ -152,13 +151,13 @@ export class SharesDashboard {
   }
 
   get totalUnclaimed(): number {
-    return this.viewModels
+    return this.viewModels()
       .filter((s) => !s.paid && s.status !== 'rejected')
       .reduce((sum, s) => sum + Number(s.rewardAmount), 0);
   }
 
   get totalEarned(): number {
-    return this.viewModels
+    return this.viewModels()
       .filter((s) => s.paid)
       .reduce((sum, s) => sum + Number(s.rewardAmount), 0);
   }

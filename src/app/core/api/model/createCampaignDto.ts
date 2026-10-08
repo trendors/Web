@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { CampaignDeliverable } from './campaignDeliverable';
 import { CampaignTier } from './campaignTier';
 import { CampaignInfluencer } from './campaignInfluencer';
 
@@ -69,5 +70,6 @@ export interface CreateCampaignDto {
      */
     campaignTier?: Array<CampaignTier>;
     campaignInfluencers?: Array<CampaignInfluencer>;
+    deliverables?: Array<CampaignDeliverable>;
 }
 

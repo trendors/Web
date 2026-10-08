@@ -38,7 +38,7 @@ export class CampaignDeliverableService extends BaseService {
     }
 
     /**
-     * Add agreed terms (one row per content type)
+     * Add a required output (one row per content type)
      * @endpoint post /campaign-deliverable
      * @param createCampaignDeliverableDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -103,62 +103,7 @@ export class CampaignDeliverableService extends BaseService {
     }
 
     /**
-     * Term rows for one influencer assignment (+ terms_total)
-     * @endpoint get /campaign-deliverable/assignment/{campaignInfluencerId}
-     * @param campaignInfluencerId 
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     * @param options additional options
-     */
-    public campaignDeliverableControllerFindByAssignment(campaignInfluencerId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public campaignDeliverableControllerFindByAssignment(campaignInfluencerId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public campaignDeliverableControllerFindByAssignment(campaignInfluencerId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public campaignDeliverableControllerFindByAssignment(campaignInfluencerId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        if (campaignInfluencerId === null || campaignInfluencerId === undefined) {
-            throw new Error('Required parameter campaignInfluencerId was null or undefined when calling campaignDeliverableControllerFindByAssignment.');
-        }
-
-        let localVarHeaders = this.defaultHeaders;
-
-        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-        ]);
-        if (localVarHttpHeaderAcceptSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-        }
-
-        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-        const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-
-        let responseType_: 'text' | 'json' | 'blob' = 'json';
-        if (localVarHttpHeaderAcceptSelected) {
-            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-                responseType_ = 'text';
-            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-                responseType_ = 'json';
-            } else {
-                responseType_ = 'blob';
-            }
-        }
-
-        let localVarPath = `/campaign-deliverable/assignment/${this.configuration.encodeParam({name: "campaignInfluencerId", value: campaignInfluencerId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: undefined})}`;
-        const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('get', `${basePath}${localVarPath}`,
-            {
-                context: localVarHttpContext,
-                responseType: <any>responseType_,
-                ...(withCredentials ? { withCredentials } : {}),
-                headers: localVarHeaders,
-                observe: observe,
-                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
-     * All term rows across one campaign (brand view)
+     * Required outputs for one campaign
      * @endpoint get /campaign-deliverable/campaign/{campaignId}
      * @param campaignId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

@@ -21,10 +21,6 @@ export class ShareService {
     return this.http.post<{ data: Share }>(`${this.apiUrl}/`, data)
   }
 
-  claimShare(shareId: string | number): Observable<{ success: boolean; message: string }> {
-    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/verify-tweet/${shareId}`, {});
-  }
-
   // Attempt to claim reward for a share. Accepts optional payload (e.g. external_post_url)
   claimReward(shareId: string | number): Observable<{ success: boolean; message: string; data?: any }> {
     return this.http.get<{ success: boolean; message: string; data?: any }>(`${this.apiUrl}/verify-post/${shareId}`);

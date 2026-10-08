@@ -130,7 +130,6 @@
   color: var(--accent);
   border: none;
   border-radius: 6px;
-  font-family: 'Inter', sans-serif;
   font-size: var(--fs-caption);
   font-weight: 500;
   letter-spacing: 0.05em;
@@ -147,7 +146,6 @@
   color: var(--grey-mid);
   border: 1px solid var(--divider);
   border-radius: 6px;
-  font-family: 'Inter', sans-serif;
   font-size: var(--fs-caption);
   font-weight: 400;
   cursor: pointer;
@@ -218,7 +216,6 @@
   background: var(--grey-light);
   border: 1px solid var(--divider);
   border-radius: 6px;
-  font-family: 'Inter', sans-serif;
   font-size: var(--fs-caption);
   font-weight: 400;
   color: var(--grey-mid);
@@ -332,8 +329,7 @@
   border: 1px solid var(--divider);
   border-radius: 6px;
   background: #fff;
-  font-family: 'Inter', sans-serif;
-  font-size: var(--fs-secondary);
+  font-size: var(--fs-input);
   font-weight: 400;
   color: var(--black);
   outline: none;
@@ -371,7 +367,6 @@
   color: var(--accent);
   border: none;
   border-radius: 6px;
-  font-family: 'Inter', sans-serif;
   font-size: var(--fs-secondary);
   font-weight: 500;
   letter-spacing: 0.05em;
@@ -393,7 +388,6 @@
   color: var(--black);
   border: 1px solid var(--divider);
   border-radius: 6px;
-  font-family: 'Inter', sans-serif;
   font-size: var(--fs-secondary);
   font-weight: 400;
   cursor: pointer;

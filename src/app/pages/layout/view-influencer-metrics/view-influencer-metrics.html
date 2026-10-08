@@ -34,329 +34,95 @@
 
     <!-- Influencer summary -->
     <section class="influencer-card">
-
-      <!-- Avatar -->
-      <img
-        [src]="h.avatar"
-        [alt]="h.name"
-        class="avatar"
-        (error)="onImgError($event, fallbackAvatar)"
-      />
-
-      <!-- Details -->
-      <div class="influencer-details">
-
-        <div class="name-row">
-
-          <h1>
-            {{ h.name }}
-          </h1>
-
-          <span class="status-badge" [class.active]="h.statusActive">
-            <span class="status-dot"></span>
-            {{ h.status }}
-          </span>
-
+      <div class="identity">
+        <img class="avatar" [src]="h.avatar" [alt]="h.name" (error)="onImgError($event, fallbackAvatar)" />
+        <div class="identity-text">
+          <div class="name-row">
+            <h1>{{ h.name }}</h1>
+            <span class="status-badge" [class.active]="h.statusActive">
+              <span class="status-dot"></span>{{ h.status }}
+            </span>
+          </div>
+          <p class="subtitle">
+            {{ h.username }}@if (h.platform !== '—') { · {{ h.platform }} }
+          </p>
+          <p class="campaign-name">{{ h.campaign }}</p>
         </div>
-
-        <p class="subtitle">
-          {{ h.username }}
-          <span>·</span>
-          {{ h.campaign }}
-        </p>
-
-        <!-- Platform -->
-        <div class="platform-row">
-
-          <span class="platform-icon">
-          </span>
-
-          <span class="platform-name">
-            {{ h.platform }}
-          </span>
-
-          <span class="followers">
-            {{ contents().length }} posts
-          </span>
-
-        </div>
-
       </div>
 
-
-      <!-- Completion -->
-      <div class="summary-box completion-box">
-
-        <div class="summary-label">
-          Content completion
+      <div class="summary-grid">
+        <div class="summary-tile">
+          <span class="tile-label">Content delivered</span>
+          <span class="tile-value">{{ h.completed }}<small> / {{ h.totalContent }}</small></span>
+          <div class="bar"><div class="bar-fill" [style.width.%]="completionPercentage()"></div></div>
+          <span class="tile-note">{{ completionPercentage() }}% complete</span>
         </div>
 
-        <div class="summary-value">
-          {{ h.completed }} /
-          {{ h.totalContent }}
-        </div>
-
-        <div class="progress-track">
-          <div
-            class="progress-fill"
-            [style.width.%]="completionPercentage()"
-          ></div>
-        </div>
-
-        <div class="completion-text">
-          {{ completionPercentage() }}% complete
-        </div>
-
-      </div>
-
-
-      <!-- Payout -->
-      <div class="summary-box payout-box">
-
-        <div class="summary-label payout-label">
-          <span>◈</span>
-          Total payout
-        </div>
-
-        <div class="summary-value">
-          ₦{{ h.totalPayout | number }}
-        </div>
-
-        <div class="payout-breakdown">
-
-          <span class="paid-text">
-            ₦{{ h.paid | number }} paid
+        <div class="summary-tile">
+          <span class="tile-label">Total payout</span>
+          <span class="tile-value">₦{{ h.totalPayout | number }}</span>
+          <div class="bar"><div class="bar-fill" [style.width.%]="paidPercentage()"></div></div>
+          <span class="tile-note">
+            <span class="paid-text">₦{{ h.paid | number }} paid</span> ·
+            <span class="pending-text">₦{{ h.pending | number }} pending</span>
           </span>
-
-          <span>·</span>
-
-          <span class="pending-text">
-            ₦{{ h.pending | number }} pending
-          </span>
-
         </div>
 
+        <div class="summary-tile">
+          <span class="tile-label">Total views</span>
+          <span class="tile-value">{{ formatCompact(totals().views) }}</span>
+          <span class="tile-note">
+            {{ formatCompact(totals().likes + totals().comments + totals().shares) }} engagements
+          </span>
+        </div>
       </div>
-
     </section>
-
 
     <!-- Content Metrics heading -->
     <div class="section-heading">
-
-      <h2>
-        Content Metrics
-      </h2>
-
-      <p>
-        {{ contents().length }} posts ·
-        {{ totalViews() }} total views
-      </p>
-
+      <h2>Content Metrics</h2>
+      <p>{{ contents().length }} posts · {{ formatCompact(totals().views) }} total views</p>
     </div>
 
-
-    <!-- Content -->
-    <div class="content-list">
-
-      @for (content of contents(); track content.id ?? content.title) {
-
-        <article class="content-card">
-
-          <!-- Content image -->
-          <img
-            [src]="content.image"
-            [alt]="content.title"
-            class="content-image"
-            (error)="onImgError($event, fallbackThumb)"
-          />
-
-
-          <div class="content-body">
-
-            <!-- Top content row -->
-            <div class="content-top">
-
-              <div class="content-info">
-
-                <!-- Title -->
-                <div class="content-title-row">
-
-                  <span class="content-title">
-                    {{ content.title }}
-                  </span>
-
-                  <span class="content-type">
-                    {{ content.type }}
-                  </span>
-
-                </div>
-
-
-                <!-- Platform/date/post -->
-                <div class="content-meta">
-
-                  <span class="platform-icon small">
-                    {{ getPlatformIcon(content.platform) }}
-                  </span>
-
-                  <span class="platform-name small">
-                    {{ content.platform }}
-                  </span>
-
-                  <span class="date">
-                    <span>▣</span>
-                    @if (content.date) {
-                      {{ content.date | date:'MMM d, y' }}
-                    } @else {
-                      Not published yet
-                    }
-                  </span>
-
-                  <span class="separator">
-                    ·
-                  </span>
-
-                  @if (content.postUrl) {
-                    <button
-                      type="button"
-                      class="post-link"
-                      (click)="openPost(content)"
-                    >
-                      View post
-                      <span>↗</span>
-                    </button>
-                  }
-
-                </div>
-
+    @if (contents().length > 0) {
+      <div class="content-grid">
+        @for (content of contents(); track content.id ?? $index) {
+          <article class="content-card">
+            <header class="card-top">
+              <div class="card-title">
+                <span class="content-type">{{ content.type }}</span>
+                <span class="card-sub">
+                  {{ content.platform }} · {{ content.date ? (content.date | date: 'MMM d, y') : 'Not published' }}
+                </span>
               </div>
+              <span class="pay-pill" [class.paid]="content.status === 'Paid'">{{ content.status }}</span>
+            </header>
 
+            <dl class="stats">
+              <div><dt>Views</dt><dd>{{ formatCompact(content.views) }}</dd></div>
+              <div><dt>Likes</dt><dd>{{ formatCompact(content.likes) }}</dd></div>
+              <div><dt>Comments</dt><dd>{{ formatCompact(content.comments) }}</dd></div>
+              <div><dt>Shares</dt><dd>{{ formatCompact(content.shares) }}</dd></div>
+            </dl>
 
-              <!-- Payout status -->
-              <div
-                class="content-payout"
-                [class.paid]="content.status === 'Paid'"
-                [class.pending]="content.status === 'Pending'"
-              >
-
-                <div class="content-payout-label">
-                  <span>◈</span>
-                  {{ content.payoutLabel }}
-                </div>
-
-                <div class="content-payout-value">
-                  ₦{{ content.payout | number }}
-                </div>
-
-                <div class="status-wrapper">
-
-                  <span
-                    class="status-badge"
-                    [class.active]="content.status === 'Paid'"
-                    [class.pending-badge]="content.status === 'Pending'"
-                  >
-                    <span class="status-dot"></span>
-                    {{ content.status }}
-                  </span>
-
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <!-- Metrics -->
-            <div class="metrics-grid">
-
-              <!-- Views -->
-              <div class="metric">
-                <div class="metric-label">
-                  <span class="metric-icon">◉</span>
-                  Views
-                </div>
-
-                <div class="metric-value">
-                  {{ formatCompact(content.views) }}
-                </div>
-              </div>
-
-
-              <!-- Likes -->
-              <div class="metric">
-                <div class="metric-label">
-                  <span class="metric-icon">♡</span>
-                  Likes
-                </div>
-
-                <div class="metric-value">
-                  {{ formatCompact(content.likes) }}
-                </div>
-              </div>
-
-
-              <!-- Comments -->
-              <div class="metric">
-                <div class="metric-label">
-                  <span class="metric-icon">◌</span>
-                  Comments
-                </div>
-
-                <div class="metric-value">
-                  {{ formatCompact(content.comments) }}
-                </div>
-              </div>
-
-
-              <!-- Shares -->
-              <div class="metric">
-                <div class="metric-label">
-                  <span class="metric-icon">♧</span>
-                  Shares
-                </div>
-
-                <div class="metric-value">
-                  {{ formatCompact(content.shares) }}
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-        </article>
-
-      }
-
-
-      <!-- Empty state example -->
-      @if (contents().length === 0) {
-
-        <div class="empty-state">
-
-          <div class="empty-icon">
-            ▶
-          </div>
-
-          <div>
-
-            <div class="empty-title">
-              No content yet
-            </div>
-
-            <p>
-              This influencer hasn't posted any content
-              for this campaign yet.
-            </p>
-
-          </div>
-
+            <footer class="card-bottom">
+              <span class="payout">₦{{ content.payout | number }}</span>
+              @if (content.postUrl) {
+                <a class="post-link" [href]="content.postUrl" target="_blank" rel="noopener">View post ↗</a>
+              }
+            </footer>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <div class="empty-icon">▶</div>
+        <div>
+          <div class="empty-title">No content yet</div>
+          <p>This influencer hasn't posted any content for this campaign yet.</p>
         </div>
-
-      }
-
-    </div>
+      </div>
+    }
 
     } @else {
       <div class="empty-state">

@@ -1,5 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Store } from '@ngrx/store';
+import { selectPostsState } from './posts.selectors';
 import { PostService } from '../../../core/services/posts/post.service';
 import { of } from 'rxjs';
 import {
@@ -10,14 +12,15 @@ import {
   concatMap,
   exhaustMap,
   groupBy,
+  withLatestFrom,
 } from 'rxjs/operators';
 import { PostActions } from './posts.actions';
-import { Post } from '../../../core/models/posts/post.model';
 
 @Injectable()
 export class PostsEffects {
   private actions$ = inject(Actions);
   private postsService = inject(PostService);
+  private store = inject(Store);
 
   findAll$ = createEffect(() =>
     this.actions$.pipe(
@@ -44,8 +47,13 @@ export class PostsEffects {
   loadMore$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PostActions.loadMorePosts),
-      concatMap(({ query }) =>
-        this.postsService.loadMore(query).pipe(
+      withLatestFrom(this.store.select(selectPostsState)),
+      // exhaustMap: ignore extra scroll/click triggers while a page is loading.
+      exhaustMap(([, state]) => {
+        if (!state.query) {
+          return of(PostActions.loadMorePostsFailure({ error: 'Nothing to load more of' }));
+        }
+        return this.postsService.findAll({ ...state.query, page: state.page + 1 }).pipe(
           map((response) => {
             if (response.status !== 'SUCCESS') {
               return PostActions.loadMorePostsFailure({
@@ -60,8 +68,8 @@ export class PostsEffects {
           catchError((error) =>
             of(PostActions.loadMorePostsFailure({ error: error?.message || 'error loading more' })),
           ),
-        ),
-      ),
+        );
+      }),
     ),
   );
 
@@ -72,18 +80,12 @@ export class PostsEffects {
         this.postsService.create(dto).pipe(
           switchMap((response) => {
             const postId = response.id;
-
             if (file && postId) {
               return this.postsService.uploadImage(postId, file).pipe(map(() => response));
             }
             return of(response);
           }),
-          map((response) =>
-            PostActions.createPostSuccess({
-              message: response.message,
-              post: {} as Post,
-            }),
-          ),
+          map((response) => PostActions.createPostSuccess({ message: response.message })),
           catchError((error: Error) => of(PostActions.createPostFailure({ error: error.message }))),
         ),
       ),
@@ -96,7 +98,7 @@ export class PostsEffects {
       groupBy((action) => action.dto.postId),
       mergeMap((postGroup$) =>
         postGroup$.pipe(
-          switchMap(({ dto }) =>
+          concatMap(({ dto, wasLiked }) =>
             this.postsService.likePost(dto).pipe(
               map((response) => {
                 if (response.error || response.status === 'FAILED') {
@@ -104,6 +106,8 @@ export class PostsEffects {
                     error: response.message,
                     postId: dto.postId!,
                     userId: dto.userId!,
+                    trendorsId: dto.trendorsId,
+                    wasLiked,
                   });
                 }
                 return PostActions.likePostSuccess({ response });
@@ -114,6 +118,8 @@ export class PostsEffects {
                     error: error?.message || 'error liking',
                     postId: dto.postId!,
                     userId: dto.userId!,
+                    trendorsId: dto.trendorsId,
+                    wasLiked,
                   }),
                 ),
               ),
@@ -193,9 +199,10 @@ export class PostsEffects {
   refreshAfterCreate$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PostActions.createPostSuccess),
-      map(() =>
+      withLatestFrom(this.store.select(selectPostsState)),
+      map(([, state]) =>
         PostActions.findAllPosts({
-          query: { limit: 20, page: 0, relations: ['user', 'likes', 'comments', 'shares'] },
+          query: { ...(state.query ?? { limit: 20 }), page: 0 },
         }),
       ),
     ),

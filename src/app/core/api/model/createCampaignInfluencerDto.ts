@@ -15,9 +15,9 @@ export interface CreateCampaignInfluencerDto {
      */
     campaignId: number;
     /**
-     * Influencer (user) ID
+     * User (influencer) ID
      */
-    influencerId: number;
+    userId: number;
     status?: CreateCampaignInfluencerDto.StatusEnum;
     /**
      * Deliverables owed
@@ -40,6 +40,9 @@ export namespace CreateCampaignInfluencerDto {
         Active: 'active',
         Completed: 'completed',
         Cancelled: 'cancelled',
+        Rejected: 'rejected',
+        Withdrawn: 'withdrawn',
+        Applied: 'applied',
     } as const;
     export type StatusEnum = typeof StatusEnum[keyof typeof StatusEnum];
     export const PaymentStatusEnum = {

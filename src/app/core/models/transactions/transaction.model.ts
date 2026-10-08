@@ -31,7 +31,8 @@ export enum TransactionStatus {
 }
 
 export interface FindTransactionsDto {
-  trendors_id: string;
+  /** The API's filter key is `trendor_id` (no "s"); anything else is ignored server-side. */
+  trendor_id: string;
   transaction_type?: TransactionType;
   searchQuery?: string;
   limit?: number;

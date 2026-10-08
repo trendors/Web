@@ -24,7 +24,7 @@ import { take, timeout } from 'rxjs';
 
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 import { User } from '../../core/models/users/user.model';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { UtilityService } from '../../core/api';
 import { ToastService } from '../toast/toast.service';
 
@@ -48,32 +48,6 @@ declare var PaystackPop: any;
         animate('180ms ease', style({ opacity: 0 }))
       ])
     ]),
-
-    trigger('modal', [
-      transition(':enter', [
-        style({
-          opacity: 0,
-          transform: 'translateY(20px) scale(0.98)'
-        }),
-        animate(
-          '220ms cubic-bezier(.4,0,.2,1)',
-          style({
-            opacity: 1,
-            transform: 'translateY(0) scale(1)'
-          })
-        )
-      ]),
-
-      transition(':leave', [
-        animate(
-          '180ms cubic-bezier(.4,0,.2,1)',
-          style({
-            opacity: 0,
-            transform: 'translateY(10px) scale(0.98)'
-          })
-        )
-      ])
-    ])
   ],
   templateUrl: './topup-modal.html',
   styleUrl: './topup-modal.scss',
@@ -111,6 +85,7 @@ export class TopupModalComponent implements OnInit {
 
   awaitingConfirmation = signal(false);
   private pendingReference: string | null = null;
+  private paidAmount = 0;
 
   private cdr = inject(ChangeDetectorRef);
 
@@ -215,10 +190,19 @@ export class TopupModalComponent implements OnInit {
       return;
     }
 
+    if (!environment.paystackPublicKey) {
+      this.errorMsg.set('Payments are not available right now. Please try again later.');
+      console.error('paystackPublicKey is not configured for this environment.');
+      return;
+    }
+
     this.isProcessing.set(true);
 
     this.errorMsg.set('');
     this.successMsg.set('');
+
+    // Freeze the amount: the popup must charge exactly what was initialized.
+    const amount = this.finalAmount;
 
     // Initialize the Paystack transaction via the SDK (core/api) instead of a
     // hand-rolled HttpClient post. (Paystack expects the amount in kobo.)
@@ -226,7 +210,7 @@ export class TopupModalComponent implements OnInit {
       .utilityControllerInitialize({
         email: this.userEmail,
         trendors_id: String(this.user?.trendors_id ?? ''),
-        amount: this.finalAmount * 100,
+        amount: amount * 100,
       })
       .pipe(
         // A hanging backend must never leave the button on "Processing…" forever.
@@ -235,7 +219,7 @@ export class TopupModalComponent implements OnInit {
       .subscribe({
 
         next: (res) => {
-          this.launchPaystack(res?.data ?? res);
+          this.launchPaystack(res?.data ?? res, amount);
         },
 
         error: (err) => {
@@ -259,7 +243,8 @@ export class TopupModalComponent implements OnInit {
   }
 
   private launchPaystack(
-    paymentData: { reference: string }
+    paymentData: { reference: string },
+    amount: number,
   ): void {
 
     try {
@@ -278,7 +263,7 @@ export class TopupModalComponent implements OnInit {
         email: this.userEmail,
 
         // Paystack expects kobo
-        amount: this.finalAmount * 100,
+        amount: amount * 100,
 
         ref: paymentData.reference,
 
@@ -293,16 +278,15 @@ export class TopupModalComponent implements OnInit {
           'eft'
         ],
 
-        callback: (response: any) => {          // <-- was onSuccess
-          console.log('Topup Succesdful:', response);
+        callback: (response: any) => {
           this.isProcessing.set(false);
+          this.paidAmount = amount;
           this.pendingReference = response?.reference ?? paymentData.reference;
           this.awaitingConfirmation.set(true);
         },
 
         onClose: () => {
           this.isProcessing.set(false);
-          console.log('Payment popup closed by user.');
         }
 
       })
@@ -335,12 +319,13 @@ export class TopupModalComponent implements OnInit {
       return;
     }
 
-    // The backend credits the wallet via the Paystack webhook — here we only
-    // record the user's confirmation as the success status.
+    // The wallet is credited by the backend when Paystack's webhook confirms
+    // the charge; the popup callback alone is not proof of payment, so the
+    // copy says "submitted", not "credited".
     this.awaitingConfirmation.set(false);
-    this.successMsg.set('Topup Succesdful. Your wallet will be credited shortly.');
-    this.toast.show('Topup Succesdful.', 'success');
-    this.topupSuccess.emit({ reference: this.pendingReference, amount: this.finalAmount });
+    this.successMsg.set('Payment submitted. Your wallet will be credited as soon as Paystack confirms it.');
+    this.toast.show('Payment submitted.', 'success');
+    this.topupSuccess.emit({ reference: this.pendingReference, amount: this.paidAmount });
     this.pendingReference = null;
     // Briefly show the Completed status, then disappear via the parent.
     setTimeout(() => this.closed.emit(), 1500);

@@ -1,6 +1,4 @@
-
-
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -17,20 +15,19 @@ type ActivateState = 'loading' | 'success' | 'expired' | 'invalid' | 'already-ac
   styleUrls: ['./activate.scss'],
 })
 export class ActivateComponent implements OnInit {
-  state: ActivateState = 'loading';
-  userName = '';
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private http = inject(HttpClient);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private http: HttpClient
-  ) {}
+  // Signals so the zoneless view updates when the HTTP response lands.
+  state = signal<ActivateState>('loading');
+  userName = signal('');
 
   ngOnInit(): void {
     const token = this.route.snapshot.queryParamMap.get('token');
 
     if (!token) {
-      this.state = 'invalid';
+      this.state.set('invalid');
       return;
     }
 
@@ -40,29 +37,24 @@ export class ActivateComponent implements OnInit {
         catchError((err) => {
           const code = err?.error?.code;
           if (code === 'TOKEN_EXPIRED') {
-            this.state = 'expired';
+            this.state.set('expired');
           } else if (code === 'ALREADY_ACTIVE') {
-            this.state = 'already-active';
+            this.state.set('already-active');
           } else {
-            this.state = 'invalid';
+            this.state.set('invalid');
           }
           return of(null);
-        })
+        }),
       )
       .subscribe((res) => {
-        console.log('Activation response:', res);
         if (res) {
-          this.state = 'success';
-          this.userName = res.userName ?? '';
+          this.state.set('success');
+          this.userName.set(res.userName ?? '');
         }
       });
   }
 
   goToLogin(): void {
     this.router.navigate(['/login']);
-  }
-
-  resendLink(): void {
-    this.router.navigate(['/resend-activation']);
   }
 }

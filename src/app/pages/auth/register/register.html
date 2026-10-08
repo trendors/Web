@@ -1,164 +1,159 @@
+<main class="auth-page">
+  <div class="auth-card">
+    <aside class="auth-hero">
+      <a class="auth-brand" routerLink="/">
+        <img src="logo6.png" alt="" />
+        <span>trend<b>ors</b></span>
+      </a>
 
-<div class="register-page">
+      <div>
+        <p class="auth-hero-label">Join the platform</p>
+        <h2 class="auth-hero-title">Start growing with <em>creators</em> today.</h2>
+        <p class="auth-hero-desc">
+          Connect with thousands of creators, launch campaigns, and track results — all in one place.
+        </p>
+      </div>
 
-  <!-- LEFT PANEL -->
-  <div class="left">
-    <div class="brand">
-      <img class="brand-logo-img" src="logo6.png" alt="Trendors" />
-    </div>
+      <div class="auth-stats">
+        <div><strong>12K+</strong><span>Active creators</span></div>
+        <div><strong>₦4.2B</strong><span>Paid out</span></div>
+        <div><strong>98%</strong><span>Success rate</span></div>
+      </div>
+    </aside>
 
-    <div class="hero">
-      <div class="hero-label">Join the platform</div>
-      <h1 class="hero-title">
-        Start growing<br/>with <em>creators</em><br/>today.
-      </h1>
-      <p class="hero-desc">
-        Connect with thousands of creators, launch campaigns, and track results — all in one place.
+    <section class="auth-panel">
+      <a class="auth-brand" routerLink="/">
+        <img src="logo6.png" alt="" />
+        <span>trend<b>ors</b></span>
+      </a>
+
+      <header class="auth-header">
+        <h1 class="auth-title">Create account</h1>
+        <p class="auth-sub">Fill in your details to get started</p>
+      </header>
+
+      <form class="ui-form" [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+        @if (error$ | async; as error) {
+          <div class="ui-alert" role="alert">{{ error }}</div>
+        }
+
+        <div class="ui-row">
+          <div class="ui-field">
+            <label class="ui-label" for="first_name">First name</label>
+            <input
+              id="first_name"
+              class="ui-input"
+              type="text"
+              autocomplete="given-name"
+              autocapitalize="words"
+              enterkeyhint="next"
+              placeholder="John"
+              formControlName="first_name"
+            />
+            @if (showError('first_name', 'required')) {
+              <span class="ui-error">First name is required</span>
+            }
+          </div>
+
+          <div class="ui-field">
+            <label class="ui-label" for="last_name">Last name</label>
+            <input
+              id="last_name"
+              class="ui-input"
+              type="text"
+              autocomplete="family-name"
+              autocapitalize="words"
+              enterkeyhint="next"
+              placeholder="Doe"
+              formControlName="last_name"
+            />
+            @if (showError('last_name', 'required')) {
+              <span class="ui-error">Last name is required</span>
+            }
+          </div>
+        </div>
+
+        <div class="ui-field">
+          <label class="ui-label" for="email">Email</label>
+          <input
+            id="email"
+            class="ui-input"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            autocapitalize="none"
+            spellcheck="false"
+            enterkeyhint="next"
+            placeholder="you@example.com"
+            formControlName="email"
+          />
+          @if (showError('email', 'required')) {
+            <span class="ui-error">Email is required</span>
+          } @else if (showError('email', 'email')) {
+            <span class="ui-error">Enter a valid email</span>
+          }
+        </div>
+
+        <div class="ui-field">
+          <label class="ui-label" for="phone_number">
+            Phone number <span class="ui-optional">(optional)</span>
+          </label>
+          <input
+            id="phone_number"
+            class="ui-input"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            enterkeyhint="next"
+            placeholder="08012345678"
+            formControlName="phone_number"
+          />
+        </div>
+
+        <div class="ui-field">
+          <label class="ui-label" for="password">Password</label>
+          <div class="ui-input-group">
+            <input
+              id="password"
+              class="ui-input"
+              [type]="hidePassword ? 'password' : 'text'"
+              autocomplete="new-password"
+              enterkeyhint="go"
+              placeholder="At least 8 characters"
+              formControlName="password"
+            />
+            <button
+              type="button"
+              class="ui-affix-btn"
+              (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+            >
+              <i class="ti" [class.ti-eye]="hidePassword" [class.ti-eye-off]="!hidePassword"></i>
+            </button>
+          </div>
+          @if (showError('password', 'required')) {
+            <span class="ui-error">Password is required</span>
+          } @else if (showError('password', 'minlength')) {
+            <span class="ui-error">Must be at least 8 characters</span>
+          } @else {
+            <span class="ui-hint">At least 8 characters</span>
+          }
+        </div>
+
+        <button type="submit" class="ui-btn block" [disabled]="isLoading$ | async">
+          @if (isLoading$ | async) {
+            <span class="ui-spinner" aria-hidden="true"></span>
+            Creating account…
+          } @else {
+            Create account
+            <i class="ti ti-arrow-right" aria-hidden="true"></i>
+          }
+        </button>
+      </form>
+
+      <p class="auth-footer">
+        Already have an account? <a class="auth-link" routerLink="/login">Sign in</a>
       </p>
-    </div>
-
-    <div class="stats">
-      <div class="stat-item">
-        <div class="stat-value">12K+</div>
-        <div class="stat-label">Active creators</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">₦4.2B</div>
-        <div class="stat-label">Paid out</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">98%</div>
-        <div class="stat-label">Success rate</div>
-      </div>
-    </div>
+    </section>
   </div>
-
-  <!-- RIGHT PANEL -->
-  <div class="right">
-    <div class="form-header">
-      <div class="form-title">Create account</div>
-      <div class="form-subtitle">Fill in your details to get started</div>
-    </div>
-
-    <!-- Error message -->
-    @if (error$ | async; as error) {
-      <div class="error-banner">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
-        </svg>
-        <span>{{ error }}</span>
-      </div>
-    }
-
-    <form class="form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-
-      <!-- First + Last name -->
-      <div class="field-row">
-        <div class="field">
-          <label for="first_name">First Name</label>
-          <input
-            id="first_name"
-            type="text"
-            placeholder="John"
-            formControlName="first_name"
-            [class.invalid]="registerForm.get('first_name')?.invalid && registerForm.get('first_name')?.touched"
-          />
-          @if (registerForm.get('first_name')?.hasError('required') && registerForm.get('first_name')?.touched) {
-            <span class="field-error">Required</span>
-          }
-        </div>
-        <div class="field">
-          <label for="last_name">Last Name</label>
-          <input
-            id="last_name"
-            type="text"
-            placeholder="Doe"
-            formControlName="last_name"
-            [class.invalid]="registerForm.get('last_name')?.invalid && registerForm.get('last_name')?.touched"
-          />
-          @if (registerForm.get('last_name')?.hasError('required') && registerForm.get('last_name')?.touched) {
-            <span class="field-error">Required</span>
-          }
-        </div>
-      </div>
-
-      <!-- Email -->
-      <div class="field">
-        <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          formControlName="email"
-          [class.invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-        />
-        @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
-          <span class="field-error">Email is required</span>
-        }
-        @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
-          <span class="field-error">Invalid email format</span>
-        }
-      </div>
-
-      <!-- Phone (optional) -->
-      <div class="field">
-        <label for="phone_number">
-          Phone Number
-          <span class="optional">optional</span>
-        </label>
-        <input
-          id="phone_number"
-          type="tel"
-          placeholder="08012345678"
-          formControlName="phone_number"
-        />
-      </div>
-
-      <!-- Password -->
-      <div class="field">
-        <label for="password">Password</label>
-        <div class="input-wrap">
-          <input
-            id="password"
-            [type]="hidePassword ? 'password' : 'text'"
-            placeholder="Min. 6 characters"
-            formControlName="password"
-            [class.invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-          />
-          <button type="button" class="toggle-pw" (click)="hidePassword = !hidePassword">
-            {{ hidePassword ? 'show' : 'hide' }}
-          </button>
-        </div>
-        @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
-          <span class="field-error">Password is required</span>
-        }
-        @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
-          <span class="field-error">Must be at least 6 characters</span>
-        }
-      </div>
-
-      <!-- Submit -->
-      <button
-        type="submit"
-        class="btn-submit"
-        [disabled]="registerForm.invalid || (isLoading$ | async)"
-      >
-        @if (isLoading$ | async) {
-          <span class="spinner"></span>
-          Creating account...
-        } @else {
-          Create account
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        }
-      </button>
-
-      <div class="signin-link">
-        Already have an account? <a routerLink="/login">Sign in</a>
-      </div>
-
-    </form>
-  </div>
-
-</div>
+</main>

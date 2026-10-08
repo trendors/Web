@@ -1,6 +1,7 @@
-import { CommonModule, AsyncPipe, DatePipe } from '@angular/common';
-import { Component } from '@angular/core';
-import { MatIcon } from '@angular/material/icon';
+import { CommonModule, AsyncPipe, isPlatformBrowser } from '@angular/common';
+import { environment } from '../../../../environments/environment';
+import { isTokenExpired } from '../../../core/utils/jwt';
+import { Component, PLATFORM_ID, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, switchMap, tap } from 'rxjs';
 import { PostService } from '../../../core/services/posts/post.service';
@@ -10,12 +11,13 @@ import { SeoService } from '../../../core/services/utility/seoservice';
 
 @Component({
   selector: 'app-single-post',
-  imports: [MatIcon, CommonModule, AsyncPipe, DatePipe],
+  imports: [CommonModule, AsyncPipe],
   templateUrl: './single-post.html',
   styleUrls: ['./single-post.scss'],
 })
 export class SinglePost {
 
+  private platformId = inject(PLATFORM_ID);
   post$!: Observable<Post>;
   trends$: Observable<any>;
   isLoading = true;
@@ -46,7 +48,7 @@ export class SinglePost {
                 title: response.data?.text || 'Post Detail',
                 desc: response.data?.text || 'No excerpt available',
                 image: response.data?.images?.[0] ?? '',
-                url: `https://c967-102-90-123-32.ngrok-free.app/post/${response.data?.id}`
+                url: `${environment.baseUrl}/post/${response.data?.id}`
               });
 
               return new Observable<Post>((observer) => {
@@ -69,7 +71,16 @@ export class SinglePost {
   }
 
   goBack() {
-    this.router.navigate(['/feed']);
+    this.router.navigate([this.isLoggedIn() ? '/home/posts' : '/']);
+  }
+
+  private isLoggedIn(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    try {
+      return !isTokenExpired(localStorage.getItem('token'));
+    } catch {
+      return false;
+    }
   }
 
 

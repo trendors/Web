@@ -8,6 +8,7 @@
  * Do not edit the class manually.
  */
 import { PostMetrics } from './postMetrics';
+import { CampaignDeliverable } from './campaignDeliverable';
 import { CampaignInfluencer } from './campaignInfluencer';
 
 
@@ -21,9 +22,17 @@ export interface CampaignInfluencerPost {
      */
     campaignInfluencer?: CampaignInfluencer;
     /**
-     * \"Skincare Routine\"
+     * Agreed term this fulfills, if any
+     */
+    deliverable?: CampaignDeliverable;
+    /**
+     * \"Skincare Routine\" / \"Attend Lagos shoot\"
      */
     title?: string;
+    /**
+     * Work details for non-content tasks
+     */
+    description?: string;
     content_type?: CampaignInfluencerPost.ContentTypeEnum;
     platform?: CampaignInfluencerPost.PlatformEnum;
     /**
@@ -34,6 +43,14 @@ export interface CampaignInfluencerPost {
      * Set on publish
      */
     published_at?: string;
+    /**
+     * Deadline for the work
+     */
+    due_date?: string;
+    /**
+     * When the work was finished
+     */
+    completed_at?: string;
     status?: CampaignInfluencerPost.StatusEnum;
     /**
      * Payout for this post
@@ -59,13 +76,18 @@ export namespace CampaignInfluencerPost {
         Instagram: 'instagram',
         Tiktok: 'tiktok',
         Youtube: 'youtube',
+        Facebook: 'facebook',
+        X: 'x',
     } as const;
     export type PlatformEnum = typeof PlatformEnum[keyof typeof PlatformEnum];
     export const StatusEnum = {
+        Todo: 'todo',
+        Doing: 'doing',
         Pending: 'pending',
         Submitted: 'submitted',
         Approved: 'approved',
         Published: 'published',
+        Done: 'done',
     } as const;
     export type StatusEnum = typeof StatusEnum[keyof typeof StatusEnum];
     export const PaymentStatusEnum = {

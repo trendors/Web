@@ -25,7 +25,7 @@ export class PasswordRecoveryEffects {
           catchError((error) =>
             of(
               PasswordRecoveryActions.forgotPasswordFailure({
-                error: error.error?.message || 'Forgot password request failed',
+                error: error?.message || 'Forgot password request failed',
               }),
             ),
           ),
@@ -48,7 +48,7 @@ export class PasswordRecoveryEffects {
           catchError((error) =>
             of(
               PasswordRecoveryActions.resetPasswordFailure({
-                error: error.error?.message || 'Reset password request failed',
+                error: error?.message || 'Reset password request failed',
               }),
             ),
           ),

@@ -13,6 +13,7 @@ import { CampaignInfluencerService } from '../../../core/api';
 import { Campaign } from '../../../core/models/campaign/campaign.model';
 import { environment } from '../../../../environments/environment';
 import { extractApiList } from '../../../core/utils/api-response';
+import { campaignPhase } from '../../../core/utils/campaign-phase';
 import { platformIconKey, platformLabel } from '../../../core/utils/platform-icon';
 import {
   BehaviorSubject,
@@ -23,6 +24,9 @@ import {
   Observable,
   of,
   Subject,
+  distinctUntilChanged,
+  filter,
+  switchMap,
   takeUntil,
 } from 'rxjs';
 
@@ -112,29 +116,38 @@ export class ViewCampaign implements OnInit, OnDestroy {
   ngOnInit() {
     this.store
       .select(selectCurrentUser)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((user) => {
-        if (user?.id) {
-          this.store.dispatch(CampaignActions.loadCampaigns({ userId: user.id }));
-        }
-      });
+      .pipe(
+        map((user) => user?.id),
+        filter((id): id is number => typeof id === 'number'),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((userId) => this.store.dispatch(CampaignActions.loadCampaigns({ userId })));
 
     // Per-campaign influencer counts load independently: the list renders
     // immediately and counts fill in on arrival (failures stay at zero).
-    this.campaigns$.pipe(takeUntil(this.destroy$)).subscribe((campaigns) => {
-      if (campaigns.length === 0) return;
-      forkJoin(
-        campaigns.map((campaign) =>
-          this.campaignInfluencerApi
-            .campaignInfluencerControllerFindByCampaign(campaign.id, false, 'body', false, {
-              transferCache: false,
-            })
-            .pipe(
-              map((res) => ({ id: campaign.id, rows: extractApiList(res) as any[] })),
-              catchError(() => of({ id: campaign.id, rows: [] as any[] })),
+    // switchMap cancels the previous batch when the list changes, so a
+    // reload never leaves stale requests running or overwriting fresh counts.
+    this.campaigns$
+      .pipe(
+        filter((campaigns) => campaigns.length > 0),
+        switchMap((campaigns) =>
+          forkJoin(
+            campaigns.map((campaign) =>
+              this.campaignInfluencerApi
+                .campaignInfluencerControllerFindByCampaign(campaign.id, false, 'body', false, {
+                  transferCache: false,
+                })
+                .pipe(
+                  map((res) => ({ id: campaign.id, rows: extractApiList(res) as any[] })),
+                  catchError(() => of({ id: campaign.id, rows: [] as any[] })),
+                ),
             ),
+          ),
         ),
-      ).subscribe((results) => {
+        takeUntil(this.destroy$),
+      )
+      .subscribe((results) => {
         const next = new Map<number, CampaignCounts>();
         for (const { id, rows } of results) {
           const statuses = rows.map((row) => String(row?.status ?? '').trim().toLowerCase());
@@ -146,7 +159,6 @@ export class ViewCampaign implements OnInit, OnDestroy {
         }
         this.counts.set(next);
       });
-    });
   }
 
   ngOnDestroy() {
@@ -174,7 +186,7 @@ export class ViewCampaign implements OnInit, OnDestroy {
   }
 
   isActiveCampaign(campaign: Campaign): boolean {
-    return campaign.access === 'open' || campaign.access === 'invite_only';
+    return campaignPhase(campaign) === 'active';
   }
 
   getPlatforms(raw: unknown): string[] {

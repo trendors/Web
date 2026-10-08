@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -13,7 +14,7 @@ import { ActiveProfileService } from '../../core/services/activeprofile.service'
 @Component({
   selector: 'app-side-nav-card',
   standalone: true,
-  imports: [AsyncPipe, RouterLink, RouterLinkActive],
+  imports: [AsyncPipe, RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './side-nav-card.html',
   styleUrl: './side-nav-card.scss',
 })

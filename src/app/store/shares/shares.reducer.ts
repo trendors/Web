@@ -25,12 +25,9 @@ export const sharesReducer = createReducer(
   on(SharesActions.loadSharesFailure, (state, { error }) => ({ ...state, isLoading: false, error: true })),
   on(SharesActions.setFilter, (state, { filter }) => ({ ...state, filter })),
 
-  on(SharesActions.createShares, (state) => ({ ...state, isLoading: true, })),
+  // Recording a share happens in the background; it must not flip the
+  // dashboard into a loading state.
   on(SharesActions.createSharesSuccess, (state) => ({ ...state, error: false })),
   on(SharesActions.createSharesFailure, (state) => ({ ...state, error: true })),
-
-  on(SharesActions.claimShare, (state) => ({ ...state, isLoading: true, })),
-  on(SharesActions.claimShareSuccess, (state) => ({ ...state, error: false })),
-  on(SharesActions.claimShareFailure, (state) => ({ ...state, error: true }))
 
 );

@@ -3,7 +3,7 @@
 
   <div class="shares-stats">
     <div class="stat-card">
-      <div class="stat-val">{{ viewModels.length }}</div>
+      <div class="stat-val">{{ viewModels().length }}</div>
       <div class="stat-lbl">Total shares</div>
     </div>
     <div class="stat-card">
@@ -16,14 +16,14 @@
     </div>
   </div>
 
-  <div class="empty-state" *ngIf="viewModels.length === 0">
+  <div class="empty-state" *ngIf="viewModels().length === 0">
     <i class="ti ti-share-off"></i>
     <p>No shares yet. Share an ad to start earning!</p>
   </div>
 
 
 
-  @for (share of viewModels; track $index) {
+  @for (share of viewModels(); track share.id) {
   <div class="share-card">
 
     <div class="card-top">
@@ -110,9 +110,9 @@
 
 
     @if (share.canClaim) {
-    <button class="btn btn-claim" (click)="claimReward(share)" [disabled]="claimingShareId === share.id">
-      <span *ngIf="claimingShareId === share.id" class="button-spinner" aria-hidden="true"></span>
-      <span *ngIf="claimingShareId !== share.id"><i class="ti ti-coin"></i> Claim ${{ share.rewardAmount }}</span>
+    <button class="btn btn-claim" (click)="claimReward(share)" [disabled]="claimingShareId() === share.id">
+      <span *ngIf="claimingShareId() === share.id" class="button-spinner" aria-hidden="true"></span>
+      <span *ngIf="claimingShareId() !== share.id"><i class="ti ti-coin"></i> Claim ₦{{ share.rewardAmount }}</span>
     </button>
     }
 

@@ -7,7 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { CampaignInfluencer } from './campaignInfluencer';
+import { Campaign } from './campaign';
 
 
 export interface CampaignDeliverable { 
@@ -16,19 +16,23 @@ export interface CampaignDeliverable {
      */
     id?: number;
     /**
-     * Parent assignment
+     * Campaign these outputs belong to
      */
-    campaignInfluencer?: CampaignInfluencer;
+    campaign?: Campaign;
     content_type?: CampaignDeliverable.ContentTypeEnum;
     platform?: CampaignDeliverable.PlatformEnum;
     /**
-     * Number of posts agreed
+     * Number of posts required
      */
     quantity?: number;
     /**
-     * Amount per post
+     * Guide amount per post
      */
     rate_per_post?: number;
+    /**
+     * When these outputs are due (from negotiation)
+     */
+    due_date?: string;
 }
 export namespace CampaignDeliverable {
     export const ContentTypeEnum = {
@@ -42,6 +46,8 @@ export namespace CampaignDeliverable {
         Instagram: 'instagram',
         Tiktok: 'tiktok',
         Youtube: 'youtube',
+        Facebook: 'facebook',
+        X: 'x',
     } as const;
     export type PlatformEnum = typeof PlatformEnum[keyof typeof PlatformEnum];
 }

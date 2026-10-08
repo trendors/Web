@@ -9,7 +9,7 @@
  */
 import { Campaign } from './campaign';
 import { User } from './user';
-import { CampaignDeliverable } from './campaignDeliverable';
+import { CampaignOffer } from './campaignOffer';
 import { CampaignInfluencerPost } from './campaignInfluencerPost';
 
 
@@ -23,9 +23,9 @@ export interface CampaignInfluencer {
      */
     campaign?: Campaign;
     /**
-     * Influencer (user) assigned to the campaign
+     * User (influencer) assigned to the campaign
      */
-    influencer?: User;
+    user?: User;
     status?: CampaignInfluencer.StatusEnum;
     /**
      * Deliverables owed
@@ -48,8 +48,8 @@ export interface CampaignInfluencer {
      * When the contract was signed
      */
     contract_signed_at?: string;
-    deliverables?: Array<CampaignDeliverable>;
     influencerPosts?: Array<CampaignInfluencerPost>;
+    offers?: Array<CampaignOffer>;
 }
 export namespace CampaignInfluencer {
     export const StatusEnum = {
@@ -58,6 +58,9 @@ export namespace CampaignInfluencer {
         Active: 'active',
         Completed: 'completed',
         Cancelled: 'cancelled',
+        Rejected: 'rejected',
+        Withdrawn: 'withdrawn',
+        Applied: 'applied',
     } as const;
     export type StatusEnum = typeof StatusEnum[keyof typeof StatusEnum];
     export const PaymentStatusEnum = {

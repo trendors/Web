@@ -1,86 +1,81 @@
+<section class="tx-page">
+  <header class="ui-page-header">
+    <h1>Transactions</h1>
+  </header>
 
-  <div class="account-main">
-    <div class="page">
-
-
-      <!-- Filter Card -->
-
-      <form [formGroup]="filterForm" class="form">
-        <div class="field">
-          <select formControlName="transaction_type" class="field-input">
-            <option [value]="TransactionType.ALL">All Activity</option>
-            <option [value]="TransactionType.CREDIT">Credits</option>
-            <option [value]="TransactionType.DEBIT">Debits</option>
-          </select>
-        </div>
-      </form>
-
-        <div class="section-label">Transactions</div>
-
-        @if (loading$ | async) {
-        <div class="notice">
-          <span class="notice-text">Loading transactions...</span>
-        </div>
-        }
-
-        @if (transactions$ | async; as transactions) {
-        <div class="form">
-
-          @for (tx of transactions; track tx.id) {
-          <div class="card" (click)="openTransactionDialog(tx)" >
-
-            <div class="wallet-balance-row">
-
-              <!-- Left -->
-              <div class="wallet-info">
-                <span class="section-label">
-                  {{ tx.description }}
-                </span>
-
-                <span class="wallet-tag">
-                  {{ tx.createdAt | date: 'MMM d, y' }} • {{ tx.status | lowercase }}
-                </span>
-              </div>
-
-              <!-- Right -->
-              <div class="wallet-actions">
-                <span class="wallet-balance section-label"
-                  [style.color]="tx.type === TransactionType.CREDIT ? 'var(--success)' : 'var(--error)'">
-                  {{ tx.type === TransactionType.CREDIT ? '+' : '−' }}
-                  {{ tx.amount }}
-                  <small>{{ tx.currency }}</small>
-                </span>
-              </div>
-
-            </div>
-
-          </div>
-          }
-
-        </div>
-        }
-
-      <!-- Pagination -->
-      <div class="card actions-card">
-        <div class="wallet-balance-row">
-
-          <button class="btn-outline" (click)="previousPage()" [disabled]="(filterForm.get('page')?.value ?? 1) <= 1">
-            Prev
-          </button>
-
-          <span class="wallet-tag">
-            {{ filterForm.get('page')?.value }}
-            /
-            {{ (totalPages$ | async) ?? 1 }}
-          </span>
-
-          <button class="btn-outline" (click)="nextPage()"
-            [disabled]="(filterForm.get('page')?.value ?? 1) >= ((totalPages$ | async) || 1)">
-            Next
-          </button>
-
-        </div>
-      </div>
-    </div>
-
+  <div class="ui-scroll-x filters" role="group" aria-label="Filter transactions">
+    @for (f of filters; track f.value) {
+      <button
+        type="button"
+        class="ui-chip"
+        [class.active]="filterForm.controls.transaction_type.value === f.value"
+        [attr.aria-pressed]="filterForm.controls.transaction_type.value === f.value"
+        (click)="setType(f.value)"
+      >
+        {{ f.label }}
+      </button>
+    }
   </div>
+
+  @if (error$ | async; as error) {
+    <div class="ui-alert" role="alert">{{ error }}</div>
+  }
+
+  @if (loading$ | async) {
+    <div class="ui-empty"><span class="ui-spinner" aria-hidden="true"></span>Loading transactions…</div>
+  } @else {
+    @if (transactions$ | async; as transactions) {
+      @if (transactions.length) {
+        <ul class="tx-list ui-card">
+          @for (tx of transactions; track tx.id) {
+            <li class="tx-row">
+              <span
+                class="tx-icon"
+                [class.credit]="tx.type === TransactionType.CREDIT"
+                aria-hidden="true"
+              >
+                <i
+                  class="ti"
+                  [class.ti-arrow-down-left]="tx.type === TransactionType.CREDIT"
+                  [class.ti-arrow-up-right]="tx.type !== TransactionType.CREDIT"
+                ></i>
+              </span>
+              <div class="tx-info">
+                <span class="tx-desc">{{ tx.description || (tx.type === TransactionType.CREDIT ? 'Credit' : 'Debit') }}</span>
+                <span class="tx-meta">
+                  {{ tx.createdAt | date: 'MMM d, y' }} · <span class="tx-status">{{ tx.status | lowercase }}</span>
+                </span>
+              </div>
+              <span class="tx-amount tabular" [class.credit]="tx.type === TransactionType.CREDIT">
+                {{ tx.type === TransactionType.CREDIT ? '+' : '−' }}{{ tx.amount | currency: (tx.currency || 'NGN') : 'symbol-narrow' : '1.0-2' }}
+              </span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="ui-empty">
+          <i class="ti ti-receipt-off" aria-hidden="true"></i>
+          <strong>No transactions yet</strong>
+          Top-ups, payouts and campaign charges will show up here.
+        </div>
+      }
+    }
+  }
+
+  @if (((totalPages$ | async) ?? 1) > 1) {
+    <nav class="pager" aria-label="Pagination">
+      <button class="ui-btn secondary sm" type="button" (click)="previousPage()" [disabled]="page() <= 0">
+        <i class="ti ti-chevron-left" aria-hidden="true"></i> Prev
+      </button>
+      <span class="tabular">Page {{ page() + 1 }} of {{ (totalPages$ | async) ?? 1 }}</span>
+      <button
+        class="ui-btn secondary sm"
+        type="button"
+        (click)="nextPage()"
+        [disabled]="page() + 1 >= ((totalPages$ | async) || 1)"
+      >
+        Next <i class="ti ti-chevron-right" aria-hidden="true"></i>
+      </button>
+    </nav>
+  }
+</section>

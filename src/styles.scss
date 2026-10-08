@@ -1,74 +1,158 @@
 @use '@angular/material' as mat;
+@use 'breakpoints' as bp;
+@use 'auth';
+@use 'forms';
 
-// Single bundled family: Inter Variable (see angular.json styles).
-// Fallback: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif.
+// One family everywhere: Inter Variable (bundled via angular.json styles).
+// Components must not set their own font-family; they inherit this.
 
 // ---------------------------------------------------------------------------
-// Single source of truth for tokens. (Previously split across two :root
-// blocks with duplicate/unused entries — consolidated here.)
+// Tokens — the single source of truth. Components use these, not hex values.
 // ---------------------------------------------------------------------------
 :root {
-  --font-sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: var(--font-sans);  // Headers
-  --font-body: var(--font-sans);     // Body text
+  --font-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: var(--font-sans);
+  --font-body: var(--font-sans);
 
-  // Type scale (rem, html = 16px). Mobile-first defaults; desktop steps up
-  // in the media query below per the platform size guidance.
-  --fs-page-title: 1.75rem;    // 28px mobile H1 (range 20-34) / 600 / 1.2 / -0.02em
-  --fs-section: 1.25rem;       // 20px / 600 / 1.3
-  --fs-card-title: 1.0625rem;  // 17px / 500 / 1.35
-  --fs-body: 1rem;             // 16px / 400 / 1.5 (recommended body, no iOS zoom)
-  --fs-button: 1rem;           // 16px / 500
-  --fs-secondary: 0.875rem;    // 14px / 400
-  --fs-caption: 0.75rem;       // 12px / 500 (mobile caption range 11-12, never below 10px)
+  // Type scale (html = 16px). Phone sizes; desktop steps up below.
+  --fs-page-title: 1.5rem;     // 24px
+  --fs-section: 1.25rem;       // 20px
+  --fs-card-title: 1.0625rem;  // 17px
+  --fs-body: 1rem;             // 16px
+  --fs-button: 1rem;           // 16px
+  --fs-secondary: 0.875rem;    // 14px
+  --fs-caption: 0.75rem;       // 12px
+  --fs-input: 1rem;            // never below 16px: iOS zooms on focus otherwise
 
-  // Colors (consolidated — removed unused dark-mode/legacy tokens:
-  // --purple, --surface-hover, --text-primary, --text-secondary, --text-muted,
-  // --accent-dim, --border-light, --text-black, etc. Re-add only if actually used.)
+  // Colors
   --text: #111827;
-  --text2: #4a4a6a;
+  --text2: #374151;
   --muted: #6b7280;
+  --placeholder: #9ca3af;
   --page-bg: #ffffff;
-  --bg: #f7f7f9;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
   --white: #ffffff;
-  --border: #e4e4ec;
-  --border-hover: #c4c4d8;
+  --border: #e5e7eb;
+  --border-hover: #c9ccd3;
+  --border-strong: #9ca3af;
   --accent: #ff6b35;
-  --accent-dark: #ff4f1a;
-  --accent-soft: rgba(255, 107, 53, 0.07);
+  --accent-dark: #e8551f;
+  --accent-soft: rgba(255, 107, 53, 0.1);
+  --on-accent: #ffffff;
   --success: #16a34a;
-  --red: #ff4f4f;
-  --amber: #f5a623;
-  --blue: #5a9ef5;
+  --success-soft: #dcfce7;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --warning: #d97706;
+  --warning-soft: #fef3c7;
+  --info: #2563eb;
+  --info-soft: #dbeafe;
+  // Aliases for token names components used to define locally. They all
+  // resolve to the palette above so every screen shares one set of colors.
+  --red: var(--danger);
+  --error: var(--danger);
+  --red-bg: var(--danger-soft);
+  --amber: var(--warning);
+  --amber-bg: var(--warning-soft);
+  --blue: var(--info);
+  --blue-bg: var(--info-soft);
+  --green: var(--success);
+  --green-bg: var(--success-soft);
+  --ink: var(--text);
+  --ink-soft: var(--muted);
+  --ink-muted: var(--muted);
+  --ink-faint: var(--placeholder);
+  --black: var(--text);
+  --grey-dark: var(--text2);
+  --grey-mid: var(--muted);
+  --grey-light: var(--surface-2);
+  --foreground: var(--text);
+  --muted-foreground: var(--muted);
+  --background: var(--bg);
+  --bg-page: var(--bg);
+  --paper: var(--bg);
+  --card: var(--surface);
+  --bg-card: var(--surface);
+  --panel: var(--surface);
+  --panel-raised: var(--surface-2);
+  --input: var(--surface-2);
+  --line: var(--border);
+  --divider: var(--border);
+  --primary: var(--accent);
+  --primary-foreground: var(--on-accent);
+  --gold: var(--accent);
+  --gold-soft: var(--accent-soft);
+  --gold-light: var(--accent-soft);
+  --pine: var(--accent);
+  --pine-soft: var(--accent-soft);
+  --purple: var(--accent);
+  --purple-soft: var(--accent-soft);
+  --accent-dim: var(--accent-soft);
+  --emerald: var(--success);
+  --emerald-soft: var(--success-soft);
+  --teal: var(--success);
+  --error-soft: var(--danger-soft);
+  --notice-border: var(--border);
+  --border-hi: var(--border-hover);
+  --border-light: var(--border);
+  --surface-hover: var(--surface-2);
+  --text-main: var(--text);
+  --text-primary: var(--text);
+  --text-2: var(--text2);
+  --text-secondary: var(--text2);
+  --text-3: var(--muted);
+  --text-muted: var(--muted);
+  --fs-card-caption: var(--fs-caption);
+  --radius-s: var(--radius-sm);
+  --radius-m: var(--radius-md);
+  --radius-lg: var(--radius);
+
+  --focus-ring: 0 0 0 3px rgba(255, 107, 53, 0.25);
+
+  // Shape & size
   --radius: 16px;
+  --radius-md: 12px;
+  --radius-input: 10px;
   --radius-sm: 8px;
+  --radius-pill: 999px;
+  --control-h: 48px;
+  --tap: 44px;
+  --shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.06);
+  --shadow-md: 0 4px 16px rgba(17, 24, 39, 0.08);
+  --shadow-sheet: 0 -8px 32px rgba(17, 24, 39, 0.16);
 
   // Spacing
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
-  --space-4: 1rem;             // 16px side padding
-  --space-5: 1.25rem;          // 20px side padding
+  --space-4: 1rem;
+  --space-5: 1.25rem;
   --space-6: 1.5rem;
-  --page-pad: clamp(1rem, 4vw, 1.25rem);
+  --space-8: 2rem;
+  --page-pad: 1rem;
+
+  // Fixed chrome heights, so content can pad around it.
+  --bottom-nav-h: 64px;
 
   // Safe areas (0 on devices without a notch)
-  --sat: env(safe-area-inset-top);
-  --sab: env(safe-area-inset-bottom);
-  --sal: env(safe-area-inset-left);
-  --sar: env(safe-area-inset-right);
-}
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 
-// Desktop scale-up (desktop guidance: body 16-18, headings 24-48+,
-// captions/secondary 13-14, buttons 15-20).
-@media (min-width: 1024px) {
-  :root {
-    --fs-page-title: 2.5rem;   // 40px
-    --fs-section: 1.5rem;      // 24px
-    --fs-card-title: 1.125rem; // 18px
-    --fs-body: 1.0625rem;      // 17px
-    --fs-button: 1.0625rem;    // 17px
-    --fs-caption: 0.8125rem;   // 13px
+  @include bp.up(tablet) {
+    --page-pad: 1.5rem;
+    --fs-page-title: 1.75rem;
+  }
+
+  @include bp.up(desktop) {
+    --fs-page-title: 2rem;
+    --fs-section: 1.375rem;
+    --fs-card-title: 1.125rem;
+    --fs-caption: 0.8125rem;
   }
 }
 
@@ -84,157 +168,40 @@
 }
 
 // ---------------------------------------------------------------------------
-// Material theme
-// FIX 1: density 0 -> -2. Density 0 is Material's largest/default density —
-//   it inflates buttons, form fields, chips, etc. far past what a minimalist
-//   scale calls for. -2 is a good starting point; try -1..-3 to taste.
-// FIX 2: typography no longer takes a bare font-name string (which makes
-//   Material generate its own default M3 type scale — sized independently
-//   of --fs-*, and with higher specificity inside Material components).
-//   Feeding it our own family/weights keeps Material's internal type scale
-//   in the same family and weight system as the rest of the app.
+// Material theme: brand orange, Inter, compact density.
 // ---------------------------------------------------------------------------
 html {
-  @include mat.theme((color: (primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
-      ),
-      typography: (
-        brand-family: 'Inter Variable',
-        bold-weight: 600,
-        medium-weight: 500,
-        regular-weight: 400,
-      ),
-      density: -2,
-    ));
+  @include mat.theme((
+    color: (
+      primary: mat.$orange-palette,
+      tertiary: mat.$orange-palette,
+    ),
+    typography: (
+      plain-family: 'Inter Variable',
+      brand-family: 'Inter Variable',
+      bold-weight: 600,
+      medium-weight: 500,
+      regular-weight: 400,
+    ),
+    density: -2,
+  ));
 
-  font-size: 16px;
-  scroll-padding-top: 4rem;
-}
-
-// Bring Material's own M3 type-scale tokens down to match our scale, so
-// components (mat-button, mat-form-field, mat-card, etc.) that read these
-// tokens internally line up with the rest of the app instead of using M3
-// defaults. Extend this list if other Material components still look
-// mismatched after testing.
-html {
+  // M3's orange tone is brownish; pin the primary roles to the brand color.
+  --mat-sys-primary: var(--accent);
+  --mat-sys-on-primary: var(--on-accent);
   --mat-sys-body-large: var(--fs-body);
   --mat-sys-body-medium: var(--fs-secondary);
   --mat-sys-body-small: var(--fs-caption);
   --mat-sys-title-large: var(--fs-section);
   --mat-sys-title-medium: var(--fs-card-title);
   --mat-sys-label-large: var(--fs-button);
+
+  font-size: 16px;
+  scroll-padding-top: 4rem;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
-* {
-  font-family: var(--font-body);
-}
-
-// ---------------------------------------------------------------------------
-// Headings
-// ---------------------------------------------------------------------------
-h1, h2, h3, h4, .title, .heading {
-  font-family: var(--font-display);
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  text-wrap: balance; // keeps headings from wrapping awkwardly
-  margin: 0;
-}
-
-h1, .title { font-size: var(--fs-page-title); font-weight: 600; line-height: 1.2; }
-h2 { font-size: var(--fs-section); font-weight: 600; line-height: 1.3; }
-h3 { font-size: var(--fs-card-title); font-weight: 500; line-height: 1.35; }
-h4 { font-size: var(--fs-card-title); font-weight: 500; line-height: 1.35; }
-
-// ---------------------------------------------------------------------------
-// Body text
-// FIX 3: scoped instead of bare `p, span` — a bare `span` selector overrides
-//   font-size on Material's *internal* spans (button labels, form field
-//   text, badges), which is a separate source of "things look off" inside
-//   Material components. Use .body-text (or unclassed <p>) explicitly.
-// ---------------------------------------------------------------------------
-p:not([class]) {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: var(--fs-body);
-  line-height: 1.5;
-  margin: 0;
-}
-
-.body-text {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: var(--fs-body);
-  line-height: 1.5;
-}
-
-// ---------------------------------------------------------------------------
-// Secondary / muted text
-// ---------------------------------------------------------------------------
-.subtitle, .secondary, .date, .time {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: var(--fs-secondary);
-  color: var(--muted);
-  line-height: 1.4;
-  margin: 0;
-}
-
-// ---------------------------------------------------------------------------
-// Captions
-// ---------------------------------------------------------------------------
-.caption {
-  font-family: var(--font-body);
-  font-weight: 500;
-  font-size: var(--fs-caption);
-  color: var(--muted);
-  line-height: 1.4;
-  margin: 0;
-}
-
-// Labels/badges: sentence case, never all-caps.
-.category, .badge, .label {
-  font-family: var(--font-body);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  font-size: var(--fs-caption);
-  color: var(--muted);
-}
-
-// ---------------------------------------------------------------------------
-// Touch targets: buttons, inputs and list rows are at least 48px
-// ---------------------------------------------------------------------------
-button,
-input[type='button'],
-input[type='submit'] {
-  min-height: 48px;
-  font-family: var(--font-body);
-  font-size: var(--fs-button);
-  font-weight: 500;
-}
-
-input:not([type='checkbox']):not([type='radio']),
-textarea,
-select {
-  min-height: 48px;
-  font-size: 1rem; // 16px minimum: prevents iOS zoom on focus
-  font-family: var(--font-body);
-  scroll-margin-bottom: 6rem; // keep focused fields visible above the keyboard
-}
-
-// ---------------------------------------------------------------------------
-// Misc components
-// ---------------------------------------------------------------------------
-.card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 22px;
-}
-
-// ---------------------------------------------------------------------------
-// Page / body
-// FIX 4: body was declared three separate times — merged into one block.
-// ---------------------------------------------------------------------------
 html,
 body {
   height: 100%;
@@ -250,8 +217,528 @@ body {
   line-height: 1.5;
   min-height: 100vh;
   min-height: 100dvh;
-  margin: 0;
   padding-left: var(--sal);
   padding-right: var(--sar);
-  padding-bottom: var(--sab);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+// Form controls don't inherit font by default.
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--font-mono);
+}
+
+// ---------------------------------------------------------------------------
+// Headings & text
+// ---------------------------------------------------------------------------
+h1, h2, h3, h4, .title, .heading {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-wrap: balance;
+  margin: 0;
+}
+
+h1, .title { font-size: var(--fs-page-title); font-weight: 600; }
+h2 { font-size: var(--fs-section); font-weight: 600; line-height: 1.3; }
+h3, h4 { font-size: var(--fs-card-title); font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; }
+
+p:not([class]) {
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.body-text {
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+.subtitle, .secondary, .date, .time {
+  font-size: var(--fs-secondary);
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.caption {
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.category, .badge, .label {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  font-size: var(--fs-caption);
+  color: var(--muted);
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------------------
+// Baseline for unstyled controls: thumb-sized and zoom-safe.
+// ---------------------------------------------------------------------------
+button,
+input[type='button'],
+input[type='submit'] {
+  min-height: var(--tap);
+  font-size: var(--fs-button);
+  font-weight: 500;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+textarea,
+select {
+  min-height: var(--tap);
+  font-size: var(--fs-input); // 16px floor: stops iOS focus zoom
+  scroll-margin-bottom: 6rem;            // keep focused field above the keyboard
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--accent);
+  width: 20px;
+  height: 20px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+// ---------------------------------------------------------------------------
+// Form primitives — use these on every screen.
+//
+//   <label class="ui-field">
+//     <span class="ui-label">Email</span>
+//     <input class="ui-input" type="email" inputmode="email" autocomplete="email" />
+//     <span class="ui-hint">We never share it</span>
+//     <span class="ui-error">Enter a valid email</span>
+//   </label>
+//
+// With an affix:  <div class="ui-input-group"><span class="ui-affix">₦</span>
+//                 <input class="ui-input" …><button class="ui-affix-btn">…</button></div>
+// ---------------------------------------------------------------------------
+.ui-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ui-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+
+  @include bp.up(tablet) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ui-label {
+  @include forms.label;
+
+  .ui-optional {
+    color: var(--muted);
+    font-weight: 400;
+  }
+}
+
+.ui-input {
+  @include forms.input;
+}
+
+textarea.ui-input {
+  min-height: 112px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+select.ui-input {
+  @include forms.select;
+}
+
+.ui-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .ui-input {
+    flex: 1;
+  }
+
+  .ui-affix {
+    position: absolute;
+    left: 14px;
+    color: var(--muted);
+    font-size: var(--fs-input);
+    pointer-events: none;
+
+    + .ui-input {
+      padding-left: 34px;
+    }
+  }
+
+  .ui-affix-btn {
+    position: absolute;
+    right: 2px;
+    width: var(--tap);
+    height: var(--tap);
+    min-height: var(--tap);
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    border-radius: var(--radius-input);
+    font-size: 1.25rem;
+  }
+
+  .ui-input:has(~ .ui-affix-btn) {
+    padding-right: 48px;
+  }
+}
+
+.ui-hint {
+  font-size: var(--fs-caption);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.ui-error {
+  font-size: var(--fs-caption);
+  color: var(--danger);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.ui-alert {
+  padding: 12px 14px;
+  border-radius: var(--radius-input);
+  font-size: var(--fs-secondary);
+  line-height: 1.45;
+  background: var(--danger-soft);
+  color: var(--danger);
+
+  &.success { background: var(--success-soft); color: var(--success); }
+  &.info { background: var(--info-soft); color: var(--info); }
+  &.warning { background: var(--warning-soft); color: var(--warning); }
+}
+
+// Checkbox / radio row with a full-height tap area.
+.ui-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap);
+  font-size: var(--fs-secondary);
+  color: var(--text2);
+  cursor: pointer;
+  user-select: none;
+}
+
+// ---------------------------------------------------------------------------
+// Buttons
+// ---------------------------------------------------------------------------
+.ui-btn {
+  @include forms.btn;
+
+  &.secondary { @include forms.btn-secondary; }
+  &.ghost { @include forms.btn-ghost; }
+  &.danger { @include forms.btn-danger; }
+  &.block { width: 100%; }
+  &.sm { @include forms.btn-sm; }
+}
+
+// Inline spinner for buttons: <span class="ui-spinner" aria-hidden="true"></span>
+.ui-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ui-spin 0.7s linear infinite;
+  flex: none;
+}
+
+@keyframes ui-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ui-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  min-height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text2);
+  font-size: 1.25rem;
+  cursor: pointer;
+
+  &:hover { background: var(--surface-2); }
+}
+
+// Sticky action bar for long forms on phones; sits above the bottom nav.
+.ui-actions {
+  display: flex;
+  gap: var(--space-3);
+
+  > .ui-btn { flex: 1; }
+
+  &.sticky {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    padding: var(--space-3) 0 calc(var(--space-3) + var(--sab));
+    background: linear-gradient(to top, var(--page-bg) 75%, transparent);
+  }
+
+  @include bp.up(tablet) {
+    > .ui-btn { flex: 0 0 auto; }
+    justify-content: flex-end;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Surfaces
+// ---------------------------------------------------------------------------
+.card,
+.ui-card {
+  @include forms.card;
+
+  @include bp.up(tablet) {
+    padding: var(--space-5);
+  }
+}
+
+// Modal that is a bottom sheet on phones and a centred dialog from tablet up.
+//   <div class="ui-sheet-backdrop" (click)="close()"></div>
+//   <div class="ui-sheet" role="dialog" aria-modal="true">…</div>
+.ui-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(17, 24, 39, 0.45);
+}
+
+.ui-sheet {
+  position: fixed;
+  z-index: 1001;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: calc(100dvh - var(--sat) - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  box-shadow: var(--shadow-sheet);
+  padding: var(--space-5) var(--page-pad) calc(var(--space-5) + var(--sab));
+  animation: ui-sheet-up 0.22s ease-out;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: -8px auto 12px;
+    border-radius: 2px;
+    background: var(--border);
+  }
+
+  @include bp.up(tablet) {
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    width: min(520px, calc(100vw - 48px));
+    transform: translate(-50%, -50%);
+    border-radius: var(--radius);
+    padding: var(--space-6);
+    animation: none;
+
+    &::before { display: none; }
+  }
+}
+
+@keyframes ui-sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+// Horizontally scrolling chip/tab row for filters on phones.
+.ui-scroll-x {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+
+  &::-webkit-scrollbar { display: none; }
+  > * { flex: 0 0 auto; scroll-snap-align: start; }
+}
+
+// Filter/tab chip: <button class="ui-chip" [class.active]="…" [attr.aria-pressed]="…">
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: var(--fs-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover:not(.active) {
+    border-color: var(--border-hover);
+  }
+
+  &.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: #fff;
+  }
+}
+
+// Underline tabs that scroll sideways on narrow screens.
+//   <div class="ui-tabs" role="tablist"><button class="ui-tab" role="tab" [class.active]="…">…</button></div>
+.ui-tabs {
+  display: flex;
+  gap: var(--space-1);
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-4);
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.ui-tab {
+  flex: 0 0 auto;
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  color: var(--muted);
+  font-size: var(--fs-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover { color: var(--text); }
+
+  &.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  .count {
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    font-size: var(--fs-caption);
+  }
+}
+
+// Centred empty/loading state inside a list.
+.ui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--fs-secondary);
+
+  .ti {
+    font-size: 2rem;
+    color: var(--border-strong);
+  }
+
+  strong {
+    color: var(--text);
+    font-size: var(--fs-body);
+    font-weight: 600;
+  }
+}
+
+// Page heading row used at the top of feed-column pages.
+.ui-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+
+  h1 {
+    font-size: var(--fs-page-title);
+  }
+}
+
+// Tabler icons render on the text baseline; center them in flex rows.
+.ti {
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,6 +1,9 @@
+import { provideAppMockStore } from '../../core/testing/mock-store';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { MockStore } from '@ngrx/store/testing';
+import { of } from 'rxjs';
+import { WalletService } from '../../core/api';
 
 import { TopNavFilter } from './top-nav-filter';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
@@ -16,7 +19,11 @@ describe('TopNavFilter', () => {
   async function setup(user: unknown): Promise<(string | null)[]> {
     await TestBed.configureTestingModule({
       imports: [TopNavFilter],
-      providers: [provideRouter([]), provideMockStore()],
+      providers: [
+        provideRouter([]),
+        provideAppMockStore(),
+        { provide: WalletService, useValue: { walletControllerGetUserWallet: () => of({ data: { balance: 0 } }) } },
+      ],
     }).compileComponents();
 
     store = TestBed.inject(MockStore);

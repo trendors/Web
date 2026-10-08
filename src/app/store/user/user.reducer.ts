@@ -27,11 +27,5 @@ export const userReducer = createReducer(
   on(UserAction.deleteUser, (state) => ({ ...state, isLoading: true, error: null })),
   on(UserAction.deleteUserSuccess, (state) => ({ ...state, isLoading: false })),
   on(UserAction.deleteUserFailure, (state, { error }) => ({ ...state, isLoading: false, error })),
-  on(updateCurrentUser, (state, { user }) => {
-    console.log('Reducer updating user:', user);
-    return {
-      ...state,
-      currentUser: user
-    };
-  })
+  on(updateCurrentUser, (state, { user }) => ({ ...state, currentUser: user })),
 );

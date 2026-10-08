@@ -38,7 +38,7 @@ export class CampaignInfluencerService extends BaseService {
     }
 
     /**
-     * Assign an influencer to a campaign
+     * Assign a user to a campaign
      * @endpoint post /campaign-influencer
      * @param createCampaignInfluencerDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -108,16 +108,16 @@ export class CampaignInfluencerService extends BaseService {
      * @param withPosts 
      * @param paymentStatus 
      * @param status 
-     * @param influencerId 
+     * @param userId 
      * @param campaignId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public campaignInfluencerControllerFindAll(withPosts?: boolean, paymentStatus?: 'pending' | 'partial' | 'paid' | 'overdue', status?: 'invited' | 'contracted' | 'active' | 'completed' | 'cancelled', influencerId?: number, campaignId?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public campaignInfluencerControllerFindAll(withPosts?: boolean, paymentStatus?: 'pending' | 'partial' | 'paid' | 'overdue', status?: 'invited' | 'contracted' | 'active' | 'completed' | 'cancelled', influencerId?: number, campaignId?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public campaignInfluencerControllerFindAll(withPosts?: boolean, paymentStatus?: 'pending' | 'partial' | 'paid' | 'overdue', status?: 'invited' | 'contracted' | 'active' | 'completed' | 'cancelled', influencerId?: number, campaignId?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public campaignInfluencerControllerFindAll(withPosts?: boolean, paymentStatus?: 'pending' | 'partial' | 'paid' | 'overdue', status?: 'invited' | 'contracted' | 'active' | 'completed' | 'cancelled', influencerId?: number, campaignId?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public campaignInfluencerControllerFindAll(withPosts?: boolean, paymentStatus?: 'pending' | 'partial' | 'paid' | 'overdue', status?: 'invited' | 'contracted' | 'active' | 'completed' | 'cancelled' | 'rejected' | 'withdrawn' | 'applied', userId?: number, campaignId?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public campaignInfluencerControllerFindAll(withPosts?: boolean, paymentStatus?: 'pending' | 'partial' | 'paid' | 'overdue', status?: 'invited' | 'contracted' | 'active' | 'completed' | 'cancelled' | 'rejected' | 'withdrawn' | 'applied', userId?: number, campaignId?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public campaignInfluencerControllerFindAll(withPosts?: boolean, paymentStatus?: 'pending' | 'partial' | 'paid' | 'overdue', status?: 'invited' | 'contracted' | 'active' | 'completed' | 'cancelled' | 'rejected' | 'withdrawn' | 'applied', userId?: number, campaignId?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public campaignInfluencerControllerFindAll(withPosts?: boolean, paymentStatus?: 'pending' | 'partial' | 'paid' | 'overdue', status?: 'invited' | 'contracted' | 'active' | 'completed' | 'cancelled' | 'rejected' | 'withdrawn' | 'applied', userId?: number, campaignId?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -150,8 +150,8 @@ export class CampaignInfluencerService extends BaseService {
 
         localVarQueryParameters = this.addToHttpParams(
             localVarQueryParameters,
-            'influencerId',
-            <any>influencerId,
+            'userId',
+            <any>userId,
             QueryParamStyle.Form,
             true,
         );
@@ -275,20 +275,20 @@ export class CampaignInfluencerService extends BaseService {
     }
 
     /**
-     * All campaigns one influencer works on
-     * @endpoint get /campaign-influencer/influencer/{influencerId}
-     * @param influencerId 
+     * All campaigns one user works on
+     * @endpoint get /campaign-influencer/user/{userId}
+     * @param userId 
      * @param withPosts 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public campaignInfluencerControllerFindByInfluencer(influencerId: number, withPosts?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public campaignInfluencerControllerFindByInfluencer(influencerId: number, withPosts?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public campaignInfluencerControllerFindByInfluencer(influencerId: number, withPosts?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public campaignInfluencerControllerFindByInfluencer(influencerId: number, withPosts?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        if (influencerId === null || influencerId === undefined) {
-            throw new Error('Required parameter influencerId was null or undefined when calling campaignInfluencerControllerFindByInfluencer.');
+    public campaignInfluencerControllerFindByUser(userId: number, withPosts?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public campaignInfluencerControllerFindByUser(userId: number, withPosts?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public campaignInfluencerControllerFindByUser(userId: number, withPosts?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public campaignInfluencerControllerFindByUser(userId: number, withPosts?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (userId === null || userId === undefined) {
+            throw new Error('Required parameter userId was null or undefined when calling campaignInfluencerControllerFindByUser.');
         }
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
@@ -326,7 +326,7 @@ export class CampaignInfluencerService extends BaseService {
             }
         }
 
-        let localVarPath = `/campaign-influencer/influencer/${this.configuration.encodeParam({name: "influencerId", value: influencerId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: undefined})}`;
+        let localVarPath = `/campaign-influencer/user/${this.configuration.encodeParam({name: "userId", value: userId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<any>('get', `${basePath}${localVarPath}`,
             {
@@ -411,7 +411,7 @@ export class CampaignInfluencerService extends BaseService {
     }
 
     /**
-     * Remove an influencer from a campaign
+     * Remove a user from a campaign
      * @endpoint delete /campaign-influencer/{id}
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

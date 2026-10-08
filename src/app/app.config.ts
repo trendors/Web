@@ -1,9 +1,10 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode, importProvidersFrom } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withDebugTracing } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { routes } from './app.routes';
-import { provideStore } from '@ngrx/store';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { MetaReducer, provideStore } from '@ngrx/store';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideEffects } from '@ngrx/effects';
 import { authFeatureKey, authReducer } from './store/auth/sharedState/auth.reducer';
 import { LoginEffects } from './store/auth/login/login.effects';
@@ -31,18 +32,22 @@ import {
   transactionReducer,
 } from './store/transactions/transaction.reducer';
 import { TransactionsEffects } from './store/transactions/transaction.effects';
-import { SocketService } from './socket.service';
 import { UserEffects } from './store/user/user.effect';
 import { ApiModule, Configuration } from './core/api';
+import { environment } from '../environments/environment';
+import { clearStateOnLogout } from './store/clear-state.meta-reducer';
+
+const metaReducers: MetaReducer[] = [clearStateOnLogout];
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    SocketService, // Add it here
     provideBrowserGlobalErrorListeners(),
+    // The top-up modal uses @angular/animations triggers; without this it throws NG05105.
+    provideAnimationsAsync(),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor])),
-     importProvidersFrom(
-      ApiModule.forRoot(() => new Configuration({ basePath: 'http://localhost:6001' }))
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    importProvidersFrom(
+      ApiModule.forRoot(() => new Configuration({ basePath: environment.apiUrl })),
     ),
     provideStore({
       [authFeatureKey]: authReducer,
@@ -53,7 +58,7 @@ export const appConfig: ApplicationConfig = {
       [campaignFeatureKey]: campaignReducer,
       [invitationFeatureKey]: invitationReducer,
       [transactionFeatureKey]: transactionReducer,
-    }),
+    }, { metaReducers }),
     provideEffects([
       LoginEffects,
       RegisterEffects,

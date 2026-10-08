@@ -1,9 +1,4 @@
-import { ChangeDetectorRef, NgZone } from '@angular/core';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { AsyncPipe, SlicePipe } from '@angular/common';
 import {
   FormBuilder,
@@ -16,17 +11,13 @@ import { Store } from '@ngrx/store';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { PostActions } from '../../../store/posts/post/posts.actions';
 import {
+  selectAllPosts,
+  selectHasMorePosts,
   selectIsLoadingMore,
+  selectIsLoadingPosts,
+  selectPostsError,
 } from '../../../store/posts/post/posts.selectors';
-import {
-  BehaviorSubject,
-  debounceTime,
-  distinctUntilChanged,
-  Observable,
-  Subject,
-  take,
-  takeUntil,
-} from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, take, takeUntil } from 'rxjs';
 import {
   CreatePostDto,
   Channel,
@@ -37,37 +28,20 @@ import {
   EditCommentPayload,
   Comment,
 } from '../../../core/models/posts/post.model';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ShareSheet } from '../../../components/share-sheet/share-sheet';
 import { Router } from '@angular/router';
-import { TopNavFilter } from "../../../components/top-nav-filter/top-nav-filter";
-import { UserInfoCard } from "../../../components/user-info-card/user-info-card";
 import { NewPostsNotifier } from "../../../components/new-posts-notifier/new-posts-notifier";
 import { Fab } from "../../../components/fab/fab";
 import { SocketService } from '../../../socket.service';
-import { LoaderComponent } from "../../../components/loader/loader";
-import { Campaign, FetchPostDto, PostsService } from '../../../core/api';
+import { CampaignInfluencerService } from '../../../core/api';
+import { ToastService } from '../../../components/toast/toast.service';
+import { extractApiList } from '../../../core/utils/api-response';
+import { TimeAgoPipe } from '../../../time-ago-pipe';
 
 @Component({
   selector: 'app-home',
-  imports: [
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    MatProgressSpinnerModule,
-    AsyncPipe,
-    SlicePipe,
-    TopNavFilter,
-    UserInfoCard,
-    NewPostsNotifier,
-    Fab,
-    LoaderComponent,
-    FormsModule,
-  ],
-  standalone: true,
+  imports: [ReactiveFormsModule, FormsModule, AsyncPipe, SlicePipe, NewPostsNotifier, Fab, TimeAgoPipe],
   templateUrl: './posts.html',
   styleUrl: './posts.scss',
 })
@@ -77,24 +51,25 @@ export class Posts implements OnInit, OnDestroy {
   private router = inject(Router);
   private bottomSheet = inject(MatBottomSheet);
   private socketService = inject(SocketService);
-  private ngZone = inject(NgZone);
-  private cdr = inject(ChangeDetectorRef);
+  private campaignInfluencerApi = inject(CampaignInfluencerService);
+  private toast = inject(ToastService);
   private destroy$ = new Subject<void>();
 
+  readonly PAGE_SIZE = 20;
 
+  // The feed is the store's list, so likes, comments, edits and new posts
+  // (all handled by the posts reducer) show up immediately.
+  posts$ = this.store.select(selectAllPosts);
+  loading$ = this.store.select(selectIsLoadingPosts);
   loadingMore$ = this.store.select(selectIsLoadingMore);
+  hasMore$ = this.store.select(selectHasMorePosts);
+  postsError$ = this.store.select(selectPostsError);
   user$ = this.store.select(selectCurrentUser);
 
-  private isLoadingPosts$ = new BehaviorSubject<boolean>(false);
-  loading$ = this.isLoadingPosts$.asObservable();
   activePostTab: 'open' | 'application' = 'open';
-  postsError: string | null = null;
-  newPostsAvailable: boolean = false;
-  pendingPosts: any[] = [];
-  filteredPosts$: Observable<Post[]> = new Observable<Post[]>();
+  newPostsAvailable = signal(false);
+  pendingPosts = signal<any[]>([]);
   searchControl = new FormControl('', { nonNullable: true });
-  private searchQuery$ = new BehaviorSubject<string>('');
-  private postTab$ = new BehaviorSubject<'open_posts' | 'application_required_posts'>('open_posts');
   selectedFile: File | null = null;
   imagePreview: string | null = null;
   currentUserId: number | undefined;
@@ -102,37 +77,33 @@ export class Posts implements OnInit, OnDestroy {
   currentUserName: string | undefined;
   editingCommentId: number | null = null;
   editCommentText: string = '';
-applyingPostIds = new Set<number>();
+  applyingPostIds = new Set<number>();
+  /** Campaigns this user already has an assignment on (loaded from the server). */
+  appliedCampaignIds = signal(new Set<number>());
 
   newCommentTexts: { [postId: number]: string } = {};
   expandedComments: { [postId: number]: boolean } = {};
   visibleCommentsCount: { [postId: number]: number } = {};
-  posts: Post[] = [];
 
   postForm = this.fb.group({
     text: ['', [Validators.required, Validators.minLength(3)]],
   });
-
-  constructor(private postService: PostsService) {
-
-  }
 
   ngOnInit() {
     this.loadInitialPosts();
     this.listenForNewPosts();
 
     this.user$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+      const changed = user?.id !== this.currentUserId;
       this.currentUserId = user?.id;
       this.currentTrendorsId = user?.trendors_id;
-      this.currentUserName = user?.user_name || `${user?.creativeProfile?.first_name ?? ''}_${user?.creativeProfile?.last_name ?? ''}`;
+      this.currentUserName = this.userNameOf(user);
+      if (changed && user?.id) this.loadAppliedCampaigns(user.id);
     });
 
-    // Setup Search Listener with debounce
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe((searchValue) => {
-        this.onSearchChange(searchValue);
-      });
+      .subscribe(() => this.loadInitialPosts());
   }
 
   ngOnDestroy() {
@@ -140,59 +111,34 @@ applyingPostIds = new Set<number>();
     this.destroy$.complete();
   }
 
-  onSearchChange(value: string): void {
-    this.searchQuery$.next(value);
-  }
-
-  private filterPosts(
-    posts: Post[],
-    searchQuery: string,
-    tab: 'open_posts' | 'application_required_posts',
-  ): Post[] {
-    const normalizedSearch = searchQuery.trim().toLowerCase();
-
-    return posts.filter((post) => {
-      const matchesAccess =
-        tab === 'open_posts'
-          ? post.campaign?.access === 'open'
-          : post.campaign?.access === 'application';
-      if (!matchesAccess) {
-        return false;
-      }
-
-      if (!normalizedSearch) {
-        return true;
-      }
-
-      const matchesText = post.text.toLowerCase().includes(normalizedSearch);
-      const matchesHeading = post.heading?.toLowerCase().includes(normalizedSearch) ?? false;
-      const matchesUserName = post.userName?.toLowerCase().includes(normalizedSearch) ?? false;
-
-      return matchesText || matchesHeading || matchesUserName;
-    });
+  private userNameOf(user: any): string | undefined {
+    if (!user) return undefined;
+    const first = user.creativeProfile?.first_name ?? '';
+    const last = user.creativeProfile?.last_name ?? '';
+    return user.user_name || (first || last ? `${first}_${last}` : undefined);
   }
 
   selectPostTab(tab: 'open' | 'application'): void {
-    if (this.activePostTab === tab) return; // avoid redundant refetch
+    if (this.activePostTab === tab) return;
     this.activePostTab = tab;
-    this.loadInitialPosts(undefined, tab);
+    this.loadInitialPosts();
   }
 
-
   refreshPosts() {
-    this.newPostsAvailable = false;
+    this.newPostsAvailable.set(false);
+    this.pendingPosts.set([]);
     this.loadInitialPosts();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   listenForNewPosts() {
-    this.socketService.listenToNewPosts().subscribe((post) => {
-      this.ngZone.run(() => {
-        this.cdr.markForCheck();
-        this.pendingPosts.push(post);
-        this.newPostsAvailable = true;
+    this.socketService
+      .listenToNewPosts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((post) => {
+        this.pendingPosts.update((list) => [...list, post]);
+        this.newPostsAvailable.set(true);
       });
-    });
   }
 
   isLikedByCurrentUser(post: Post): boolean {
@@ -200,50 +146,39 @@ applyingPostIds = new Set<number>();
     return post.likes.some((like) => like.userId === this.currentUserId);
   }
 
-  loadInitialPosts(searchString?: string, campaignType?: 'open' | 'application') {
-    this.isLoadingPosts$.next(true);
-    this.postsError = null;
-
-    this.postService
-      .postsControllerFindAll({
-        limit: 20,
-        page: 0,
-        searchString,
-        relations: ['user', 'likes', 'comments', 'shares', 'campaign'],
-        campaignType: campaignType ?? this.activePostTab,
-      })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (posts) => {
-          this.posts = posts.data.list;
-          this.isLoadingPosts$.next(false);
+  loadInitialPosts() {
+    const searchString = this.searchControl.value.trim();
+    this.store.dispatch(
+      PostActions.findAllPosts({
+        query: {
+          limit: this.PAGE_SIZE,
+          page: 0,
+          relations: ['user', 'likes', 'comments', 'shares', 'campaign'],
+          campaignType: this.activePostTab,
+          ...(searchString ? { searchString } : {}),
         },
-        error: (err) => {
-          console.error('Failed to load posts', err);
-          this.postsError = 'Could not load posts. Please try again.';
-          this.isLoadingPosts$.next(false);
-        },
-      });
+      }),
+    );
   }
 
   onLoadMore() {
-    this.loadInitialPosts(undefined, this.activePostTab);
+    this.store.dispatch(PostActions.loadMorePosts());
   }
 
   onSubmitPost() {
     if (this.postForm.invalid) return;
 
     this.user$.pipe(take(1)).subscribe((user) => {
-      if (!user?.id) {
-        console.warn('⚠️ No user found');
+      if (!user?.id || !user.trendors_id) {
+        this.toast.show('Please log in again to post.', 'error');
         return;
       }
       const dto: CreatePostDto = {
         text: this.postForm.value.text || '',
-        userName: user.user_name || `${user.creativeProfile?.first_name ?? ''}_${user.creativeProfile?.last_name ?? ''}`,
+        userName: this.userNameOf(user) ?? '',
         userId: user.id,
         channel: Channel.PUBLIC,
-        trendorsId: user.trendors_id || 'default_id',
+        trendorsId: user.trendors_id,
         isSponsored: false,
         images: [],
         generate_ai_rewrite: false,
@@ -262,20 +197,17 @@ applyingPostIds = new Set<number>();
     });
   }
 
-  onLikePost(postId: number) {
-    this.user$.pipe(take(1)).subscribe((user) => {
-      if (!user?.id) {
-        console.warn('⚠️ No user found for like action');
-        return;
-      }
-
-      const dto: LikePostDto = {
-        postId,
-        userId: user.id,
-        trendorsId: user.trendors_id || 'default_id',
-      };
-      this.store.dispatch(PostActions.likePost({ dto }));
-    });
+  onLikePost(post: Post) {
+    if (!this.currentUserId || !this.currentTrendorsId) {
+      this.toast.show('Please log in to like posts.', 'error');
+      return;
+    }
+    const dto: LikePostDto = {
+      postId: post.id,
+      userId: this.currentUserId,
+      trendorsId: this.currentTrendorsId,
+    };
+    this.store.dispatch(PostActions.likePost({ dto, wasLiked: this.isLikedByCurrentUser(post) }));
   }
 
   onFileSelected(event: any) {
@@ -315,7 +247,6 @@ applyingPostIds = new Set<number>();
     return this.currentUserId === commentUserId;
   }
 
-  // Starts the inline edit mode
   startEditComment(comment: Comment) {
     this.editingCommentId = comment.id;
     this.editCommentText = comment.text;
@@ -336,7 +267,7 @@ applyingPostIds = new Set<number>();
     };
 
     this.store.dispatch(PostActions.editComment({ payload }));
-    this.cancelEditComment(); // Instantly close the edit box
+    this.cancelEditComment();
   }
 
   onDeleteComment(commentId: number, postId: number) {
@@ -377,40 +308,60 @@ applyingPostIds = new Set<number>();
     this.newCommentTexts[postId] = '';
   }
 
+  private campaignIdOf(post: Post): number {
+    return Number((post as Record<string, any>)['campaignId'] ?? post.campaign?.id);
+  }
 
   isAppliedByCurrentUser(post: Post): boolean {
-    // if (!this.currentUserId || !post.applications) return false;
-    // return post.applications.some((app) => app.userId === this.currentUserId);
-    return true
+    return this.appliedCampaignIds().has(this.campaignIdOf(post));
   }
 
-  openApplySheet(post: Post): void {
-    // const ref = this.bottomSheet.open(ApplySheet, {
-    //   data: { post },
-    //   panelClass: 'custom-apply-sheet',
-    // });
-
-    // ref.afterDismissed().subscribe((confirmed) => {
-    //   if (confirmed) {
-    //     this.submitApplication(post.id);
-    //   }
-    // });
+  /** Seed "Applied" state from the user's existing assignments. */
+  private loadAppliedCampaigns(userId: number): void {
+    this.campaignInfluencerApi
+      .campaignInfluencerControllerFindByUser(userId, false)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          const ids = new Set<number>();
+          for (const row of extractApiList(res)) {
+            const id = Number(row?.campaign?.id ?? row?.campaignId);
+            if (Number.isFinite(id)) ids.add(id);
+          }
+          this.appliedCampaignIds.set(ids);
+        },
+        error: (err) => console.error('Failed to load applications', err),
+      });
   }
 
-  private submitApplication(postId: number): void {
-  //   this.user$.pipe(take(1)).subscribe((user) => {
-  //     if (!user?.id) return;
-  //     this.applyingPostIds.add(postId);
+  /** Create a campaign application via POST /campaign-influencer. */
+  applyToCampaign(post: Post): void {
+    const campaignId = this.campaignIdOf(post);
+    if (!Number.isFinite(campaignId)) {
+      this.toast.show('This post is not linked to a campaign.', 'error');
+      return;
+    }
+    const userId = this.currentUserId;
+    if (userId == null) {
+      this.toast.show('Please log in to apply.', 'error');
+      return;
+    }
+    if (this.isAppliedByCurrentUser(post) || this.applyingPostIds.has(post.id)) return;
 
-  //     const dto = {
-  //       postId,
-  //       userId: user.id,
-  //       trendorsId: user.trendors_id || 'default_id',
-  //     };
-
-  //     this.store.dispatch(PostActions.applyToCampaign({ dto }));
-     
-  //   }
-  // );
+    this.applyingPostIds.add(post.id);
+    this.campaignInfluencerApi
+      .campaignInfluencerControllerCreate({ campaignId, userId })
+      .subscribe({
+        next: () => {
+          this.applyingPostIds.delete(post.id);
+          this.appliedCampaignIds.update((ids) => new Set(ids).add(campaignId));
+          this.toast.show('Application sent to the brand.', 'success');
+        },
+        error: (err) => {
+          console.error('Failed to apply to campaign', err);
+          this.applyingPostIds.delete(post.id);
+          this.toast.show(err?.error?.message ?? 'Could not send your application.', 'error');
+        },
+      });
   }
 }

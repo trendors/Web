@@ -1,6 +1,5 @@
 import { createActionGroup, props } from '@ngrx/store';
 import { Campaign } from '../../core/models/campaign/campaign.model';
-import { CreateCampaign } from '../../pages/layout/create-campaign/create-campaign';
 
 export const CampaignActions = createActionGroup({
   source: 'Campaign Action Flow',
@@ -12,5 +11,7 @@ export const CampaignActions = createActionGroup({
     'Create Campaign': props<{ dto: FormData; files?: File[] }>(),
     'Create Campaign Success': props<{ campaign: Campaign }>(),
     'Create Campaign Failure': props<{ error: string }>(),
+
+    'Update Campaign Success': props<{ campaign: Partial<Campaign> & { id: number } }>(),
   },
 });

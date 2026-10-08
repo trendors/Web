@@ -3,8 +3,8 @@
   <div class="top-bar">
     <div class="top-steps">
       <button *ngFor="let step of steps; let i = index" class="step-btn" [class.active]="i === currentStep"
-        [class.done]="i < currentStep" (click)="goTo(i)">
-        <span class="step-num">{{ i < currentStep ? '✓' : i + 1 }}</span>
+        [class.done]="i < currentStep" [attr.aria-current]="i === currentStep ? 'step' : null" (click)="goTo(i)" type="button">
+        <span class="step-num">@if (i < currentStep) {<i class="ti ti-check" aria-hidden="true"></i>} @else {{{ i + 1 }}}</span>
             <span class="step-name">{{ step.label }}</span>
       </button>
     </div>
@@ -20,10 +20,10 @@
       <div class="card">
         <div class="field">
           <label>Campaign Name <span class="req">*</span></label>
-          <input type="text" [(ngModel)]="campaignTitle" placeholder="e.g. Summer Sale 2024" maxlength="80" />
+          <input type="text" [(ngModel)]="campaignTitle" placeholder="e.g. Summer Sale 2024" maxlength="80" autocapitalize="sentences" enterkeyhint="next" />
           <div class="char-count">{{ campaignTitle() .length }}/80</div>
         </div>
-        <div class="field" style="margin-bottom: 0">
+        <div class="field">
           <label>Description <span class="req">*</span>
             <span class="hint">What's this campaign about?</span></label>
           <textarea [(ngModel)]="campaignDescription"
@@ -33,8 +33,8 @@
         </div>
         <div class="field">
           <label>Campaign Action Link <span class="req">*</span></label>
-          <input type="text" [(ngModel)]="link" placeholder="e.g. https://example.com" maxlength="200" />
-          <label> <span class="hint">Registration, Sign-up, Download or Purchase link</span></label>
+          <input type="url" inputmode="url" autocapitalize="none" spellcheck="false" [(ngModel)]="link" placeholder="https://example.com" maxlength="200" />
+          <span class="hint">Registration, sign-up, download or purchase link</span>
 
         </div>
       </div>
@@ -54,17 +54,17 @@
           </label>
         </div>
 
-        <div class="field" style="margin-top: 12px; margin-bottom: 0">
+        <div class="field">
           <label>Trending Hashtags <span class="hint">Up to 4</span></label>
           <div class="topics-wrap">
             <div class="topic-tag" *ngFor="let t of hash_tags(); let i = index">
               {{ t }}
-              <button (click)="removeTopic(i)">✕</button>
+              <button type="button" (click)="removeTopic(i)" [attr.aria-label]="'Remove ' + t"><i class="ti ti-x" aria-hidden="true"></i></button>
             </div>
           </div>
           <div class="topic-row">
-            <input type="text" [(ngModel)]="topicInput" placeholder="#SummerSale" (keydown)="onTopicKeydown($event)" />
-            <button class="btn-add" (click)="addTopic()">+ Add</button>
+            <input type="text" [(ngModel)]="topicInput" placeholder="#SummerSale" autocapitalize="none" enterkeyhint="done" (keydown)="onTopicKeydown($event)" />
+            <button type="button" class="btn-add" (click)="addTopic()">Add</button>
           </div>
         </div>
       </div>
@@ -79,7 +79,7 @@
 
         <div class="wrap">
           <div class="card-grid">
-            <button class="card" [class.selected]="selectedAccess === ac.value" (click)="selectAccess(ac.value)"
+            <button type="button" class="card" [class.selected]="selectedAccess === ac.value" [attr.aria-pressed]="selectedAccess === ac.value" (click)="selectAccess(ac.value)"
               *ngFor="let ac of accessTypes; let i = index">
               <span class="check">
                 <svg viewBox="0 0 12 12" fill="none">
@@ -94,10 +94,8 @@
           </div>
         </div>
 
-        <div style="margin-top:16px">
-        </div>
-        <div style="margin-top: 11px">
-          <div class="toggle-row" style="margin-bottom: 0">
+        <div>
+          <div class="toggle-row">
             <div class="toggle-info">
               <div class="toggle-name">Auto-assign tier by follower count</div>
               <div class="toggle-desc">
@@ -119,7 +117,7 @@
         <div class="grid-3">
           <div class="field">
             <label>Campaign budget (₦)</label>
-            <input type="number" min="25000" step="1000" [(ngModel)]="openBudget" placeholder="e.g. 50000"
+            <input type="number" inputmode="numeric" min="25000" step="1000" [(ngModel)]="openBudget" placeholder="e.g. 50000"
               class="input" />
             <div class="hint">Minimum spend to launch an open campaign is ₦25,000</div>
           </div>
@@ -136,7 +134,7 @@
             <div class="hint">Campaign goes live immediately after review</div>
           </div>
         </div>
-        <div class="hint" style="margin: 2%">
+        <div class="hint bonus-list">
           <div>
             <ul>
               <li>₦50 per verified share</li>
@@ -154,7 +152,7 @@
     @if (selectedAccess === 'invite_only') {
     <div class="batch-container">
       <div class="search-section" #searchSectionRef>
-        <input type="text" #searchInput placeholder="Search users by name..." class="search-input"
+        <input type="search" #searchInput placeholder="Search creators by name" class="search-input" enterkeyhint="search" autocomplete="off"
           (input)="searchUsers(searchInput.value)" />
 
         @if (users().length > 0) {
@@ -163,62 +161,18 @@
 
 
           <li class="dropdown-item" (click)="selectMember(m)">
-            <div class="avatar" style="background:#D97757;">{{ m.first_name[0] }}{{ m.last_name[0] }}</div>
+            <div class="avatar">{{ initials((m.first_name || '') + ' ' + (m.last_name || '')) }}</div>
             <div class="member-main">
               <div class="member-name">{{ m.first_name }} {{ m.last_name }}</div>
-              <div class="member-handle">@{{ m.user.user_name }}</div>
+              <div class="member-handle">@{{ m.user?.user_name }}</div>
             </div>
+            @if (followersLabel(m); as followers) {
             <div class="social-stats">
-              <span class="social-chip">
-                <span class="icon">
-                  <svg viewBox="0 0 24 24" fill="var(--x)">
-                    <path
-                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </span>
-                <span class="count">204k</span>
-              </span>
-              <span class="social-chip">
-                <span class="icon">
-                  <svg viewBox="0 0 24 24">
-                    <path fill="var(--facebook)"
-                      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                </span>
-                <span class="count">30k</span>
-              </span>
-              <span class="social-chip">
-                <span class="icon">
-                  <svg viewBox="0 0 24 24">
-                    <defs>
-                      <linearGradient id="igA" x1="0%" y1="100%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="var(--instagram-a)" />
-                        <stop offset="50%" stop-color="var(--instagram-b)" />
-                        <stop offset="100%" stop-color="var(--instagram-c)" />
-                      </linearGradient>
-                    </defs>
-                    <path fill="url(#igA)"
-                      d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM12 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                  </svg>
-                </span>
-                <span class="count">85k</span>
-              </span>
-              <span class="social-chip">
-                <span class="icon">
-                  <svg viewBox="0 0 24 24">
-                    <path fill="var(--tiktok-accent)"
-                      d="M16.5 2c.5 2.7 2.1 4.4 4.9 4.6v3.1c-1.7.1-3.2-.4-4.9-1.5v6.9c0 3.6-2.6 6.5-6.5 6.5S3.5 18.7 3.5 15.1c0-3.4 2.7-6.2 6.2-6.5v3.1c-1.6.3-2.8 1.6-2.8 3.3 0 1.9 1.5 3.3 3.4 3.3s3.5-1.4 3.5-3.3V2z" />
-                    <path fill="var(--tiktok-accent2)"
-                      d="M15.3 2c.5 2.7 2.1 4.4 4.9 4.6v3.1c-1.7.1-3.2-.4-4.9-1.5v6.9c0 3.6-2.6 6.5-6.5 6.5S2.3 18.7 2.3 15.1c0-3.4 2.7-6.2 6.2-6.5v3.1c-1.6.3-2.8 1.6-2.8 3.3 0 1.9 1.5 3.3 3.4 3.3s3.5-1.4 3.5-3.3V2z" />
-                    <path fill="var(--tiktok)"
-                      d="M15.9 2c.5 2.7 2.1 4.4 4.9 4.6v3.1c-1.7.1-3.2-.4-4.9-1.5v6.9c0 3.6-2.6 6.5-6.5 6.5S2.9 18.7 2.9 15.1c0-3.4 2.7-6.2 6.2-6.5v3.1c-1.6.3-2.8 1.6-2.8 3.3 0 1.9 1.5 3.3 3.4 3.3s3.5-1.4 3.5-3.3V2z" />
-                  </svg>
-                </span>
-                <span class="count">12k</span>
-              </span>
+              <span class="social-chip"><span class="count">{{ followers }} followers</span></span>
             </div>
-            <button type="button" class="invite-btn" (click)="$event.stopPropagation(); inviteMember(m)">
-              Invite
+            }
+            <button type="button" class="invite-btn" (click)="$event.stopPropagation(); selectMember(m)">
+              Add
             </button>
           </li>
           }
@@ -232,7 +186,6 @@
             <tr>
               <th>Name</th>
               <th>Status</th>
-              <th>Profile</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -241,27 +194,22 @@
             <tr>
               <td>
                 <strong>{{
-                  inv.user?.name || inv.user?.user_name || inv.user_name || 'N/A'
+                  memberName(inv)
                   }}</strong>
               </td>
 
               <td>
-                <span class="status-badge">
-                  {{ inv.status || 'Pending' }}
-                </span>
-              </td>
-              <td>
-                <span class="profile-badge"> View Profile </span>
+                <span class="status-badge">To invite</span>
               </td>
               <td>
                 <div>
-                  <button class="btn-delete">Cancel</button>
+                  <button type="button" class="btn-delete" (click)="removeMember(inv)">Remove</button>
                 </div>
               </td>
             </tr>
             } @empty {
             <tr>
-              <td colspan="4" class="empty-msg">No members added to this batch yet.</td>
+              <td colspan="3" class="empty-msg">No members added to this batch yet.</td>
             </tr>
             }
           </tbody>
@@ -271,9 +219,9 @@
     }
 
     @if (selectedAccess === 'application') {
-    <div class="section" style="margin-top:12px">
+    <div class="section">
       <div class="section-title">Choose creator tiers</div>
-      <div class="hint" style="margin-bottom:12px">
+      <div class="hint section-hint">
         Pick how many slots you want at each reach tier. Your budget is calculated from this.
       </div>
 
@@ -287,12 +235,12 @@
             </div>
             <div class="tier-amt">{{ tier.amount }}<span class="tier-unit">/ slot</span></div>
             <div class="tier-slot-input">
-              <button type="button" class="tier-slot-btn"
-                (click)="setTierSlots(tier.name, getTierSlots(tier.name) - 1)">−</button>
-              <input type="number" min="0" class="tier-slot-count" [value]="getTierSlots(tier.name)"
+              <button type="button" class="tier-slot-btn" aria-label="Fewer slots"
+                (click)="setTierSlots(tier.name, getTierSlots(tier.name) - 1)"><i class="ti ti-minus" aria-hidden="true"></i></button>
+              <input type="number" inputmode="numeric" min="0" class="tier-slot-count" [attr.aria-label]="tier.name + ' slots'" [value]="getTierSlots(tier.name)"
                 (input)="setTierSlots(tier.name, $any($event.target).value)" />
-              <button type="button" class="tier-slot-btn"
-                (click)="setTierSlots(tier.name, getTierSlots(tier.name) + 1)">+</button>
+              <button type="button" class="tier-slot-btn" aria-label="More slots"
+                (click)="setTierSlots(tier.name, getTierSlots(tier.name) + 1)"><i class="ti ti-plus" aria-hidden="true"></i></button>
             </div>
           </div>
         </div>
@@ -308,7 +256,7 @@
       <div class="modal">
         <div class="modal-head">
           <h3>Profile</h3>
-          <button class="btn-close" (click)="viewingProfile.set(null)">✕</button>
+          <button type="button" class="ui-icon-btn" aria-label="Close" (click)="viewingProfile.set(null)"><i class="ti ti-x" aria-hidden="true"></i></button>
         </div>
         <div class="modal-avatar">
           {{ initials(viewingProfile()!.user.name || viewingProfile()!.name || '') }}
@@ -342,28 +290,15 @@
   <div class="page-content" *ngIf="currentStep === 2">
 
     <div class="section">
-      <div class="section-title">Platforms</div>
-      <div class="card">
-        <div class="platform-grid">
-          <div class="platform-item" *ngFor="let p of platforms">
-            <input type="checkbox" [id]="'p-' + p.id" [(ngModel)]="p.selected" />
-            <label class="platform-label" [for]="'p-' + p.id">
-              <span class="platform-emoji">{{ p.emoji }}</span>
-              <span class="platform-name">{{ p.name }}</span>
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="section">
       <div class="section-title">Campaign Media</div>
       <div class="card">
         <div class="upload-zone" [class.dragover]="isDragging()" (dragover)="onDragOver($event)"
-          (dragleave)="onDragLeave()" (drop)="onDrop($event)" (click)="fileInput.click()">
+          (dragleave)="onDragLeave()" (drop)="onDrop($event)" (click)="fileInput.click()"
+          (keydown.enter)="fileInput.click()" role="button" tabindex="0">
           <input #fileInput type="file" multiple accept="image/*,video/*,.pdf" style="display: none"
             (change)="onFilesSelected($event)" />
-          <div class="upload-icon">📂</div>
-          <div class="upload-title">Drop files or click to browse</div>
+          <i class="ti ti-cloud-upload upload-icon" aria-hidden="true"></i>
+          <div class="upload-title">Tap to add photos, videos or PDFs</div>
           <div class="upload-sub">
             Supports <strong>JPG, PNG, MP4, PDF</strong> · Max <strong>50MB</strong> · Up to
             <strong>10 files</strong>
@@ -380,7 +315,7 @@
               <div class="file-name">{{ f.file.name }}</div>
               <div class="file-size">{{ f.size }}</div>
             </div>
-            <div class="file-remove" (click)="removeFile(i)">✕</div>
+            <button type="button" class="file-remove" [attr.aria-label]="'Remove ' + f.file.name" (click)="removeFile(i)"><i class="ti ti-x" aria-hidden="true"></i></button>
           </div>
         </div>
       </div>
@@ -390,39 +325,63 @@
 
   <div class="page-content" *ngIf="currentStep === 3">
     <div class="section">
-      <div class="section-title">Deliverables</div>
-      <div class="hint" style="margin-bottom:12px">
-        For each selected platform, how many of each content type must creators post?
+      <div class="section-title">Deliverables per creator</div>
+      <div class="hint section-hint">
+        Each deliverable is attached to a platform, with a quantity and a fee for each post.
       </div>
 
-      @if (selectedPlatforms.length === 0) {
-        <div class="card">
-          <span class="empty">No platforms selected yet.</span>
-          <span class="rv-edit" (click)="goTo(2)">Choose platforms →</span>
+      <div class="deliverable-head">
+        <span>Platform</span>
+        <span>Format</span>
+        <span>Qty</span>
+        <span>Fee each (₦)</span>
+        <span></span>
+      </div>
+
+      @for (row of deliverableRows(); track $index) {
+        <div class="deliverable-row">
+          <div class="deliverable-menu">
+            <button type="button" class="deliverable-input deliverable-select" (click)="toggleRowMenu($index, 'platform')">
+              <span>{{ platformDisplayName(row.platform) }}</span>
+              <i class="ti ti-chevron-down deliverable-caret" aria-hidden="true"></i>
+            </button>
+            @if (isRowMenuOpen($index, 'platform')) {
+              <div class="deliverable-options">
+                @for (p of platforms; track p.id) {
+                  <div class="deliverable-option" [class.active]="row.platform === p.id" (click)="pickRowOption($index, 'platform', p.id)">
+                    {{ p.name }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <div class="deliverable-menu">
+            <button type="button" class="deliverable-input deliverable-select" (click)="toggleRowMenu($index, 'format')">
+              <span>{{ formatLabel(row.format) }}</span>
+              <i class="ti ti-chevron-down deliverable-caret" aria-hidden="true"></i>
+            </button>
+            @if (isRowMenuOpen($index, 'format')) {
+              <div class="deliverable-options">
+                @for (d of deliverableTypes; track d.value) {
+                  <div class="deliverable-option" [class.active]="row.format === d.value" (click)="pickRowOption($index, 'format', d.value)">
+                    {{ formatLabel(d.value) }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <input type="number" inputmode="numeric" min="0" class="deliverable-input deliverable-qty" aria-label="Quantity" [value]="row.qty"
+            (input)="updateDeliverableRow($index, { qty: $any($event.target).value })" />
+          <input type="number" inputmode="numeric" min="0" class="deliverable-input deliverable-fee" aria-label="Fee each in naira" [value]="row.fee"
+            (input)="updateDeliverableRow($index, { fee: $any($event.target).value })" placeholder="0" />
+          <button type="button" class="deliverable-remove" aria-label="Remove deliverable"
+            (click)="removeDeliverableRow($index)"><i class="ti ti-trash" aria-hidden="true"></i></button>
         </div>
       }
 
-      @for (platform of selectedPlatforms; track platform) {
-        <div class="section" style="margin-top:12px">
-          <div class="section-title">{{ platformDisplayName(platform) }}</div>
-          <div class="tier-picker-list">
-            <div class="tier-picker-row" *ngFor="let d of deliverableTypes">
-              <div class="tier-dot">{{ d.icon }}</div>
-              <div class="tier-main">
-                <div class="tier-name">{{ d.label }}</div>
-              </div>
-              <div class="tier-slot-input">
-                <button type="button" class="tier-slot-btn"
-                  (click)="setDeliverableQty(platform, d.value, getDeliverableQty(platform, d.value) - 1)">−</button>
-                <input type="number" min="0" class="tier-slot-count" [value]="getDeliverableQty(platform, d.value)"
-                  (input)="setDeliverableQty(platform, d.value, $any($event.target).value)" />
-                <button type="button" class="tier-slot-btn"
-                  (click)="setDeliverableQty(platform, d.value, getDeliverableQty(platform, d.value) + 1)">+</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      }
+      <button type="button" class="deliverable-add" (click)="addDeliverableRow()">
+        <i class="ti ti-plus" aria-hidden="true"></i> Add deliverable
+      </button>
 
       <div class="tier-summary">
         <span>{{ totalDeliverables }} item{{ totalDeliverables === 1 ? '' : 's' }} required</span>
@@ -451,7 +410,7 @@
     <div class="rv-section">
       <div class="rv-head">
         Campaign Basics
-        <span class="rv-edit" (click)="goTo(0)">Edit →</span>
+        <button type="button" class="rv-edit" (click)="goTo(0)">Edit</button>
       </div>
       <div class="rv-card">
         <div class="rv-row">
@@ -460,7 +419,7 @@
         </div>
         <div class="rv-row">
           <div class="rv-key">Description</div>
-          <div class="rv-val" [class.empty]="!campaignDescription()" style="max-width: 300px">
+          <div class="rv-val" [class.empty]="!campaignDescription()">
             {{ campaignDescription() || '—' }}
           </div>
         </div>
@@ -481,7 +440,7 @@
     <div class="rv-section">
       <div class="rv-head">
         Content
-        <span class="rv-edit" (click)="goTo(1)">Edit →</span>
+        <button type="button" class="rv-edit" (click)="goTo(1)">Edit</button>
       </div>
       <div class="rv-card">
         <div class="rv-row">
@@ -520,7 +479,7 @@
           <div class="rv-key">Deliverables</div>
           <div class="rv-val" [class.empty]="totalDeliverables === 0">
             {{ deliverablesSummary }}
-            <span class="rv-edit" (click)="goTo(3)">Edit →</span>
+            <button type="button" class="rv-edit" (click)="goTo(3)">Edit</button>
           </div>
         </div>
       </div>
@@ -528,7 +487,7 @@
     <div class="rv-section">
       <div class="rv-head">
         Access & Pricing
-        <span class="rv-edit" (click)="goTo(2)">Edit →</span>
+        <button type="button" class="rv-edit" (click)="goTo(2)">Edit</button>
       </div>
       <div class="rv-card">
         <div class="rv-row">
@@ -542,42 +501,42 @@
       </div>
     </div>
     <div class="rv-note">
-      <span class="rv-note-icon">ℹ️</span>
+      <i class="ti ti-info-circle rv-note-icon" aria-hidden="true"></i>
       <span>By launching, you agree to our terms. Your campaign will be reviewed within a few minutes
         before going live. You can pause or edit it at any time from your dashboard.</span>
     </div>
     @if (showTopup) {
 
-    <app-topup-modal [amount]="topupShortfall > 0 ? topupShortfall : 5000" [fixedAmount]="true" (topupSuccess)="onTopupSuccess()">
+    <app-topup-modal [amount]="topupShortfall > 0 ? topupShortfall : 5000" [fixedAmount]="true" (closed)="showTopup = false" (topupSuccess)="onTopupSuccess()">
     </app-topup-modal>
     }
-    <button class="checkout-btn checkout-btn-full" (click)="onCheckout()" [disabled]="isSubmitting()">
+    <button type="button" class="checkout-btn checkout-btn-full" (click)="onCheckout()" [disabled]="isSubmitting()">
       @if (isSubmitting()) {
       <span>Creating campaign…</span>
       } @else {
-      <span>Checkout →</span>
+      <span>Review and pay</span>
       }
     </button>
     @if (submitStatus() === 'success') {
-    <div class="rv-note">
-      <span class="rv-note-icon">✅</span>
+    <div class="rv-note success" role="status">
+      <i class="ti ti-circle-check rv-note-icon" aria-hidden="true"></i>
       <span>{{ submitMessage() }}</span>
     </div>
     }
     @if (submitStatus() === 'error') {
-    <div class="rv-note">
-      <span class="rv-note-icon">⚠️</span>
+    <div class="rv-note error" role="alert">
+      <i class="ti ti-alert-triangle rv-note-icon" aria-hidden="true"></i>
       <span>{{ submitMessage() }}</span>
     </div>
     }
   </div>
   <div>
     <div class="pager">
-      <button class="pager__btn" aria-label="Previous" (click)="prev()">
+      <button type="button" class="pager__btn" [disabled]="currentStep === 0" (click)="prev()">
         <i class="ti ti-chevron-left" aria-hidden="true"></i>
-        Prev
+        Back
       </button>
-      <button class="pager__btn" aria-label="Next" (click)="next()">
+      <button type="button" class="pager__btn pager__btn--next" [disabled]="currentStep === steps.length - 1" (click)="next()">
         Next
         <i class="ti ti-chevron-right" aria-hidden="true"></i>
       </button>
@@ -586,14 +545,15 @@
 </div>
 
 @if (showPayAlert()) {
-<div class="modal-overlay" (click)="closePayAlert()">
-  <div class="modal" (click)="$event.stopPropagation()">
+<div class="ui-sheet-backdrop" (click)="closePayAlert()"></div>
+<div class="ui-sheet pay-sheet" role="dialog" aria-modal="true" aria-labelledby="pay-title">
+  <div>
     <div class="modal-head">
-      <h3>Confirm payment</h3>
-      <button class="btn-close" (click)="closePayAlert()">✕</button>
+      <h3 id="pay-title">Confirm payment</h3>
+      <button type="button" class="ui-icon-btn" aria-label="Close" (click)="closePayAlert()"><i class="ti ti-x" aria-hidden="true"></i></button>
     </div>
 
-    <div class="rv-card" style="margin-bottom:12px">
+    <div class="rv-card">
       <div class="rv-row">
         <div class="rv-key">Campaign cost</div>
         <div class="rv-val">₦{{ computedBudget | number }}</div>
@@ -612,7 +572,7 @@
       </div>
     </div>
 
-    <button class="checkout-btn checkout-btn-full" (click)="payFromWallet()" [disabled]="walletLoading() || isSubmitting()">
+    <button type="button" class="checkout-btn checkout-btn-full" (click)="payFromWallet()" [disabled]="walletLoading() || isSubmitting()">
       @if (isSubmitting()) {
         <span>Processing payment…</span>
       } @else {
@@ -623,8 +583,8 @@
       <span>Cancel</span>
     </button>
     @if (payError()) {
-      <div class="rv-note">
-        <span class="rv-note-icon">⚠️</span>
+      <div class="rv-note error" role="alert">
+        <i class="ti ti-alert-triangle rv-note-icon" aria-hidden="true"></i>
         <span>{{ payError() }}</span>
       </div>
     }

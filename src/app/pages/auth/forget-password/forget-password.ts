@@ -1,57 +1,34 @@
-import { AsyncPipe, CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { selectAuthError, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
 import { PasswordRecoveryActions } from '../../../store/auth/passwordRecovery/password-recovery.actions';
-import { MatIcon } from '@angular/material/icon';
 import { Actions, ofType } from '@ngrx/effects';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-forget-password',
-  imports: [
-    ReactiveFormsModule,
-    MatCardModule,
-    MatInputModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatProgressSpinnerModule,
-    RouterModule,
-    MatIcon,
-    AsyncPipe
-  ],
+  imports: [ReactiveFormsModule, RouterModule, AsyncPipe],
   templateUrl: './forget-password.html',
-  styleUrl: './forget-password.scss',
 })
 export class ForgetPassword {
   private fb = inject(FormBuilder);
   private store = inject(Store);
   private action$ = inject(Actions);
-  private router = inject(Router);
 
   isLoading$ = this.store.select(selectIsLoading);
   error$ = this.store.select(selectAuthError);
 
-  emailSent = false;
+  emailSent = signal(false);
 
   constructor() {
     this.action$
       .pipe(ofType(PasswordRecoveryActions.forgotPasswordSuccess), takeUntilDestroyed())
-      .subscribe((action) => {
-        this.emailSent = true;
-
-        const responseData = action.response.data?.resetToken;
-        if (responseData) {
-          const resetLink = `/reset-password?token=${responseData}`;
-          this.router.navigateByUrl(resetLink);
-        }
+      .subscribe(() => {
+        // The reset link only ever arrives by email.
+        this.emailSent.set(true);
       });
   }
 

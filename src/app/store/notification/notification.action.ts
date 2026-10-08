@@ -11,5 +11,10 @@ export const NotificationActions = createActionGroup({
     'Mark As Read': props<{ notificationId: number; trendorId: string }>(),
     'Mark As Read Success': props<{ notificationId: number }>(),
     'Mark As Read Failure': props<{ error: string }>(),
+
+    /** Pushed live over the realtime socket. */
+    'Notification Received': props<{ notification: Notification }>(),
+    /** Read on another tab/device. */
+    'Notification Read Elsewhere': props<{ notificationId: number }>(),
   },
 });

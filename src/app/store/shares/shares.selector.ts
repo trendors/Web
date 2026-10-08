@@ -10,8 +10,7 @@ export const selectFilteredShares = createSelector(
   selectSharesFilter,
   (list, filter) => {
     if (filter === 'all') return list;
-    if (filter === 'paid')
-      return list.filter((s) => (!s.paid && s.rewardAmount > 0) || s.rewardAmount > 0);
+    if (filter === 'paid') return list.filter((s) => Number(s.rewardAmount) > 0);
     if (filter === 'free') return list.filter((s) => s.rewardAmount === 0);
     if (filter === 'pending') return list.filter((s) => s.status === 'pending');
     if (filter === 'claimed') return list.filter((s) => s.status === 'completed' && s.paid);
@@ -20,6 +19,9 @@ export const selectFilteredShares = createSelector(
 );
 export const selectTotals = createSelector(selectAllShares, (list) => ({
   totalShares: list.length,
-  totalEarned: list.reduce((sum, s) => sum + Number(s.rewardAmount || 0), 0),
+  // Earned = rewards actually paid out, not pending or unverified shares.
+  totalEarned: list
+    .filter((s) => s.paid)
+    .reduce((sum, s) => sum + Number(s.rewardAmount || 0), 0),
   pendingCount: list.filter((s) => s.status === 'pending').length,
 }));

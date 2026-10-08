@@ -5,6 +5,16 @@
       border-radius: 12px;
       padding: 16px;
     }
+
+    .trending__state {
+      font-size: var(--fs-secondary);
+      color: #777;
+      padding: 8px 0;
+    }
+
+    .trending__state--error {
+      color: #c0392b;
+    }
  
     .trending__title {
       display: flex;

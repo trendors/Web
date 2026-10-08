@@ -1,279 +1,256 @@
-<div class="search-bar">
-  <mat-icon>search</mat-icon>
-  <input type="text" placeholder="Search posts.." [formControl]="searchControl" class="search-input" />
+<div class="feed-controls">
+  <label class="search-bar">
+    <i class="ti ti-search" aria-hidden="true"></i>
+    <span class="sr-only">Search posts</span>
+    <input
+      type="search"
+      class="search-input"
+      placeholder="Search posts"
+      enterkeyhint="search"
+      autocomplete="off"
+      [formControl]="searchControl"
+    />
+  </label>
+
+  <div class="ui-tabs" role="tablist" aria-label="Post type">
+    <button
+      type="button"
+      role="tab"
+      class="ui-tab"
+      [class.active]="activePostTab === 'open'"
+      [attr.aria-selected]="activePostTab === 'open'"
+      (click)="selectPostTab('open')"
+    >
+      Open posts
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="ui-tab"
+      [class.active]="activePostTab === 'application'"
+      [attr.aria-selected]="activePostTab === 'application'"
+      (click)="selectPostTab('application')"
+    >
+      Campaigns to apply for
+    </button>
+  </div>
 </div>
 
-<div class="post-tabs" role="tablist" aria-label="Post type">
-  <button type="button" class="post-tab" [class.active]="activePostTab === 'open'" (click)="selectPostTab('open')">
-    Open posts
-  </button>
-  <button type="button" class="post-tab" [class.active]="activePostTab === 'application'"
-    (click)="selectPostTab('application')">
-    Application required
-  </button>
-</div>
-
-@if (loading$ | async) {
-<app-loader></app-loader>
+@if (newPostsAvailable()) {
+  <div class="notifier-holder">
+    <app-new-posts-notifier (click)="refreshPosts()" [pendingPosts]="pendingPosts()"></app-new-posts-notifier>
+  </div>
 }
 
-@if (newPostsAvailable) {
-<div class="notifier-holder">
-  <app-new-posts-notifier class="notifier" (click)="refreshPosts()"
-    [pendingPosts]="pendingPosts"></app-new-posts-notifier>
-</div>
-}
-
-<div>
-  <app-fab class="fab"></app-fab>
-</div>
+<app-fab></app-fab>
 
 <div class="posts-list">
-  @if (posts?.length ?? 0 > 0) {
-  @for (post of posts; track trackById($index, post)) {
-  <article class="card post-card">
+  @let posts = (posts$ | async) ?? [];
+  @if (posts.length > 0) {
+    @for (post of posts; track trackById($index, post)) {
+      <article class="ui-card post-card">
+        <header class="post-header">
+          <span class="avatar" aria-hidden="true">{{ (post.userName || 'U').slice(0, 1).toUpperCase() }}</span>
+          <div class="author">
+            <span class="author-name">{{ post.userName || 'Anonymous' }}</span>
+            <span class="post-meta">
+              {{ post.createdAt | timeAgo }}
+              @if (post.campaign?.access === 'application') {
+                · <span class="tag">Campaign</span>
+              }
+            </span>
+          </div>
+        </header>
 
-    <!-- ── POST HEADER ── -->
-    <!-- <div class="post-header">
-      <div class="post-author">
-        <div class="avatar-small gray">
-          {{ (post.userName || 'U').slice(0, 1).toUpperCase() }}
-        </div>
-        <div class="author-details">
-          <h4>{{ post.userName || 'Anonymous' }}</h4>
-          <span class="post-time">&#64;{{ post.userName }}</span>
-        </div>
-      </div>
-    </div> -->
+        <div class="post-content">
+          @if (post.heading) {
+            <h2 class="post-heading">{{ post.heading }}</h2>
+          }
+          <p class="post-text">{{ post.text }}</p>
 
-    <div class="post-header">
-      <div class="post-author">
-        <div class="avatar-small gray">
-          {{ (post.userName || 'U').slice(0, 1).toUpperCase() }}
-        </div>
-        <div class="author-details">
-          <h4>{{ post.userName || 'Anonymous' }}</h4>
-          <span class="post-time">&#64;{{ post.userName }}</span>
-        </div>
-      </div>
-      <!-- @if (post.campaign?.access === 'application') {
-      <span class="badge-application">Application required</span>
-      } -->
-    </div>
-
-    <!-- ── POST CONTENT ── -->
-    <div class="post-content">
-      @if (post.heading) {
-      <h5 class="post-heading">{{ post.heading }}</h5>
-      }
-      <p class="post-text">{{ post.text }}</p>
-
-      @if (post.images?.length) {
-      <div class="image-gallery" [class.multi]="post.images!.length > 1">
-        @for (img of post.images | slice: 0 : 2; track img; let i = $index) {
-        <div class="img-wrapper">
-          <img [src]="img" alt="Post image" loading="lazy" />
-          @if (i === 1 && post.images!.length > 2) {
-          <div class="overlay">+{{ post.images!.length - 2 }}</div>
+          @if (post.images?.length) {
+            <div class="image-gallery" [class.multi]="post.images!.length > 1">
+              @for (img of post.images | slice: 0 : 2; track img; let i = $index) {
+                <div class="img-wrapper">
+                  <img [src]="img" alt="" loading="lazy" decoding="async" />
+                  @if (i === 1 && post.images!.length > 2) {
+                    <div class="overlay">+{{ post.images!.length - 2 }}</div>
+                  }
+                </div>
+              }
+            </div>
           }
         </div>
-        }
-      </div>
-      }
-    </div>
 
-    <!-- @if (post.campaign?.access === 'application') {
-    <div class="apply-cta">
-      <button class="apply-btn" [class.applied]="isAppliedByCurrentUser(post)"
-        [disabled]="isAppliedByCurrentUser(post) || applyingPostIds.has(post.id)" (click)="openApplySheet(post)">
-        @if (applyingPostIds.has(post.id)) {
-        <mat-spinner diameter="16"></mat-spinner>
-        } @else if (isAppliedByCurrentUser(post)) {
-        <mat-icon>check_circle</mat-icon> Applied
-        } @else {
-        Apply to Campaign
-        }
-      </button>
-    </div> } -->
-
-
-    <!-- ── REQUIREMENTS PANEL ── -->
-   @if (post.campaign?.access === 'application') {
-
-<div class="requirements-panel">
-  <div class="requirements-title">Eligibility requirements</div>
-
-  <ul class="requirements-list">
-    <!-- Neutral row (no pass/fail known) -->
-    <li class="req-item">
-      <span class="req-icon neutral">•</span>
-      <span class="req-label">Platforms: {{ post.campaign?.platforms?.join(', ') }}</span>
-    </li>
-
-    <!-- Met requirement -->
-    <li class="req-item met">
-      <span class="req-icon">✓</span>
-      <span class="req-label">Min. 5,000 Twitter followers</span>
-      <span class="req-note">You have 8,200</span>
-    </li>
-
-    <!-- Unmet requirement -->
-    <li class="req-item unmet">
-      <span class="req-icon">✕</span>
-      <span class="req-label">Min. 700 Facebook followers</span>
-      <span class="req-note">You have 5,000</span>
-    </li>
-  </ul>
-</div>
-   }
-    <!-- ── ACTION BAR ── -->
-    <div class="post-actions">
-      <!-- Like -->
-      <button class="action-btn" [class.liked]="isLikedByCurrentUser(post)" (click)="onLikePost(post.id)"
-        [attr.aria-label]="isLikedByCurrentUser(post) ? 'Unlike post' : 'Like post'">
-        <mat-icon>{{ isLikedByCurrentUser(post) ? 'favorite' : 'favorite_border' }}</mat-icon>
-        <span class="action-count">{{ post.likes?.length || 0 }}</span>
-      </button>
-
-      <!-- Comment – toggles the section open/closed -->
-      <button class="action-btn" [class.active]="expandedComments[post.id]" (click)="toggleComments(post.id)"
-        aria-label="Toggle comments">
-        <mat-icon>{{
-          expandedComments[post.id] ? 'chat_bubble' : 'chat_bubble_outline'
-          }}</mat-icon>
-        <span class="action-count">{{ post.comments?.length || 0 }}</span>
-      </button>
-
-      @if (post.campaign?.access === 'application') {
-      <span class="badge-application" [class.applied]="isAppliedByCurrentUser(post)">
-
-
-        @if (applyingPostIds.has(post.id)) {
-        <mat-spinner diameter="16"></mat-spinner>
-        } @else if (isAppliedByCurrentUser(post)) {
-        <mat-icon>check_circle</mat-icon> Applied
-        } @else {
-        Apply to Campaign
-        }
-
-      </span>
-      } @else {
-      <button class="action-btn" (click)="openShareMenu(post)" aria-label="Share post">
-        <i class="fa-solid fa-share"></i>
-        <span class="action-count">{{ post.shares?.length || 0 }}</span>
-      </button>
-      }
-
-
-    </div>
-
-    <!-- ── COMMENTS PANEL (toggle) ── -->
-    @if (expandedComments[post.id]) {
-    <div class="comments-panel">
-
-      <!-- Existing comments list -->
-      @if (post.comments?.length) {
-      <div class="comments-list">
-        @for (
-        comment of post.comments | slice: 0 : visibleCommentsCount[post.id] || 3;
-        track comment.id
-        ) {
-        <div class="comment-item">
-          <div class="avatar-tiny">
-            {{
-            (comment.user?.user_name || comment.userName || 'U')
-            .slice(0, 1)
-            .toUpperCase()
-            }}
+        @if (post.campaign?.access === 'application' && post.campaign?.platforms?.length) {
+          <div class="requirements">
+            <i class="ti ti-device-mobile" aria-hidden="true"></i>
+            <span>Platforms: {{ post.campaign!.platforms!.join(', ') }}</span>
           </div>
-
-          <div class="comment-body">
-            <div class="comment-bubble">
-              <span class="comment-author-name">
-                {{ comment.user?.user_name || comment.userName || 'Anonymous' }}
-              </span>
-
-              @if (editingCommentId === comment.id) {
-              <!-- Inline edit mode -->
-              <div class="inline-edit">
-                <input type="text" class="edit-input" [(ngModel)]="editCommentText"
-                  (keyup.enter)="submitEditComment(post.id)" (keyup.escape)="cancelEditComment()" autofocus />
-                <div class="edit-actions">
-                  <button class="edit-btn cancel" (click)="cancelEditComment()">
-                    Cancel
-                  </button>
-                  <button class="edit-btn save" (click)="submitEditComment(post.id)">
-                    Save
-                  </button>
-                </div>
-              </div>
-              } @else {
-              <p class="comment-text">{{ comment.text }}</p>
-              }
-            </div>
-
-            <!-- Comment meta row -->
-            <div class="comment-meta">
-              <span class="comment-time">just now</span>
-
-              @if (isCommentOwner(comment.userId)) {
-              <button class="meta-action" (click)="startEditComment(comment)">
-                Edit
-              </button>
-              <span class="meta-sep">·</span>
-              <button class="meta-action danger" (click)="onDeleteComment(comment.id, post.id)">
-                Delete
-              </button>
-              }
-            </div>
-          </div>
-        </div>
         }
 
-        <!-- View more / collapse -->
-        @if ((post.comments?.length ?? 0) > 3) {
-        <button class="view-more-btn" (click)="toggleShowAllComments(post.id, post.comments!.length)">
-          @if (!visibleCommentsCount[post.id] || visibleCommentsCount[post.id] <= 3) { View all {{ post.comments!.length
-            }} comments } @else { Hide comments } </button>
-            }
-      </div>
-      } @else {
-      <p class="no-comments">No comments yet. Be the first!</p>
-      }
-
-      <!-- Add comment input — always shown when panel is open -->
-      <div class="add-comment-row">
-        <div class="avatar-tiny self">
-          {{ (currentUserName || 'U').slice(0, 1).toUpperCase() }}
-        </div>
-        <div class="comment-input-wrapper">
-          <input type="text" [(ngModel)]="newCommentTexts[post.id]" placeholder="Add a comment…"
-            (keyup.enter)="submitComment(post.id)" class="comment-input" />
-          <button class="send-btn" (click)="submitComment(post.id)" [disabled]="!newCommentTexts[post.id]?.trim()"
-            aria-label="Post comment">
-            <mat-icon>send</mat-icon>
+        <footer class="post-actions">
+          <button
+            type="button"
+            class="action-btn"
+            [class.liked]="isLikedByCurrentUser(post)"
+            [attr.aria-pressed]="isLikedByCurrentUser(post)"
+            [attr.aria-label]="isLikedByCurrentUser(post) ? 'Unlike post' : 'Like post'"
+            (click)="onLikePost(post)"
+          >
+            <i class="ti" [class.ti-heart-filled]="isLikedByCurrentUser(post)" [class.ti-heart]="!isLikedByCurrentUser(post)" aria-hidden="true"></i>
+            <span class="tabular">{{ post.likes?.length || 0 }}</span>
           </button>
-        </div>
-      </div>
 
-    </div>
+          <button
+            type="button"
+            class="action-btn"
+            [class.active]="expandedComments[post.id]"
+            [attr.aria-expanded]="!!expandedComments[post.id]"
+            aria-label="Comments"
+            (click)="toggleComments(post.id)"
+          >
+            <i class="ti ti-message-circle" aria-hidden="true"></i>
+            <span class="tabular">{{ post.comments?.length || 0 }}</span>
+          </button>
+
+          @if (post.campaign?.access === 'application') {
+            @if (applyingPostIds.has(post.id)) {
+              <span class="ui-btn sm apply-btn" aria-live="polite">
+                <span class="ui-spinner" aria-hidden="true"></span> Applying…
+              </span>
+            } @else if (isAppliedByCurrentUser(post)) {
+              <span class="applied-pill">
+                <i class="ti ti-circle-check" aria-hidden="true"></i> Applied
+              </span>
+            } @else {
+              <button type="button" class="ui-btn sm apply-btn" (click)="applyToCampaign(post)">
+                Apply
+              </button>
+            }
+          } @else {
+            <button type="button" class="action-btn" aria-label="Share post" (click)="openShareMenu(post)">
+              <i class="ti ti-share-3" aria-hidden="true"></i>
+              <span class="tabular">{{ post.shares?.length || 0 }}</span>
+            </button>
+          }
+        </footer>
+
+        @if (expandedComments[post.id]) {
+          <section class="comments-panel" aria-label="Comments">
+            @if (post.comments?.length) {
+              <ul class="comments-list">
+                @for (comment of post.comments | slice: 0 : visibleCommentsCount[post.id] || 3; track comment.id) {
+                  <li class="comment-item">
+                    <span class="avatar sm" aria-hidden="true">
+                      {{ (comment.user?.user_name || comment.userName || 'U').slice(0, 1).toUpperCase() }}
+                    </span>
+
+                    <div class="comment-body">
+                      <div class="comment-bubble">
+                        <span class="comment-author">{{ comment.user?.user_name || comment.userName || 'Anonymous' }}</span>
+
+                        @if (editingCommentId === comment.id) {
+                          <div class="inline-edit">
+                            <input
+                              type="text"
+                              class="ui-input"
+                              [(ngModel)]="editCommentText"
+                              enterkeyhint="done"
+                              (keyup.enter)="submitEditComment(post.id)"
+                              (keyup.escape)="cancelEditComment()"
+                              aria-label="Edit comment"
+                            />
+                            <div class="edit-actions">
+                              <button type="button" class="ui-btn ghost sm" (click)="cancelEditComment()">Cancel</button>
+                              <button type="button" class="ui-btn sm" (click)="submitEditComment(post.id)">Save</button>
+                            </div>
+                          </div>
+                        } @else {
+                          <p class="comment-text">{{ comment.text }}</p>
+                        }
+                      </div>
+
+                      <div class="comment-meta">
+                        <span>{{ comment.createdAt | timeAgo }}</span>
+                        @if (isCommentOwner(comment.userId)) {
+                          <button type="button" class="meta-action" (click)="startEditComment(comment)">Edit</button>
+                          <button type="button" class="meta-action danger" (click)="onDeleteComment(comment.id, post.id)">
+                            Delete
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  </li>
+                }
+              </ul>
+
+              @if ((post.comments?.length ?? 0) > 3) {
+                <button type="button" class="view-more-btn" (click)="toggleShowAllComments(post.id, post.comments!.length)">
+                  @if (!visibleCommentsCount[post.id] || visibleCommentsCount[post.id] <= 3) {
+                    View all {{ post.comments!.length }} comments
+                  } @else {
+                    Show fewer comments
+                  }
+                </button>
+              }
+            } @else {
+              <p class="no-comments">No comments yet. Be the first!</p>
+            }
+
+            <form class="add-comment" (ngSubmit)="submitComment(post.id)">
+              <span class="avatar sm self" aria-hidden="true">{{ (currentUserName || 'U').slice(0, 1).toUpperCase() }}</span>
+              <div class="comment-input-wrapper">
+                <input
+                  type="text"
+                  class="comment-input"
+                  name="comment-{{ post.id }}"
+                  [(ngModel)]="newCommentTexts[post.id]"
+                  placeholder="Add a comment…"
+                  enterkeyhint="send"
+                  autocomplete="off"
+                  aria-label="Add a comment"
+                />
+                <button
+                  type="submit"
+                  class="send-btn"
+                  [disabled]="!newCommentTexts[post.id]?.trim()"
+                  aria-label="Post comment"
+                >
+                  <i class="ti ti-send" aria-hidden="true"></i>
+                </button>
+              </div>
+            </form>
+          </section>
+        }
+      </article>
     }
 
-  </article>
-  }
-
-  @if (loadingMore$ | async) {
-  <div class="loading-more">
-    <mat-spinner diameter="24"></mat-spinner>
-    <p>Loading more…</p>
-  </div>
-  }
-
-  }
-  @else {
-  <div class="empty-state">
-    <mat-icon>article</mat-icon>
-    <p>No posts yet. Be the first to create one!</p>
-  </div>
+    @if (loadingMore$ | async) {
+      <div class="ui-empty"><span class="ui-spinner" aria-hidden="true"></span>Loading more…</div>
+    } @else if (hasMore$ | async) {
+      <button type="button" class="ui-btn secondary block" (click)="onLoadMore()">Load more</button>
+    }
+  } @else if (loading$ | async) {
+    @for (s of [1, 2, 3]; track s) {
+      <div class="ui-card post-card skeleton" aria-hidden="true">
+        <div class="sk-row"><span class="sk-circle"></span><span class="sk-line w40"></span></div>
+        <span class="sk-line"></span>
+        <span class="sk-line w80"></span>
+      </div>
+    }
+  } @else if (postsError$ | async; as postsError) {
+    <div class="ui-empty">
+      <i class="ti ti-alert-circle" aria-hidden="true"></i>
+      <strong>Couldn't load posts</strong>
+      {{ postsError }}
+      <button type="button" class="ui-btn secondary sm" (click)="loadInitialPosts()">Try again</button>
+    </div>
+  } @else {
+    <div class="ui-empty">
+      <i class="ti ti-article" aria-hidden="true"></i>
+      <strong>No posts yet</strong>
+      New campaigns and posts will show up here.
+    </div>
   }
 </div>

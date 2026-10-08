@@ -10,6 +10,7 @@ api/campaign.service.ts
 api/campaignDeliverable.service.ts
 api/campaignInfluencer.service.ts
 api/campaignInfluencerPost.service.ts
+api/campaignOffer.service.ts
 api/comments.service.ts
 api/digitalMarketing.service.ts
 api/influencerProfiles.service.ts
@@ -38,6 +39,8 @@ model/campaign.ts
 model/campaignDeliverable.ts
 model/campaignInfluencer.ts
 model/campaignInfluencerPost.ts
+model/campaignOffer.ts
+model/campaignOfferLine.ts
 model/campaignOverviewResponse.ts
 model/campaignSharesResponse.ts
 model/campaignStatsResponse.ts
@@ -50,6 +53,7 @@ model/createCampaignDeliverableDto.ts
 model/createCampaignDto.ts
 model/createCampaignInfluencerDto.ts
 model/createCampaignInfluencerPostDto.ts
+model/createCampaignOfferDto.ts
 model/createCampaignTierDto.ts
 model/createCommentDto.ts
 model/createCreativeProfileDto.ts
@@ -76,12 +80,14 @@ model/likePostDto.ts
 model/loadMoreDto.ts
 model/loadMoreOptions.ts
 model/models.ts
+model/offerLineDto.ts
 model/paginatedResponseDto.ts
 model/paginationDataDto.ts
 model/payFromWalletDto.ts
 model/postMetrics.ts
 model/recordPostMetricsDto.ts
 model/resetPasswordDto.ts
+model/respondCampaignOfferDto.ts
 model/respondToInvitationDto.ts
 model/searchBanksDto.ts
 model/updateAdCreativeDto.ts

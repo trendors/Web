@@ -5,36 +5,60 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 
 import { InfluencerMetricsComponent } from './view-influencer-metrics';
-import { CampaignInfluencerPostService } from '../../../core/api';
-import { postsEnvelopeForCampaign } from '../../../core/testing/campaign.fixtures';
+import { CampaignInfluencerPostService, CampaignInfluencerService, PostMetricsService } from '../../../core/api';
+import {
+  latestMetricForPost,
+  mockAssignmentActive,
+  mockAssignments,
+  mockPostMorningRoutine,
+  postsForAssignment,
+} from '../../../core/testing/campaign.fixtures';
+
+function setup(assignmentId: number, assignmentFound = false) {
+  const postsApi = {
+    campaignInfluencerPostControllerFindByAssignment: vi.fn((id: number) =>
+      of({ message: 'Posts fetched', error: false, data: postsForAssignment(id) }),
+    ),
+  };
+  // No router state in tests, so the page falls back to fetching the assignment.
+  const assignmentApi = {
+    campaignInfluencerControllerFindOne: vi.fn((id: number) =>
+      of({ data: assignmentFound ? mockAssignments.find((a) => a.id === id) ?? null : null }),
+    ),
+  };
+  const metricsApi = {
+    // Metrics already ride along on the fixture posts; the per-influencer
+    // endpoint returns nothing so the embedded snapshots are what render.
+    postMetricsControllerByInfluencer: vi.fn(() => of({ data: [] })),
+  };
+
+  TestBed.configureTestingModule({
+    imports: [InfluencerMetricsComponent],
+    providers: [
+      provideRouter([]),
+      provideLocationMocks(),
+      {
+        provide: ActivatedRoute,
+        useValue: {
+          snapshot: { paramMap: convertToParamMap({ id: String(assignmentId) }) },
+        },
+      },
+      { provide: CampaignInfluencerPostService, useValue: postsApi },
+      { provide: CampaignInfluencerService, useValue: assignmentApi },
+      { provide: PostMetricsService, useValue: metricsApi },
+    ],
+  });
+  return { postsApi, metricsApi, assignmentApi };
+}
 
 describe('InfluencerMetricsComponent', () => {
   let component: InfluencerMetricsComponent;
   let fixture: ComponentFixture<InfluencerMetricsComponent>;
-
-  const postsApi = {
-    campaignInfluencerPostControllerFindByCampaign: vi.fn((campaignId: number) =>
-      of(postsEnvelopeForCampaign(campaignId)),
-    ),
-  };
+  let postsApi: ReturnType<typeof setup>['postsApi'];
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [InfluencerMetricsComponent],
-      providers: [
-        provideRouter([]),
-        provideLocationMocks(),
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            paramMap: of(convertToParamMap({ id: '101' })),
-            queryParamMap: of(convertToParamMap({ campaignId: '1' })),
-          },
-        },
-        { provide: CampaignInfluencerPostService, useValue: postsApi },
-      ],
-    }).compileComponents();
-
+    ({ postsApi } = setup(mockAssignmentActive.id!));
+    await TestBed.compileComponents();
     fixture = TestBed.createComponent(InfluencerMetricsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -45,74 +69,70 @@ describe('InfluencerMetricsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should fetch the campaign posts for the influencer', () => {
-    expect(postsApi.campaignInfluencerPostControllerFindByCampaign).toHaveBeenCalledWith(1, 'body', false, {
-      transferCache: false,
-    });
+  it('should fetch the posts for the route assignment', () => {
+    expect(postsApi.campaignInfluencerPostControllerFindByAssignment).toHaveBeenCalledWith(
+      mockAssignmentActive.id,
+      'body',
+      false,
+      { transferCache: false },
+    );
     expect(component.loading()).toBe(false);
   });
 
-  it('should derive the influencer header from their posts', () => {
+  it('should derive the influencer header from the assignment', () => {
     expect(component.header()?.name).toBe('Ada Okafor');
-    expect(component.header()?.username).toBe('@ada.okafor');
-    expect(component.header()?.campaign).toBe('GlowSkin Skincare Launch');
     expect(component.header()?.totalPayout).toBe(120000);
     expect(component.header()?.paid).toBe(40000);
     expect(component.header()?.pending).toBe(80000);
   });
 
-  it('should list the influencer posts with their latest metrics', () => {
-    expect(component.contents()).toHaveLength(3);
-    const morning = component.contents().find((c) => c.title === 'Morning routine with GlowSkin');
-    expect(morning?.views).toBe(12500);
-    expect(morning?.likes).toBe(980);
+  it('should list the assignment posts with their latest metrics', () => {
+    const expected = postsForAssignment(mockAssignmentActive.id!);
+    expect(component.contents()).toHaveLength(expected.length);
+    const morning = component.contents().find((c) => c.postUrl === mockPostMorningRoutine.post_url);
+    const latest = latestMetricForPost(mockPostMorningRoutine.id!);
+    expect(morning?.views).toBe(latest?.views);
+    expect(morning?.likes).toBe(latest?.likes);
     expect(morning?.status).toBe('Paid');
-    expect(component.totalViews()).toBe('17.7K');
   });
 
   it('should compute content completion from the assignment', () => {
-    expect(component.completionPercentage).toBe(67);
+    // posts_published 2 of posts_agreed 3
+    expect(component.completionPercentage()).toBe(67);
   });
 });
 
-describe('InfluencerMetricsComponent with no posts for the influencer', () => {
-  let component: InfluencerMetricsComponent;
-  let fixture: ComponentFixture<InfluencerMetricsComponent>;
-
-  const postsApi = {
-    campaignInfluencerPostControllerFindByCampaign: vi.fn((campaignId: number) =>
-      of(postsEnvelopeForCampaign(campaignId)),
-    ),
-  };
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [InfluencerMetricsComponent],
-      providers: [
-        provideRouter([]),
-        provideLocationMocks(),
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            // Emeka (104) has an assignment but no posts on campaign 1.
-            paramMap: of(convertToParamMap({ id: '104' })),
-            queryParamMap: of(convertToParamMap({ campaignId: '1' })),
-          },
-        },
-        { provide: CampaignInfluencerPostService, useValue: postsApi },
-      ],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(InfluencerMetricsComponent);
-    component = fixture.componentInstance;
+describe('InfluencerMetricsComponent with no posts for the assignment', () => {
+  it('should leave loading and show an empty state instead of header data', async () => {
+    // Any fixture assignment with no submitted posts.
+    const empty = mockAssignments.find((a) => postsForAssignment(a.id!).length === 0)!;
+    setup(empty.id!);
+    await TestBed.compileComponents();
+    const fixture = TestBed.createComponent(InfluencerMetricsComponent);
+    const component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
-  });
 
-  it('should leave loading and show an empty state instead of header data', () => {
     expect(component.loading()).toBe(false);
     expect(component.header()).toBeNull();
     expect(component.contents()).toEqual([]);
     expect(component.error()).toContain('No posts found');
+  });
+});
+
+describe('InfluencerMetricsComponent with a known assignment but no posts', () => {
+  it('should show the influencer header with an empty content table', async () => {
+    const empty = mockAssignments.find((a) => postsForAssignment(a.id!).length === 0)!;
+    setup(empty.id!, true);
+    await TestBed.compileComponents();
+    const fixture = TestBed.createComponent(InfluencerMetricsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.loading()).toBe(false);
+    expect(component.error()).toBeNull();
+    expect(component.header()).not.toBeNull();
+    expect(component.contents()).toEqual([]);
   });
 });

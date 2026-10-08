@@ -18,5 +18,9 @@ export interface UpdateCampaignDeliverableDto {
      * Amount per post
      */
     rate_per_post?: number;
+    /**
+     * When these outputs are due (ISO date)
+     */
+    due_date?: string;
 }
 

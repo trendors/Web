@@ -1,80 +1,55 @@
-.container {
-  display: grid;
-  grid-template-columns: 280px auto 320px;
-  gap: 24px;
-  min-height: 100vh;
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
+@use 'breakpoints' as bp;
 
-.sidebar, .sidebar-right {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  position: sticky;
-  top: 24px;
-  height: fit-content;
+// Phone/tablet: one column between the sticky top bar and the bottom nav.
+// Desktop: left sidebar + feed. Wide: + right sidebar.
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--page-pad) calc(var(--bottom-nav-h) + var(--sab) + var(--space-6));
+
+  @include bp.up(desktop) {
+    grid-template-columns: 260px minmax(0, 1fr);
+    padding: var(--space-6);
+  }
+
+  @include bp.up(wide) {
+    grid-template-columns: 260px minmax(0, 1fr) 300px;
+  }
 }
 
 .feed {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 100%; /* Ensure it fills its grid cell */
-  max-width: 600px;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+  max-width: 680px;
   justify-self: center;
-  margin-bottom: 55px;
 }
 
-.earnings-card,
-.trending-ads-card {
-  mat-card-header {
-    margin-bottom: 16px;
-  }
+.sidebar {
+  display: none;
 
-  mat-card-title {
-    font-size: var(--fs-card-title);
-    font-weight: 600;
-  }
-}
-
-.earnings-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-
-  .label {
-    color: #666;
-  }
-
-  .value {
-    font-weight: 600;
+  @include bp.up(desktop) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    position: sticky;
+    top: var(--space-6);
+    height: fit-content;
   }
 }
 
-@media (max-width: 1100px) {
-  .container {
-    grid-template-columns: 280px 1fr; /* Two columns now */
-  }
-
-  .sidebar-right {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .container {
-    grid-template-columns: 1fr;
-    padding: 12px;
-  }
-
-  .sidebar, 
-  .sidebar-right {
+.sidebar-right {
+  @include bp.up(desktop) {
     display: none;
   }
 
-  .feed {
-    max-width: 100%; /* Allow feed to go edge-to-edge on mobile */
+  @include bp.up(wide) {
+    display: flex;
   }
 }

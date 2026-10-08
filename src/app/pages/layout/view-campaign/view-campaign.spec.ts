@@ -1,8 +1,9 @@
+import { provideAppMockStore } from '../../../core/testing/mock-store';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { MockStore } from '@ngrx/store/testing';
 
 import { ViewCampaign } from './view-campaign';
 import { CampaignInfluencerService } from '../../../core/api';
@@ -32,7 +33,7 @@ describe('ViewCampaign', () => {
       imports: [ViewCampaign],
       providers: [
         provideRouter([]),
-        provideMockStore(),
+        provideAppMockStore(),
         { provide: CampaignInfluencerService, useValue: rosterApi },
       ],
     }).compileComponents();

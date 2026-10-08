@@ -1,0 +1,272 @@
+@use 'breakpoints' as bp;
+
+// Shared layout for login, register, forgot/reset/change password.
+// Phone: a single full-height column with the form near the top.
+// Desktop: a dark brand panel on the left, form on the right.
+//
+//   <main class="auth-page">
+//     <aside class="auth-hero">…</aside>        (optional, desktop only)
+//     <section class="auth-panel">
+//       <a class="auth-brand">…</a>
+//       <header class="auth-header"><h1 class="auth-title">…</h1><p class="auth-sub">…</p></header>
+//       <form class="ui-form">…</form>
+//       <p class="auth-footer">…</p>
+//     </section>
+//   </main>
+
+.auth-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  background: var(--page-bg);
+
+  @include bp.up(desktop) {
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+    background: var(--bg);
+  }
+}
+
+.auth-hero {
+  display: none;
+
+  @include bp.up(desktop) {
+    flex: 1.1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-8);
+    padding: 40px;
+    background: #111110;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(255, 107, 53, 0.1);
+    }
+  }
+
+  .auth-brand {
+    color: #fff;
+    margin-bottom: 0;
+  }
+
+  .auth-hero-label {
+    font-size: var(--fs-caption);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: var(--space-3);
+  }
+
+  .auth-hero-title {
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 1.15;
+    color: #fff;
+    margin-bottom: var(--space-4);
+
+    em {
+      font-style: normal;
+      color: var(--accent);
+    }
+  }
+
+  .auth-hero-desc {
+    font-size: var(--fs-secondary);
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 320px;
+  }
+
+  .auth-stats {
+    display: flex;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: var(--space-6);
+
+    > div {
+      flex: 1;
+    }
+
+    > div + div {
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      padding-left: var(--space-5);
+    }
+
+    strong {
+      display: block;
+      font-size: var(--fs-section);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    span {
+      font-size: var(--fs-caption);
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+// Wraps hero + panel into one card on desktop.
+.auth-card {
+  display: flex;
+  width: 100%;
+
+  @include bp.up(desktop) {
+    max-width: 940px;
+    min-height: 600px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.auth-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(var(--space-8) + var(--sat)) var(--page-pad) calc(var(--space-8) + var(--sab));
+  background: var(--surface);
+
+  @include bp.up(tablet) {
+    justify-content: center;
+  }
+
+  @include bp.up(desktop) {
+    max-width: none;
+    padding: 40px 48px;
+  }
+
+  // Standalone (no hero) pages: centred card from tablet up.
+  &.solo {
+    @include bp.up(tablet) {
+      flex: 0 1 440px;
+      margin: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-8);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--fs-card-title);
+
+  img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
+
+  b {
+    color: var(--accent);
+    font-weight: inherit;
+  }
+}
+
+// The hero already shows the brand on desktop.
+.auth-hero ~ .auth-panel > .auth-brand {
+  @include bp.up(desktop) {
+    display: none;
+  }
+}
+
+.auth-header {
+  margin-bottom: var(--space-6);
+}
+
+.auth-title {
+  font-size: var(--fs-page-title);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.auth-sub {
+  margin-top: var(--space-1);
+  font-size: var(--fs-secondary);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.auth-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  // Inline links still get a usable tap area.
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+
+  .auth-link {
+    min-height: 0;
+    font-size: var(--fs-secondary);
+    font-weight: 500;
+  }
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--muted);
+  font-size: var(--fs-caption);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+}
+
+.auth-footer {
+  margin-top: var(--space-6);
+  text-align: center;
+  font-size: var(--fs-secondary);
+  color: var(--muted);
+}
+
+.auth-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+
+  .ti {
+    font-size: 3rem;
+    color: var(--success);
+  }
+}

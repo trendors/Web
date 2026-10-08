@@ -67,4 +67,12 @@ describe('user display names', () => {
     expect(userDisplayName(null)).toBe('User');
     expect(userDisplayName({} as User)).toBe('User');
   });
+  it('should show the brand name, not the email prefix, for brands without a contact name', () => {
+    const user = {
+      email: 'hello@glowskin.ng',
+      user_name: 'hello',
+      brandProfile: { brand_name: 'GlowSkin Inc' },
+    } as User;
+    expect(userDisplayName(user)).toBe('GlowSkin Inc');
+  });
 });

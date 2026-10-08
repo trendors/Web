@@ -1,4 +1,4 @@
-import { createActionGroup, props } from '@ngrx/store';
+import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import {
   CommentResponse,
   CreateCommentDto,
@@ -9,7 +9,6 @@ import {
   LikePost,
   LikePostDto,
   LikeResponse,
-  LoadMoreDto,
   Pagination,
   Post,
 } from '../../../core/models/posts/post.model';
@@ -25,17 +24,19 @@ export const PostActions = createActionGroup({
     'Find One Post Success': props<{ post: Post }>(),
     'Find One Post Failure': props<{ error: string }>(),
 
-    'Load More Posts': props<{ query: LoadMoreDto }>(),
+    // Fetches the next page of the query last passed to 'Find All Posts'.
+    'Load More Posts': emptyProps(),
     'Load More Posts Success': props<{ list: Post[]; pagination: Pagination }>(),
     'Load More Posts Failure': props<{ error: string }>(),
 
     'Create Post': props<{ dto: CreatePostDto; file?: File }>(),
-    'Create Post Success': props<{ message: string; post: Post }>(),
+    'Create Post Success': props<{ message: string }>(),
     'Create Post Failure': props<{ error: string }>(),
 
-    'Like Post': props<{ dto: LikePostDto }>(),
+    'Like Post': props<{ dto: LikePostDto; wasLiked: boolean }>(),
     'Like Post Success': props<{ response: LikeResponse }>(),
-    'Like Post Failure': props<{ error: string; postId: number; userId: number }>(),
+    // wasLiked: the like state before the optimistic toggle, so it can be restored.
+    'Like Post Failure': props<{ error: string; postId: number; userId: number; trendorsId: string; wasLiked: boolean }>(),
 
     'Add Comment': props<{ dto: CreateCommentDto }>(),
     'Add Comment Success': props<{ response: CommentResponse }>(),

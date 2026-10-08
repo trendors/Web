@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { campaignFeatureKey, CampaignState } from './campaign.reducer';
-import { Campaign, CampaignStats } from '../../core/models/campaign/campaign.model';
+import { CampaignStats } from '../../core/models/campaign/campaign.model';
+import { campaignPhase } from '../../core/utils/campaign-phase';
 
 export const selectCampaignState = createFeatureSelector<CampaignState>(campaignFeatureKey);
 export const selectCampaignList = createSelector(selectCampaignState, (s) => s.list);
@@ -13,8 +14,8 @@ export const selectCampaignStats = createSelector(selectCampaignList, (list): Ca
 
   return {
     totalCampaigns: list.length,
-    activeNow: list.filter((campaign) => campaign.access === 'invite_only').length,
-    endedCampaigns: list.filter((campaign) => campaign.access === 'application').length,
+    activeNow: list.filter((campaign) => campaignPhase(campaign) === 'active').length,
+    endedCampaigns: list.filter((campaign) => campaignPhase(campaign) === 'ended').length,
     totalReach,
     avgEngagement: list.length ? Number((totalEngagement / list.length).toFixed(1)) : 0,
   };

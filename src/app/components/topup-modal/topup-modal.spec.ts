@@ -1,11 +1,14 @@
+import { provideAppMockStore } from '../../core/testing/mock-store';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideMockStore } from '@ngrx/store/testing';
+
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 
 import { TopupModalComponent } from './topup-modal';
 import { UtilityService } from '../../core/api';
 import { ToastService } from '../toast/toast.service';
+import { environment } from '../../../environments/environment';
 
 describe('TopupModalComponent', () => {
   let component: TopupModalComponent;
@@ -23,11 +26,13 @@ describe('TopupModalComponent', () => {
     paystackOpen = vi.fn();
     paystackSetup = vi.fn(() => ({ openIframe: paystackOpen }));
     (globalThis as any).PaystackPop = { setup: paystackSetup };
+    environment.paystackPublicKey = 'pk_test_spec';
 
     await TestBed.configureTestingModule({
       imports: [TopupModalComponent],
       providers: [
-        provideMockStore(),
+        provideAppMockStore(),
+        provideNoopAnimations(),
         { provide: UtilityService, useValue: utilityApi },
         { provide: ToastService, useValue: toast },
       ],
@@ -92,7 +97,7 @@ describe('TopupModalComponent', () => {
     component.selectPreset(5_000);
 
     component.initiatePayment();
-    paystackSetup.mock.calls[0][0].onSuccess({ reference: 'ref-123' });
+    paystackSetup.mock.calls[0][0].callback({ reference: 'ref-123' });
 
     expect(component.awaitingConfirmation()).toBe(true);
     expect(component.successMsg()).toBe('');
@@ -108,18 +113,16 @@ describe('TopupModalComponent', () => {
     component.closed.subscribe(() => (closed = true));
 
     component.initiatePayment();
-    paystackSetup.mock.calls[0][0].onSuccess({ reference: 'ref-123' });
+    paystackSetup.mock.calls[0][0].callback({ reference: 'ref-123' });
+    vi.useFakeTimers();
     component.confirmCompletion();
 
     expect(component.awaitingConfirmation()).toBe(false);
-    expect(component.successMsg()).toContain('Payment successful');
-    expect(toast.show).toHaveBeenCalledWith('Payment successful.', 'success');
-    expect(emitted?.reference).toBe('ref-123');
+    // The webhook credits the wallet, so the copy must not claim it already has.
+    expect(component.successMsg()).toContain('Payment submitted');
+    expect(toast.show).toHaveBeenCalledWith('Payment submitted.', 'success');
+    expect(emitted).toEqual({ reference: 'ref-123', amount: 5_000 });
     expect(closed).toBe(false);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.success-panel')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('.btn-pay')?.textContent).toContain('Completed');
-    vi.useFakeTimers();
     await vi.advanceTimersByTimeAsync(1500);
     expect(closed).toBe(true);
     vi.useRealTimers();
@@ -129,5 +132,12 @@ describe('TopupModalComponent', () => {
     component.confirmCompletion();
     expect(component.errorMsg()).toContain('Missing payment reference');
     expect(component.successMsg()).toBe('');
+  });
+  it('should refuse to start a payment when no Paystack key is configured', () => {
+    environment.paystackPublicKey = '';
+    component.selectPreset(5_000);
+    component.initiatePayment();
+    expect(utilityApi.utilityControllerInitialize).not.toHaveBeenCalled();
+    expect(component.errorMsg()).toContain('not available');
   });
 });

@@ -113,14 +113,14 @@ export class Onboarding implements OnInit {
             this.data.brandName.trim().length > 0 &&
             this.data.contactName.trim().length > 0 &&
             this.data.email.trim().length > 0 &&
-            this.data.password.length >= 6
+            this.data.password.length >= 8
           );
         }
         return (
           this.data.firstName.trim().length > 0 &&
           this.data.lastName.trim().length > 0 &&
           this.data.email.trim().length > 0 &&
-          this.data.password.length >= 6
+          this.data.password.length >= 8
         );
       default:
         return true;

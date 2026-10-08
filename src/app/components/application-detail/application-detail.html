@@ -25,15 +25,51 @@
   <p class="bio" *ngIf="app.bio">{{ app.bio }}</p>
 
   <ng-container [ngSwitch]="app.status">
-    <div class="post-form" *ngSwitchCase="'accepted'">
+    <div class="deliverables-section" *ngSwitchCase="'accepted'">
       <p class="deadline-note" *ngIf="app.deadline">
         <i class="ti ti-clock" aria-hidden="true"></i>{{ app.deadline }}
       </p>
-      <label for="postLink">Post link</label>
-      <input id="postLink" type="text" [(ngModel)]="postLink" placeholder="Paste your published post URL" />
-      <button class="primary full" (click)="onSubmit()" [disabled]="!postLink.trim()">
-        Submit for verification
-      </button>
+
+      @if (deliverablesLoading) {
+        <p class="list-state">Loading deliverables…</p>
+      }
+      @if (deliverablesError) {
+        <p class="list-state list-state--error">{{ deliverablesError }}</p>
+      }
+
+      @for (d of deliverables; track d.id) {
+        <div class="deliverable-row">
+          <div class="deliverable-head">
+            <span class="deliverable-title">{{ d.quantity }} × {{ d.platform }} {{ d.contentType }}</span>
+            <span class="deliverable-sub">₦{{ d.ratePerPost | number }} per post · {{ d.posts.length }} of {{ d.quantity }} submitted</span>
+          </div>
+
+          @for (p of d.posts; track p['id']; let i = $index) {
+            <div class="post-row">
+              <span class="post-index">Post {{ i + 1 }}</span>
+              <a class="post-link" [href]="p['post_url']" target="_blank" rel="noopener">{{ p['post_url'] }}</a>
+              <span class="post-status">{{ p['status'] }}</span>
+            </div>
+          }
+
+          @if (remainingSlots(d) > 0) {
+            @if (activeDeliverableId === d.id) {
+              <div class="attend-form">
+                <input type="text" [(ngModel)]="linkInput" placeholder="Paste your published post URL" />
+                @if (publishError) {
+                  <p class="list-state list-state--error">{{ publishError }}</p>
+                }
+                <div class="attend-actions">
+                  <button class="primary" [disabled]="publishLoading || !linkInput.trim()" (click)="publish(d)">Publish</button>
+                  <button class="secondary" [disabled]="publishLoading" (click)="cancelAttend()">Cancel</button>
+                </div>
+              </div>
+            } @else {
+              <button class="attend-btn" (click)="startAttend(d.id)">Attend to this deliverable</button>
+            }
+          }
+        </div>
+      }
     </div>
 
     <p class="status-note" *ngSwitchCase="'posted'">

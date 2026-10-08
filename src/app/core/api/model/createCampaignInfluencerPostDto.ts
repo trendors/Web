@@ -14,14 +14,29 @@ export interface CreateCampaignInfluencerPostDto {
      * Parent CampaignInfluencer ID
      */
     campaignInfluencerId: number;
+    /**
+     * Agreed term this fulfills
+     */
+    deliverableId?: number;
     title?: string;
-    content_type: CreateCampaignInfluencerPostDto.ContentTypeEnum;
-    platform: CreateCampaignInfluencerPostDto.PlatformEnum;
+    /**
+     * Work details for non-content tasks
+     */
+    description?: string;
+    /**
+     * Null for non-content work
+     */
+    content_type?: CreateCampaignInfluencerPostDto.ContentTypeEnum;
+    platform?: CreateCampaignInfluencerPostDto.PlatformEnum;
     /**
      * The \"View post\" link
      */
     post_url?: string;
     status?: CreateCampaignInfluencerPostDto.StatusEnum;
+    /**
+     * Deadline (ISO)
+     */
+    due_date?: string;
     /**
      * Payout for this post
      */
@@ -41,13 +56,18 @@ export namespace CreateCampaignInfluencerPostDto {
         Instagram: 'instagram',
         Tiktok: 'tiktok',
         Youtube: 'youtube',
+        Facebook: 'facebook',
+        X: 'x',
     } as const;
     export type PlatformEnum = typeof PlatformEnum[keyof typeof PlatformEnum];
     export const StatusEnum = {
+        Todo: 'todo',
+        Doing: 'doing',
         Pending: 'pending',
         Submitted: 'submitted',
         Approved: 'approved',
         Published: 'published',
+        Done: 'done',
     } as const;
     export type StatusEnum = typeof StatusEnum[keyof typeof StatusEnum];
     export const PaymentStatusEnum = {

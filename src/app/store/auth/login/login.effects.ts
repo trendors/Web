@@ -8,7 +8,9 @@ import { logoutUser } from '../logout/logout.action';
 import { isPlatformBrowser } from '@angular/common';
 import { NotificationActions } from '../../notification/notification.action';
 import { UserAction } from '../../user/user.action';
-import { Action, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
+import { User } from '../../../core/models/users/user.model';
+import { isTokenExpired } from '../../../core/utils/jwt';
 
 @Injectable()
 export class LoginEffects {
@@ -30,7 +32,7 @@ export class LoginEffects {
             return LoginActions.loginSuccess({ response });
           }),
           catchError((error) =>
-            of(LoginActions.loginFailure({ error: error.error?.message || 'Login failed' })),
+            of(LoginActions.loginFailure({ error: error?.message || 'Login failed' })),
           ),
         ),
       ),
@@ -45,6 +47,7 @@ export class LoginEffects {
         LoginActions.hydrateSuccess
       ),
       tap(({ response }) => {
+        if (!isPlatformBrowser(this.platformId)) return;
         if (response?.data?.token) {
           localStorage.setItem('token', response.data.token);
         }
@@ -89,7 +92,7 @@ export class LoginEffects {
   // the app needs to pick the right experience. Reload the full user right away.
   loginSuccessRefreshUser$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(LoginActions.loginSuccess),
+      ofType(LoginActions.loginSuccess, LoginActions.hydrateSuccess),
       map(({ response }) => response?.data?.user?.id),
       filter((id): id is number => typeof id === 'number'),
       map((userId) => UserAction.loadCurrentUser({ userId })),
@@ -101,6 +104,7 @@ export class LoginEffects {
       this.actions$.pipe(
         ofType(logoutUser),
         tap(() => {
+          if (!isPlatformBrowser(this.platformId)) return;
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           localStorage.removeItem('activeProfile');
@@ -119,15 +123,24 @@ export class LoginEffects {
         const token = localStorage.getItem('token');
         const userRaw = localStorage.getItem('user');
         if (!token || !userRaw) return null;
+        let user: User | null = null;
+        try {
+          user = JSON.parse(userRaw);
+        } catch {
+          user = null;
+        }
+        if (!user || isTokenExpired(token)) {
+          // Stale or corrupt session: clear it instead of hydrating.
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          return null;
+        }
         return LoginActions.hydrateSuccess({
-          response: { data: { token, user: JSON.parse(userRaw), message: 'Hydrated', error: false } },
+          response: { data: { token, user, message: 'Hydrated', error: false } },
         });
       }),
       filter(Boolean),
     ),
   );
 
-  ngrxOnInitEffects(): Action {
-    return { type: '[Login] Effects Init' };
-  }
 }

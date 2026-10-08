@@ -24,7 +24,7 @@ export class RegisterEffects {
           }),
           catchError((error) =>
             of(
-              RegisterActions.registerFailure({ error: error.error?.message || 'Register failed' }),
+              RegisterActions.registerFailure({ error: error?.message || 'Register failed' }),
             ),
           ),
         ),

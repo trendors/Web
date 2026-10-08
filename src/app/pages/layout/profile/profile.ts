@@ -1,5 +1,7 @@
-import { AsyncPipe, CurrencyPipe, DecimalPipe } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { AsyncPipe, DecimalPipe } from '@angular/common';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Actions, ofType } from '@ngrx/effects';
 import {
   AbstractControl,
   FormBuilder,
@@ -9,12 +11,8 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { Store } from '@ngrx/store';
-import { catchError, debounceTime, distinctUntilChanged, finalize, map, Observable, of, shareReplay, startWith, switchMap, take, tap } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, Observable, of, shareReplay, startWith, switchMap, take } from 'rxjs';
 // import { User, UpdateUserDto } from '../../../core/models/users/user.model';
 import {
   selectAuthError,
@@ -26,8 +24,6 @@ import { UserAction } from '../../../store/user/user.action';
 import { selectUserError, selectUserIsLoading } from '../../../store/user/user.selector';
 import { TopupModalComponent } from '../../../components/topup-modal/topup-modal';
 import { WalletService } from '../../../core/services/wallet/wallet.service';
-import { LoaderComponent } from "../../../components/loader/loader";
-import { Alert } from "../../../components/alert/alert";
 import { ToastService } from '../../../components/toast/toast.service';
 import { SocialVerify } from "../social-verify/social-verify";
 import { UpdateUserDto, User } from '../../../core/api';
@@ -36,20 +32,7 @@ import { userFirstName, userLastName } from '../../../core/utils/user-display';
 
 @Component({
   selector: 'app-profile',
-  imports: [
-    ReactiveFormsModule,
-    MatCardModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    AsyncPipe,
-    TopupModalComponent,
-    CurrencyPipe,
-    LoaderComponent,
-    Alert,
-    SocialVerify,
-    DecimalPipe,
-],
+  imports: [ReactiveFormsModule, AsyncPipe, DecimalPipe, TopupModalComponent, SocialVerify],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -59,9 +42,11 @@ export class Profile implements OnInit {
   private walletService = inject(WalletService);
   private walletApi = inject(WalletApiService);
   private toast = inject(ToastService);
+  private actions$ = inject(Actions);
+  private destroyRef = inject(DestroyRef);
 
   user$ = this.store.select(selectCurrentUser);
-  savedBankDetails$: Observable<any> | null = null;
+  loadingBank = signal(false);
   isLoading$ = this.store.select(selectUserIsLoading);
   authIsLoading$ = this.store.select(selectIsLoading);
   authError$ = this.store.select(selectAuthError);
@@ -69,11 +54,16 @@ export class Profile implements OnInit {
   userError$ = this.store.select(selectUserError);
   bankSearchCtrl = new FormControl('');
   showTopup = false;
-  isSubmitting = false
   bankCodeCtrl = new FormControl('', Validators.required);
-  updatingAccount: boolean = false
+  updatingAccount = signal(false);
   showDropdown = false;
   activeTab: 'wallet' | 'profile' | 'security' | 'socials' = 'wallet';
+  readonly tabs = [
+    { id: 'wallet', label: 'Wallet' },
+    { id: 'profile', label: 'Profile' },
+    { id: 'security', label: 'Security' },
+    { id: 'socials', label: 'Socials' },
+  ] as const;
 
 
    private passwordMatchValidator: ValidatorFn = (
@@ -113,7 +103,7 @@ export class Profile implements OnInit {
   passwordForm = this.fb.group(
     {
       oldPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]],
     },
     { validators: this.passwordMatchValidator },
@@ -121,10 +111,13 @@ export class Profile implements OnInit {
 
 
   ngOnInit(): void {
-  
-    this.user$.pipe(take(1)).subscribe((user) => {
+    // Track every user emission (the full profile arrives after login/hydrate),
+    // but only overwrite the form while the user hasn't started editing it.
+    this.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       if (user) {
+        const firstLoad = this.user == null;
         this.user = user;
+        if (this.profileForm.dirty) return;
         this.profileForm.patchValue({
           // Brand-only accounts have no creative profile: fall back to the
           // brand contact name so first/last name still show.
@@ -139,24 +132,28 @@ export class Profile implements OnInit {
           facebook_username: user.facebook_username,
         });
 
-        if (user.paystackRecipientCode) {
-          this.savedBankDetails$ = this.walletService.getAccountDetails(user.paystackRecipientCode).pipe(
-            tap((res) => {
-              if (res && res.success) {
-                this.bankSearchCtrl.setValue(res.bankName);
-                this.bankForm.patchValue({
-                  accountNumber: res.accountNumber,
-                  accountName: res.accountName
-                });
-                this.selectedBankCode = res.bankCode
-
-              }
-            }),
-            catchError((err) => {
-              console.error("Failed to load saved recipient details:", err);
-              return of(null);
-            })
-          );
+        if (firstLoad && user.paystackRecipientCode) {
+          // Load any saved account into the form; new users get an empty form.
+          this.loadingBank.set(true);
+          this.walletService
+            .getAccountDetails(user.paystackRecipientCode)
+            .pipe(
+              finalize(() => this.loadingBank.set(false)),
+              takeUntilDestroyed(this.destroyRef),
+            )
+            .subscribe({
+              next: (res) => {
+                if (res && res.success) {
+                  this.bankSearchCtrl.setValue(res.bankName, { emitEvent: false });
+                  this.bankForm.patchValue({
+                    accountNumber: res.accountNumber,
+                    accountName: res.accountName,
+                  });
+                  this.selectedBankCode = res.bankCode;
+                }
+              },
+              error: (err) => console.error('Failed to load saved recipient details:', err),
+            });
         }
 
       }
@@ -204,83 +201,110 @@ export class Profile implements OnInit {
  
 
 
+  copyTrendorsId(): void {
+    const id = this.user?.trendors_id;
+    if (!id) return;
+    navigator.clipboard
+      ?.writeText(String(id))
+      .then(() => this.toast.show('Trendors ID copied', 'success'))
+      .catch(() => this.toast.show('Could not copy. Long-press the ID to copy it.', 'error'));
+  }
+
   onTopupSuccess(data:any): void {
     // The modal already credited the wallet; reload so the new balance shows.
     this.wallet$ = this.buildWallet$();
   }
 
-  getAccountDetails() {
-    this.walletService.getAccountDetails(this.user?.paystackRecipientCode).pipe(
-      map((res: any) => {
-      }),
-    )
-  }
-
   onSave() {
+    if (!this.user?.id) return;
+    if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
+      return;
+    }
     const updateData: UpdateUserDto = {
-      // first_name: this.profileForm.value.first_name ?? undefined,
-      // last_name: this.profileForm.value.last_name ?? undefined,
+      first_name: this.profileForm.value.first_name?.trim() || undefined,
+      last_name: this.profileForm.value.last_name?.trim() || undefined,
       phone_number: this.profileForm.value.phone_number ?? undefined,
       twitter_handle: this.profileForm.value.twitter_handle ?? undefined,
       instagram_handle: this.profileForm.value.instagram_handle ?? undefined,
       facebook_username: this.profileForm.value.facebook_username ?? undefined,
     };
-    this.store.dispatch(UserAction.updateUser({ userId: this.user!.id as number, updateData }))
+    this.store.dispatch(UserAction.updateUser({ userId: this.user.id as number, updateData }));
+    this.profileForm.markAsPristine();
   }
 
   onDelete() {
+    if (!this.user?.id) return;
     if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
-      this.store.dispatch(UserAction.deleteUser({ userId: this.user!.id as number }));
+      this.store.dispatch(UserAction.deleteUser({ userId: this.user.id as number }));
     }
   }
 
   onChangePassword() {
-    // if (!this.user?.id || this.passwordForm.invalid) {
-    //   this.passwordForm.markAllAsTouched();
-    //   return;
-    // }
+    if (!this.user?.id || this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
 
-    console.log(this.passwordForm.value.oldPassword, )
+    // Clear the fields only once the server accepts the change, so a wrong
+    // old password doesn't wipe what the user typed.
+    this.actions$
+      .pipe(
+        ofType(PasswordChangeActions.changePasswordSuccess, PasswordChangeActions.changePasswordFailure),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((result) => {
+        if (result.type === PasswordChangeActions.changePasswordSuccess.type) {
+          this.passwordForm.reset();
+        } else {
+          this.toast.show((result as { error: string }).error || 'Could not change password', 'error');
+        }
+      });
 
     this.store.dispatch(
       PasswordChangeActions.changePasswordRequest({
-        userId: this.user?.id as any,
+        userId: this.user.id as number,
         oldPassword: this.passwordForm.value.oldPassword!,
         newPassword: this.passwordForm.value.newPassword!,
       }),
     );
-
-    this.passwordForm.reset();
   }
 
   onSaveBankAccount(): void {
-    this.updatingAccount = true
+    if (this.updatingAccount()) return;
+    if (this.bankForm.invalid || !this.selectedBankCode) {
+      this.bankForm.markAllAsTouched();
+      this.toast.show('Choose your bank and enter a valid 10-digit account number.', 'error');
+      return;
+    }
+    if (!this.user?.trendors_id) {
+      this.toast.show('Please log in again to update your bank account.', 'error');
+      return;
+    }
+    this.updatingAccount.set(true);
     const payload = {
-      trendors_id: this.user?.trendors_id,
+      trendors_id: this.user.trendors_id,
       accountNumber: this.bankForm.value.accountNumber,
       bankCode: this.selectedBankCode,
-      accountName: this.bankForm.value.accountName
+      accountName: this.bankForm.value.accountName,
     };
-    this.walletService.addBankAccount(payload)
-      .pipe(finalize(() => this.isSubmitting = false))
+    this.walletService
+      .addBankAccount(payload)
+      .pipe(finalize(() => this.updatingAccount.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.success) {
-            this.updatingAccount = false
-            this.toast.show('Successfully Updated Account', 'success');
+          if (res?.success) {
+            this.toast.show('Bank account updated.', 'success');
           } else {
-            this.updatingAccount = false
-            console.error('Registration API rejected submission:', res.error);
-            this.toast.show('Error in updating account', 'error');
-
+            console.error('Bank account update rejected:', res?.error);
+            this.toast.show('Could not update your bank account.', 'error');
           }
         },
         error: (err) => {
-          this.updatingAccount = false
-          console.error('Network dispatch failure on banking submission:', err);
-          this.toast.show('Error in updating account', 'error');
-
-        }
+          console.error('Bank account update failed:', err);
+          this.toast.show('Could not update your bank account.', 'error');
+        },
       });
   }
 }

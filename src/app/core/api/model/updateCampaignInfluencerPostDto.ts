@@ -12,6 +12,14 @@
 export interface UpdateCampaignInfluencerPostDto { 
     title?: string;
     /**
+     * Work details for non-content tasks
+     */
+    description?: string;
+    /**
+     * Agreed term this fulfills
+     */
+    deliverableId?: number;
+    /**
      * The \"View post\" link
      */
     post_url?: string;
@@ -21,6 +29,10 @@ export interface UpdateCampaignInfluencerPostDto {
      */
     published_at?: string;
     /**
+     * Deadline (ISO)
+     */
+    due_date?: string;
+    /**
      * Payout for this post
      */
     payout_amount?: number;
@@ -29,10 +41,13 @@ export interface UpdateCampaignInfluencerPostDto {
 }
 export namespace UpdateCampaignInfluencerPostDto {
     export const StatusEnum = {
+        Todo: 'todo',
+        Doing: 'doing',
         Pending: 'pending',
         Submitted: 'submitted',
         Approved: 'approved',
         Published: 'published',
+        Done: 'done',
     } as const;
     export type StatusEnum = typeof StatusEnum[keyof typeof StatusEnum];
     export const PaymentStatusEnum = {

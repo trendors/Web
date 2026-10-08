@@ -12,7 +12,8 @@ export interface TransactionState extends EntityState<Transaction> {
 export const transactionFeatureKey = 'transactions';
 
 export const adapter: EntityAdapter<Transaction> = createEntityAdapter<Transaction>({
-  selectId: (transaction) => transaction.transaction_id!, // ensure ID is used
+  // Fall back to the row id so records without a transaction_id don't collapse into one entity.
+  selectId: (transaction) => transaction.transaction_id ?? String(transaction.id),
   sortComparer: false, // or sort by date if you want
 });
 

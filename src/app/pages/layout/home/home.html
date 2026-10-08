@@ -1,21 +1,19 @@
 <app-top-nav-filter></app-top-nav-filter>
-<div class="container">
-    <div class="sidebar">
-        <app-user-info-card></app-user-info-card>
-        <app-side-nav-card></app-side-nav-card>
-    </div>
-    <div class="feed">
-        <router-outlet></router-outlet>
-    </div>
-    <div class="sidebar-right sidebar">
-        @if(url === '/home/profile') {
-        <app-social-verify />
-        }
-        @if(url !== '/home/profile') {
-        <app-your-earnings></app-your-earnings>
-        }
-        <app-trending-ads></app-trending-ads>
-    </div>
-    <app-footer></app-footer>
 
+<div class="shell">
+  <aside class="sidebar">
+    <app-user-info-card></app-user-info-card>
+    <app-side-nav-card></app-side-nav-card>
+  </aside>
+
+  <main class="feed">
+    <router-outlet></router-outlet>
+  </main>
+
+  <aside class="sidebar sidebar-right">
+    <app-your-earnings></app-your-earnings>
+    <app-trending-ads></app-trending-ads>
+  </aside>
 </div>
+
+<app-footer></app-footer>

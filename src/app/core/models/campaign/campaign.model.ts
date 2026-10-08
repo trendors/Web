@@ -1,5 +1,7 @@
 export type CampaignStatus = 'open' | 'invite_only' | 'application'; // adjust to your actual status values
 
+export type CampaignLifecycle = 'active' | 'paused' | 'closed';
+
 export interface Campaign {
   id: number;
   createdAt: string;
@@ -8,6 +10,8 @@ export interface Campaign {
   name: string;
   platforms: string[]; // comes as ["[\"twitter\"]"] — needs parsing
   access: string;
+  /** Paused/closed campaigns take no new invites or applications. */
+  status?: CampaignLifecycle;
   creator_id: number;
   link: string | null;
   description: string;

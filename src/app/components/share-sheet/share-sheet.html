@@ -44,22 +44,22 @@
 
   @if(selectedPost){
   <div class="share-row">
-    <div class="share-item" (click)="copyLink(shareVersions$)">
+    <div class="share-item" (click)="copyLink()">
       <i class="fa-solid fa-link"></i>
       <span>Copy Link</span>
     </div>
 
-    <div class="share-item" (click)="shareToWhatsApp(shareVersions$)">
+    <div class="share-item" (click)="shareToWhatsApp()">
       <i class="fa-brands fa-whatsapp"></i>
       <span>WhatsApp</span>
     </div>
 
-    <div class="share-item" (click)="shareToX(this.data.post)">
+    <div class="share-item" (click)="shareToX()">
       <i class="fa-brands fa-twitter"></i>
       <span>Twitter</span>
     </div>
 
-    <div class="share-item" (click)="shareToFacebook(shareVersions$)">
+    <div class="share-item" (click)="shareToFacebook()">
       <i class="fa-brands fa-facebook"></i>
       <span>Facebook</span>
     </div>

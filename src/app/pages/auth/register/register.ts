@@ -1,11 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { selectAuthError, selectIsLoading } from '../../../store/auth/sharedState/auth.selector';
@@ -15,19 +9,8 @@ import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-register',
-  imports: [
-    ReactiveFormsModule,
-    RouterModule,
-    MatCardModule,
-    MatInputModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatProgressSpinnerModule,
-    MatIconModule,
-    AsyncPipe
-  ],
+  imports: [ReactiveFormsModule, RouterModule, AsyncPipe],
   templateUrl: './register.html',
-  styleUrl: './register.scss',
 })
 export class Register {
   private fb = inject(FormBuilder);
@@ -39,16 +22,29 @@ export class Register {
 
   registerForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
     phone_number: [''],
     first_name: ['', Validators.required],
     last_name: ['', Validators.required],
   });
 
+  showError(control: string, error: string): boolean {
+    const c = this.registerForm.get(control);
+    return !!c && c.touched && c.hasError(error);
+  }
+
   onSubmit() {
-    if (this.registerForm.valid) {
-      const userData = this.registerForm.value as RegisterDto;
-      this.store.dispatch(RegisterActions.registerRequest({ userData }));
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
     }
+    const v = this.registerForm.value;
+    const userData = {
+      ...v,
+      email: v.email!.trim(),
+      first_name: v.first_name!.trim(),
+      last_name: v.last_name!.trim(),
+    } as RegisterDto;
+    this.store.dispatch(RegisterActions.registerRequest({ userData }));
   }
 }

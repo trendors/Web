@@ -13,9 +13,5 @@ export const SharesActions = createActionGroup({
     'create Shares Success' : props<{error: boolean}> (),
     'create Shares Failure' : props<{error: boolean, message: string}> (),
 
-    'claim Share' : props<{shareId: number}>(),
-    'claim Share Success' : props<{error: boolean}> (),
-    'claim Share Failure' : props<{error: boolean, message: string}> ()
-
   },
 });

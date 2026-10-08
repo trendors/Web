@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, HostListener, inject, Input, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
@@ -17,7 +17,9 @@ import {
 import { InvitationActions } from '../../../store/invitation/invitation.action';
 import { Calender } from "../../../components/calender/calender";
 import { TopupModalComponent } from "../../../components/topup-modal/topup-modal";
-import { CreateInvitationDto, InfluencerProfilesService, InvitationsService, WalletService as WalletApiService } from '../../../core/api';
+import { CampaignInfluencerService, InfluencerProfilesService, WalletService as WalletApiService } from '../../../core/api';
+import { extractFollowers, formatCompactNumber } from '../../../core/utils/influencer-stats';
+import { toLocalDateString } from '../../../core/utils/date';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIcon } from "@angular/material/icon";
 
@@ -55,7 +57,7 @@ interface Tier {
   templateUrl: './create-campaign.html',
   styleUrls: ['./create-campaign.scss'],
 })
-export class CreateCampaign {
+export class CreateCampaign implements OnDestroy {
 
   readonly OPEN_RATE = 70;
   platforms = [
@@ -63,12 +65,13 @@ export class CreateCampaign {
     { id: 'instagram', emoji: '📸', name: 'Instagram', selected: false },
     { id: 'tiktok', emoji: '🎵', name: 'TikTok', selected: false },
     { id: 'facebook', emoji: '👥', name: 'Facebook', selected: false },
+    { id: 'youtube', emoji: '▶️', name: 'YouTube', selected: false },
   ];
   steps: Step[] = [
     { label: 'Basics', sub: 'Name, dates, link' },
     { label: 'Plan & Access', sub: 'Subscription & sharers' },
-    { label: 'Platforms & Media', sub: 'Platforms and media' },
-    { label: 'Deliverables', sub: 'Content creators must post' },
+    { label: 'Media', sub: 'Media' },
+    { label: 'Deliverables', sub: 'Content per creator' },
     { label: 'Review', sub: 'Confirm & launch' },
   ];
 
@@ -149,6 +152,11 @@ export class CreateCampaign {
 
   /** Only open campaigns take payment up front; other access types create directly. */
   onCheckout(): void {
+    const error = this.validationError();
+    if (error) {
+      this.showError(error);
+      return;
+    }
     if (this.selectedAccess === 'open') {
       this.openPayAlert();
     } else {
@@ -187,8 +195,23 @@ export class CreateCampaign {
   payFromWallet(): void {
     if (this.isSubmitting()) return;
     this.payError.set('');
+
+    // Everything that can fail on our side is checked BEFORE money moves.
+    const validation = this.validationError();
+    if (validation) {
+      this.payError.set(validation);
+      return;
+    }
+    const amount = this.computedBudget;
+    const balance = this.walletBalance();
+    if (balance != null && balance < amount) {
+      this.payError.set('Your wallet balance is too low for this campaign. Top up and try again.');
+      return;
+    }
+
     this.isSubmitting.set(true);
     void (async () => {
+      let charged = false;
       try {
         const user = await firstValueFrom(this.user$);
         const trendorsId = String((user as any)?.trendors_id ?? '');
@@ -199,22 +222,33 @@ export class CreateCampaign {
           this.walletApi
             .walletControllerPayFromWallet({
               trendorsId,
-              amount: this.computedBudget,
-              description: `Campaign: ${this.campaignTitle() || 'Untitled'}`,
+              amount,
+              description: `Campaign: ${this.campaignTitle().trim() || 'Untitled'}`,
             })
             .pipe(timeout(30000)),
         );
         if (receipt?.error === true) {
           throw new Error(receipt?.message || 'Wallet payment failed.');
         }
+        charged = true;
+        const transactionId = receipt?.data?.transactionId;
         this.showPayAlert.set(false);
-        await this.createCampaign();
+        const created = await this.createCampaign();
+        if (!created) {
+          // The payment went through but the campaign did not. Never let this
+          // read as a generic failure: the user must know they were charged.
+          const ref = transactionId ? ` (payment reference ${transactionId})` : '';
+          this.showError(
+            `Your wallet was charged ₦${amount.toLocaleString()}${ref}, but the campaign could not be created. Please contact support so we can create it or refund you.`,
+          );
+        }
       } catch (error: any) {
         console.error('Wallet payment error:', error);
         this.isSubmitting.set(false);
+        if (charged) return;
         this.payError.set(
           error?.name === 'TimeoutError'
-            ? 'Wallet payment timed out. Please try again.'
+            ? 'Wallet payment timed out. Check your transactions before trying again.'
             : (error?.error?.message ?? error?.message ?? 'Wallet payment failed.'),
         );
       }
@@ -234,7 +268,57 @@ export class CreateCampaign {
     { value: 'video', label: 'Videos', icon: '🎥' },
   ];
 
-  deliverableQtyByPlatform = signal<Record<string, Record<string, number>>>({});
+  /** One row per deliverable: platform + format + quantity + fee each. */
+  deliverableRows = signal<{ platform: string; format: string; qty: number; fee: number }[]>([
+    { platform: 'instagram', format: 'reel', qty: 0, fee: 0 },
+  ]);
+
+  /** Which row dropdown is open (platform or format picker). */
+  openRowMenu: { row: number; field: 'platform' | 'format' } | null = null;
+
+  addDeliverableRow(): void {
+    this.deliverableRows.update((rows) => [
+      ...rows,
+      { platform: this.platforms[0]?.id ?? 'instagram', format: 'reel', qty: 0, fee: 0 },
+    ]);
+  }
+
+  removeDeliverableRow(index: number): void {
+    this.deliverableRows.update((rows) => rows.filter((_, i) => i !== index));
+  }
+
+  toggleRowMenu(index: number, field: 'platform' | 'format'): void {
+    this.openRowMenu =
+      this.openRowMenu?.row === index && this.openRowMenu?.field === field
+        ? null
+        : { row: index, field };
+  }
+
+  isRowMenuOpen(index: number, field: 'platform' | 'format'): boolean {
+    return this.openRowMenu?.row === index && this.openRowMenu?.field === field;
+  }
+
+  pickRowOption(index: number, field: 'platform' | 'format', value: string): void {
+    this.updateDeliverableRow(index, { [field]: value });
+    this.openRowMenu = null;
+  }
+
+  formatLabel(value: string): string {
+    const found = this.deliverableTypes.find((t) => t.value === value);
+    return found ? found.label.replace(/s$/, '') : value;
+  }
+
+  updateDeliverableRow(index: number, patch: Partial<{ platform: string; format: string; qty: number; fee: number }>): void {
+    this.deliverableRows.update((rows) =>
+      rows.map((row, i) => {
+        if (i !== index) return row;
+        const next = { ...row, ...patch };
+        next.qty = Math.max(0, Math.floor(Number(next.qty) || 0));
+        next.fee = Math.max(0, Math.floor(Number(next.fee) || 0));
+        return next;
+      }),
+    );
+  }
 
   private store = inject(Store);
   private actions$ = inject(Actions);
@@ -255,15 +339,17 @@ export class CreateCampaign {
   activeMembers$: Observable<Invitation[]> = this.store.select(selectActiveMembers);
   invitationLoading$: Observable<boolean> = this.store.select(selectInvitationLoading);
   viewingProfile = signal<any | null>(null);
-  @Input() campaignId: number | null = null;
 
   @ViewChild('searchSectionRef') searchSectionRef?: ElementRef<HTMLElement>;
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.deliverable-menu')) {
+      this.openRowMenu = null;
+    }
     if (this.users().length === 0) return; // nothing open, skip the work
 
-    const target = event.target as HTMLElement;
     const container = this.searchSectionRef?.nativeElement;
 
     if (container && !container.contains(target)) {
@@ -271,7 +357,7 @@ export class CreateCampaign {
     }
   }
 
-  constructor(private invitationSvc: InvitationsService, private influencerService: InfluencerProfilesService) {
+  constructor(private assignmentApi: CampaignInfluencerService, private influencerService: InfluencerProfilesService) {
 
   }
 
@@ -313,23 +399,39 @@ export class CreateCampaign {
     this.users.set([]);
   }
 
-  inviteMember(user: any): void {
-    this.invitationSvc.invitationControllerCreateInvitation({
-      campaignId: this.campaignId!,
-      userId: user.user?.id ?? user.id,
-      role: CreateInvitationDto.RoleEnum.Influencer, // Replace with the appropriate role
-    }).subscribe({
-      next: (res) => {
-        console.log('Invitation sent successfully:', res);
-      },
-      error: (err) => {
-        console.error('Error sending invitation:', err);
-      }
-    });
+  removeMember(member: any): void {
+    this.selectedMembers.update((members) => members.filter((m) => m.id !== member.id));
   }
 
+  memberName(member: any): string {
+    const full = `${member?.first_name ?? ''} ${member?.last_name ?? ''}`.trim();
+    return full || member?.user?.user_name || member?.user_name || 'Creator';
+  }
 
+  followersLabel(member: any): string {
+    const count = Math.max(extractFollowers(member) ?? 0, extractFollowers(member?.user) ?? 0);
+    return count > 0 ? formatCompactNumber(count) : '';
+  }
 
+  /**
+   * Invite the drafted members to the newly created campaign. Each invite is an
+   * `invited` assignment, the same thing the campaign page's Invite button
+   * makes, so it shows under Invites & Applications and can be negotiated.
+   */
+  private sendInvites(campaignId: number): void {
+    for (const member of this.selectedMembers()) {
+      const userId = Number(member?.user?.id ?? member?.id);
+      if (!Number.isFinite(userId)) continue;
+      this.assignmentApi
+        .campaignInfluencerControllerCreate({ campaignId, userId })
+        .subscribe({
+          error: (err) => {
+            console.error('Error sending invitation:', err);
+            this.toast.show(`Could not invite ${this.memberName(member)}.`, 'error');
+          },
+        });
+    }
+  }
 
   onOverlayClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
@@ -368,13 +470,49 @@ export class CreateCampaign {
   }
 
   next(): void {
-    const isLastStep = this.currentStep === this.totalSteps - 1;
-
-    if (isLastStep) {
+    if (this.currentStep >= this.totalSteps - 1) return;
+    const error = this.stepError(this.currentStep);
+    if (error) {
+      this.showError(error);
       return;
-    } else {
-      this.goTo(this.currentStep + 1);
     }
+    this.goTo(this.currentStep + 1);
+  }
+
+  /** First problem on a given step, or null when it is complete. */
+  stepError(step: number): string | null {
+    if (step === 0) {
+      if (!this.campaignTitle().trim()) return 'Give your campaign a title.';
+      if (!this.start_date() || !this.end_date()) return 'Pick a start and end date.';
+      if (this.end_date() < this.start_date()) return 'The end date must be after the start date.';
+    }
+    if (step === 1) {
+      if (!['open', 'invite_only', 'application'].includes(this.selectedAccess)) {
+        return 'Choose how creators join the campaign.';
+      }
+      if (this.selectedAccess === 'open' && Number(this.openBudget() ?? 0) < 25000) {
+        return 'Open campaigns need a budget of at least ₦25,000.';
+      }
+      if (this.selectedAccess === 'application' && this.totalTierSlots <= 0) {
+        return 'Select at least one creator tier slot.';
+      }
+    }
+    return null;
+  }
+
+  /** First problem anywhere in the form (checked before checkout/payment). */
+  validationError(): string | null {
+    for (let step = 0; step < this.totalSteps; step++) {
+      const error = this.stepError(step);
+      if (error) return error;
+    }
+    return null;
+  }
+
+  private showError(message: string): void {
+    this.submitStatus.set('error');
+    this.submitMessage.set(message);
+    this.toast.show(message, 'error');
   }
 
   prev(): void {
@@ -385,7 +523,10 @@ export class CreateCampaign {
 
   formatDate(d: string): string {
     if (!d) return '—';
-    return new Date(d).toLocaleDateString('en-NG', {
+    // 'YYYY-MM-DD' parses as UTC midnight; build a local date instead.
+    const [y, m, day] = d.split('-').map(Number);
+    const date = y && m && day ? new Date(y, m - 1, day) : new Date(d);
+    return date.toLocaleDateString('en-NG', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -393,7 +534,11 @@ export class CreateCampaign {
   }
 
   get selectedPlatforms(): string[] {
-    return this.platforms.filter((p) => p.selected).map((p) => p.id);
+    const ids: string[] = [];
+    for (const row of this.deliverableRows()) {
+      if (row.platform && !ids.includes(row.platform)) ids.push(row.platform);
+    }
+    return ids;
   }
 
 
@@ -435,11 +580,13 @@ export class CreateCampaign {
   }
 
   private addFiles(fileList: FileList): void {
+    const room = 10 - this.selectedImages().length;
     const incoming = Array.from(fileList);
-    const currentFiles = this.selectedImages().map((f) => f.file);
-    const combined = [...currentFiles, ...incoming].slice(0, 10);
-    const mappedFiles = combined.map((f) => this.buildCampaignFile(f));
-    this.selectedImages.set(mappedFiles);
+    if (incoming.length > room) {
+      this.toast.show('You can attach up to 10 files.', 'info');
+    }
+    const added = incoming.slice(0, Math.max(0, room)).map((f) => this.buildCampaignFile(f));
+    this.selectedImages.update((list) => [...list, ...added]);
   }
 
   private buildCampaignFile(f: File): CampaignFile {
@@ -456,7 +603,19 @@ export class CreateCampaign {
     // Use .update() rather than mutating the array returned by the getter —
     // signals don't detect in-place mutation (e.g. .splice()), so the UI
     // would silently fail to refresh.
+    const removed = this.selectedImages()[i];
+    if (removed?.preview) URL.revokeObjectURL(removed.preview);
     this.selectedImages.update((list) => list.filter((_, index) => index !== i));
+  }
+
+  private revokePreviews(): void {
+    for (const file of this.selectedImages()) {
+      if (file.preview) URL.revokeObjectURL(file.preview);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.revokePreviews();
   }
 
   private fmtSize(b: number): string {
@@ -467,16 +626,18 @@ export class CreateCampaign {
 
   onDateRangeConfirmed(range: { start: Date | null; end: Date | null }): void {
     if (range.start) {
-      this.start_date.set(range.start.toISOString().split('T')[0]);
+      this.start_date.set(toLocalDateString(range.start));
     }
     if (range.end) {
-      this.end_date.set(range.end.toISOString().split('T')[0]);
+      this.end_date.set(toLocalDateString(range.end));
     }
   }
 
 
 
   resetForm(): void {
+    this.revokePreviews();
+    this.selectedMembers.set([]);
     this.currentStep = 0;
     this.campaignTitle.set('');
     this.campaignDescription.set('');
@@ -487,7 +648,7 @@ export class CreateCampaign {
     this.auto_generate_captions.set(false);
     this.start_date.set('');
     this.end_date.set('');
-    this.selectedAccess = '';
+    this.selectedAccess = 'open';
     this.shareCount.set(0);
     this.campaignType.set('open');
     this.budget.set(null);
@@ -502,7 +663,7 @@ export class CreateCampaign {
     this.tierSlots.set(
       this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
     );
-    this.deliverableQtyByPlatform.set({});
+    this.deliverableRows.set([{ platform: 'instagram', format: 'reel', qty: 0, fee: 0 }]);
   }
 
   get estimatedClicks(): number {
@@ -550,172 +711,140 @@ export class CreateCampaign {
     );
   }
 
-  getDeliverableQty(platform: string, type: string): number {
-    return this.deliverableQtyByPlatform()[platform]?.[type] ?? 0;
-  }
-
-  setDeliverableQty(platform: string, type: string, value: number | string): void {
-    const n = Math.max(0, Math.floor(Number(value) || 0));
-    this.deliverableQtyByPlatform.update((cur) => ({
-      ...cur,
-      [platform]: { ...(cur[platform] ?? {}), [type]: n },
-    }));
-  }
-
   platformDisplayName(platformId: string): string {
     return this.platforms.find((p) => p.id === platformId)?.name ?? platformId;
   }
 
   get totalDeliverables(): number {
-    return Object.values(this.deliverableQtyByPlatform()).reduce(
-      (sum, perType) => sum + Object.values(perType).reduce((s, n) => s + (n || 0), 0),
-      0,
-    );
+    return this.deliverableRows().reduce((sum, row) => sum + (row.qty || 0), 0);
   }
 
   /** Non-zero entries shaped for the backend deliverable DTO. */
-  get deliverablesPayload(): { content_type: string; platform: string; quantity: number }[] {
-    const out: { content_type: string; platform: string; quantity: number }[] = [];
-    for (const [platform, perType] of Object.entries(this.deliverableQtyByPlatform())) {
-      for (const t of this.deliverableTypes) {
-        const quantity = perType[t.value] ?? 0;
-        if (quantity > 0) out.push({ content_type: t.value, platform, quantity });
-      }
-    }
-    return out;
+  get deliverablesPayload(): {
+    content_type: string;
+    platform: string;
+    quantity: number;
+    rate_per_post?: number;
+  }[] {
+    return this.deliverableRows()
+      .filter((row) => row.platform && row.format && row.qty > 0)
+      .map((row) => ({
+        content_type: row.format,
+        platform: row.platform,
+        quantity: row.qty,
+        ...(row.fee > 0 ? { rate_per_post: row.fee } : {}),
+      }));
   }
 
   get deliverablesSummary(): string {
-    const groups: string[] = [];
-    for (const platform of this.selectedPlatforms) {
-      const parts = this.deliverableTypes
-        .map((t) => ({ label: t.label, qty: this.getDeliverableQty(platform, t.value) }))
-        .filter((d) => d.qty > 0)
-        .map((d) => `${d.qty} ${d.qty === 1 ? d.label.replace(/s$/, '') : d.label}`);
-      if (parts.length > 0) groups.push(`${this.platformDisplayName(platform)}: ${parts.join(', ')}`);
-    }
-    return groups.length > 0 ? groups.join(' · ') : 'None set';
+    const parts = this.deliverableRows()
+      .filter((row) => row.platform && row.format && row.qty > 0)
+      .map((row) => {
+        const type = this.deliverableTypes.find((t) => t.value === row.format);
+        const label = type?.label ?? row.format;
+        const name = row.qty === 1 ? label.replace(/s$/, '') : label;
+        const fee = row.fee > 0 ? ` @ ₦${row.fee.toLocaleString()}` : '';
+        return `${row.qty} × ${this.platformDisplayName(row.platform)} ${name}${fee}`;
+      });
+    return parts.length > 0 ? parts.join(' · ') : 'None set';
   }
 
   selectTier(): void {
     alert('Tier selection coming soon!');
   }
 
-  async createCampaign() {
+  /** Resolves true once the campaign exists on the server. */
+  async createCampaign(): Promise<boolean> {
     this.isSubmitting.set(true);
 
     try {
-      const user = await firstValueFrom(this.user$); // fetch once
+      const error = this.validationError();
+      if (error) throw new Error(error);
 
+      const user = await firstValueFrom(this.user$);
+      if (!user?.id) throw new Error('We could not confirm your account. Please log in again.');
+
+      const access = this.selectedAccess;
+      const title = this.campaignTitle().trim();
       const formData = new FormData();
-      formData.append('title', this.campaignTitle());
+      formData.append('title', title);
+      formData.append('name', title);
       formData.append('description', this.campaignDescription());
       formData.append('category', this.campaignCategory());
-      formData.append('type', String(this.selectedType() ?? ''));
-      formData.append('creator_id', user?.id?.toString() || '');
+      if (this.selectedType()) formData.append('type', String(this.selectedType()));
+      formData.append('creator_id', String(user.id));
       formData.append('auto_generate_captions', this.auto_generate_captions().toString());
       formData.append('hash_tags', JSON.stringify(this.hash_tags()));
-      formData.append('name', `${this.campaignTitle()} `);
       formData.append('start_date', this.start_date());
       formData.append('end_date', this.end_date());
-      formData.append('access', this.selectedAccess);
+      formData.append('access', access);
       formData.append('platform', JSON.stringify(this.selectedPlatforms));
-      const access = this.selectedAccess;
-      const cType = access === 'open' ? 'open' : access === 'invite_only' ? 'invite' : 'application';
-      if (cType === 'open' || cType === 'application') {
-        // system sets the rate for open; application uses per-tier slot counts
-        if (cType === 'open' && (!this.openBudget() || Number(this.openBudget()) < 25000)) {
-          throw new Error('Campaign budget must be at least ₦25,000 for open campaigns');
-        }
-        if (cType === 'open') {
-          const computedBudget = Number(this.openBudget());
-          const slots = this.estimatedClicks;
-          this.budget.set(computedBudget);
-          this.maxSlots.set(slots);
-          // ensure ratePerSlot reflects system rate
-          this.ratePerSlot.set(this.OPEN_RATE);
-          formData.append('ratePerSlot', String(this.OPEN_RATE));
-          formData.append('maxSlots', String(slots));
-          formData.append('totalBudget', String(computedBudget));
-        } else {
-          // application: budget is derived from chosen slots per creator tier
-          if (this.totalTierSlots <= 0) {
-            throw new Error('Select at least one creator tier slot for application campaigns');
-          }
-          const computedBudget = this.applicationBudget;
-          this.budget.set(computedBudget);
-          this.maxSlots.set(this.totalTierSlots);
-          formData.append('tierSlots', JSON.stringify(this.tierSlots()));
-          formData.append('maxSlots', String(this.totalTierSlots));
-          formData.append('totalBudget', String(computedBudget));
-        }
-      } else if (cType === 'invite') {
-        // invite-only: negotiatedAmount (base) agreed 1-on-1; optional bonus tiers (pre-declared cap)
-        if (!this.negotiatedAmount() || !this.maxSlots()) {
-          throw new Error('negotiatedAmount and maxSlots must be set for invite-only campaigns');
-        }
-        const computedBudget = Number(this.negotiatedAmount()) * Number(this.maxSlots());
-        this.budget.set(computedBudget);
-        formData.append('negotiatedAmount', String(this.negotiatedAmount()));
-        formData.append('maxSlots', String(this.maxSlots()));
-        formData.append('totalBudget', String(computedBudget));
-        // if user provided bonus tiers JSON in the UI, parse and include
-        if (this.bonusTiersInput) {
+
+      if (access === 'open') {
+        const budget = Number(this.openBudget());
+        this.budget.set(budget);
+        this.maxSlots.set(this.estimatedClicks);
+        this.ratePerSlot.set(this.OPEN_RATE);
+        formData.append('ratePerSlot', String(this.OPEN_RATE));
+        formData.append('maxSlots', String(this.estimatedClicks));
+        formData.append('totalBudget', String(budget));
+      } else if (access === 'application') {
+        const budget = this.applicationBudget;
+        this.budget.set(budget);
+        this.maxSlots.set(this.totalTierSlots);
+        formData.append('tierSlots', JSON.stringify(this.tierSlots()));
+        formData.append('maxSlots', String(this.totalTierSlots));
+        formData.append('totalBudget', String(budget));
+      } else if (access === 'invite_only') {
+        // Invite-only fees are agreed per creator in the negotiation flow, so
+        // there is no up-front budget. Slots = creators being invited.
+        const slots = this.selectedMembers().length;
+        if (slots > 0) formData.append('maxSlots', String(slots));
+        if (this.bonusTiersInput.trim()) {
           try {
-            const parsed = JSON.parse(this.bonusTiersInput);
-            this.bonusTiers.set(parsed);
-            formData.append('bonusTiers', JSON.stringify(parsed));
-          } catch (err) {
-            console.warn('Invalid bonusTiers JSON, ignoring');
+            formData.append('bonusTiers', JSON.stringify(JSON.parse(this.bonusTiersInput)));
+          } catch {
+            throw new Error('Bonus tiers must be valid JSON.');
           }
-        } else if (this.bonusTiers()) {
-          formData.append('bonusTiers', JSON.stringify(this.bonusTiers()));
         }
       }
 
       this.selectedImages().forEach((img) => formData.append('files', img.file));
       formData.append('deliverables', JSON.stringify(this.deliverablesPayload));
 
-      this.store.dispatch(
-        CampaignActions.createCampaign({
-          dto: formData,
-          files: this.selectedImages().map((img) => img.file),
-        }),
-      );
-
       this.submitStatus.set('loading');
       this.submitMessage.set('Creating your campaign…');
 
-      // The effect answers exactly once for this dispatch.
-      this.actions$
-        .pipe(
+      // Listen before dispatching so the result can never be missed.
+      const result = firstValueFrom(
+        this.actions$.pipe(
           ofType(CampaignActions.createCampaignSuccess, CampaignActions.createCampaignFailure),
-          take(1),
-        )
-        .subscribe((result) => {
-          this.isSubmitting.set(false);
-          if (result.type === CampaignActions.createCampaignSuccess.type) {
-            this.submitStatus.set('success');
-            this.submitMessage.set('Campaign created successfully.');
-            this.toast.show('Campaign created successfully.', 'success');
-            this.resetForm();
-          } else {
-            const message =
-              (result as ReturnType<typeof CampaignActions.createCampaignFailure>)?.error ||
-              'Failed to create campaign';
-            this.submitStatus.set('error');
-            this.submitMessage.set(message);
-            this.toast.show(message, 'error');
-          }
-        });
+        ),
+      );
+      this.store.dispatch(CampaignActions.createCampaign({ dto: formData }));
+      const outcome = await result;
+      this.isSubmitting.set(false);
+
+      if (outcome.type === CampaignActions.createCampaignSuccess.type) {
+        const campaign = (outcome as ReturnType<typeof CampaignActions.createCampaignSuccess>).campaign;
+        const campaignId = Number(campaign?.id);
+        if (Number.isFinite(campaignId)) this.sendInvites(campaignId);
+        this.submitStatus.set('success');
+        this.submitMessage.set('Campaign created successfully.');
+        this.toast.show('Campaign created successfully.', 'success');
+        this.resetForm();
+        return true;
+      }
+      const message =
+        (outcome as ReturnType<typeof CampaignActions.createCampaignFailure>).error ||
+        'Failed to create campaign';
+      this.showError(message);
+      return false;
     } catch (error: any) {
       console.error(error);
-      const message = error?.message || 'Failed to create campaign';
       this.isSubmitting.set(false);
-      this.submitStatus.set('error');
-      this.submitMessage.set(message);
-      this.toast.show(message, 'error');
-      // Replaced the blocking window.alert with toast + inline status.
+      this.showError(error?.message || 'Failed to create campaign');
+      return false;
     }
   }
 }

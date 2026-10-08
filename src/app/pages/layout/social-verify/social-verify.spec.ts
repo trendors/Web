@@ -1,3 +1,4 @@
+import { provideTestDefaults } from '../../../core/testing/test-providers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SocialVerify } from './social-verify';
@@ -8,7 +9,10 @@ describe('SocialVerify', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SocialVerify]
+      imports: [SocialVerify],
+      providers: [
+        ...provideTestDefaults(),
+      ],
     })
     .compileComponents();
 

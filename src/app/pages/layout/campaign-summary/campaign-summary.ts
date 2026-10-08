@@ -4,20 +4,27 @@ import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { catchError, map, Observable, of, Subject, switchMap, take, takeUntil, tap, timeout } from 'rxjs';
-import { Campaign } from '../../../core/models/campaign/campaign.model';
+import { catchError, debounceTime, distinctUntilChanged, filter, forkJoin, map, Observable, of, Subject, switchMap, take, takeUntil, tap, timeout } from 'rxjs';
+import { Campaign, CampaignLifecycle } from '../../../core/models/campaign/campaign.model';
 import { selectCampaignList, selectCampaignLoading } from '../../../store/campaign/campaign.selector';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
 import { environment } from '../../../../environments/environment';
-import { CampaignInfluencerPostService, CampaignInfluencerService } from '../../../core/api';
+import {
+  CampaignInfluencerPostService,
+  CampaignInfluencerService,
+  CampaignService as CampaignApi,
+  InfluencerProfilesService,
+  UpdateCampaignInfluencerDto,
+} from '../../../core/api';
+import { ToastService } from '../../../components/toast/toast.service';
 import { extractApiList } from '../../../core/utils/api-response';
 import { platformIconKey, platformLabel } from '../../../core/utils/platform-icon';
 import { userDisplayName } from '../../../core/utils/user-display';
 import type { CampaignInfluencer } from '../../../core/api/model/campaignInfluencer';
 import type { CampaignInfluencerPost } from '../../../core/api/model/campaignInfluencerPost';
-import { EscrowProgress, EscrowStage } from '../../../components/escrow-progress/escrow-progress';
 import { Negotiation } from "../../../components/negotiation/negotiation";
+import { RealtimeEvent, SocketService } from '../../../socket.service';
 
 export interface Applicant {
   id: number;
@@ -53,27 +60,10 @@ export interface InfluencerPostRow {
   engagement: number;
 }
 
-export interface CampaignInfluencerRow {
-  assignmentId: number | null;
-  influencerId: number | null;
-  name: string;
-  handle: string;
-  avatar: string;
-  platform: string;
-  status: string;
-  statusClass: string;
-  done: number;
-  total: number;
-  posts: InfluencerPostRow[];
-  totalViews: number;
-  totalLikes: number;
-  totalComments: number;
-  totalShares: number;
-}
 
 @Component({
   selector: 'app-campaign-summary',
-  imports: [DatePipe, AsyncPipe, EscrowProgress, Negotiation, NgSwitch,
+  imports: [DatePipe, AsyncPipe, Negotiation, NgSwitch,
     NgSwitchCase, CommonModule, FormsModule,
     NgSwitchDefault],
   templateUrl: './campaign-summary.html',
@@ -86,6 +76,10 @@ export class CampaignSummary implements OnInit, OnDestroy {
   private location = inject(Location);
   private campaignInfluencerApi = inject(CampaignInfluencerService);
   private influencerPostApi = inject(CampaignInfluencerPostService);
+  private campaignApi = inject(CampaignApi);
+  private influencerProfilesApi = inject(InfluencerProfilesService);
+  private socket = inject(SocketService);
+  private toast = inject(ToastService);
   private destroy$ = new Subject<void>();
 
   isLoading$ = this.store.select(selectCampaignLoading);
@@ -95,6 +89,38 @@ export class CampaignSummary implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Live: invites answered, offers moved, content submitted… on this campaign.
+    this.socket
+      .changes(
+        RealtimeEvent.AssignmentUpdated,
+        RealtimeEvent.NegotiationUpdated,
+        RealtimeEvent.CampaignPostUpdated,
+      )
+      .pipe(
+        filter((c) => c.campaignId != null && c.campaignId === Number(this.route.snapshot.paramMap.get('id'))),
+        debounceTime(300),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((c) => this.reloadRoster(c.campaignId!));
+
+    // Influencer picker search (Invite influencers dialog).
+    this.pickerQuery$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => this.pickerSearching.set(true)),
+        switchMap((query) =>
+          this.influencerProfilesApi.influncerProfileControllerFindAll(10, 0, 'DESC', query).pipe(
+            catchError(() => of(null)),
+          ),
+        ),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((res: any) => {
+        this.pickerSearching.set(false);
+        this.pickerResults.set(res?.data?.list ?? []);
+      });
+
     // Ensure the list is loaded so direct navigation / refresh still resolves the campaign.
     this.store
       .select(selectCampaignList)
@@ -168,19 +194,17 @@ export class CampaignSummary implements OnInit, OnDestroy {
 
   private rawRoster: CampaignInfluencer[] = [];
   private postsByAssignment = new Map<number, CampaignInfluencerPost[]>();
-  private statusOverrides = new Map<number, { status: string; statusClass: string }>();
+  private statusOverrides = new Map<number, string>();
 
   /** Rebuild rendered rows from raw data + fetched posts + local status overrides. */
   private refreshRows(): void {
     this.influencers.set(
       this.rawRoster.map((raw) => {
-        const row = this.toInfluencerRow(this.withPopulatedPosts(raw, this.postsByAssignment));
+        const merged = this.withPopulatedPosts(raw, this.postsByAssignment);
         const rawId = (raw as Record<string, unknown>)['id'];
-        const userId = ((raw as Record<string, unknown>)['influencer'] as Record<string, unknown> | undefined)?.['id'];
-        const override =
-          (typeof rawId === 'number' ? this.statusOverrides.get(rawId) : undefined) ??
-          (typeof userId === 'number' ? this.statusOverrides.get(userId) : undefined);
-        return override ? { ...row, ...override } : row;
+        const override = typeof rawId === 'number' ? this.statusOverrides.get(rawId) : undefined;
+        if (!override) return merged;
+        return { ...merged, status: override } as CampaignInfluencer;
       }),
     );
   }
@@ -237,9 +261,57 @@ export class CampaignSummary implements OnInit, OnDestroy {
     }
   }
 
+  /** Details drawer state (invites tab). Only rows with an influencer profile open. */
+  drawerRow = signal<CampaignInfluencer | null>(null);
+
+  openDetails(row: CampaignInfluencer): void {
+    if (!this.hasProfile(row)) return;
+    this.drawerRow.set(row);
+  }
+
+  closeDetails(): void {
+    this.drawerRow.set(null);
+  }
+
+  isAppliedInvite(row: CampaignInfluencer): boolean {
+    return this.statusOf(row).trim().toLowerCase() === 'applied';
+  }
+
+  isInvitedInvite(row: CampaignInfluencer): boolean {
+    return this.statusOf(row).trim().toLowerCase() === 'invited';
+  }
+
+  /** Invited rows jump straight to the negotiation widget for this influencer. */
+  viewNegotiation(row:any): void {
+
+    console.log('Viewing negotiation for row:', row);
+
+    const assignmentId = row?.id;
+    if (assignmentId == null) return;
+    const campaignId = Number(this.route.snapshot.paramMap.get('id'));
+    const queryParams: Record<string, number> = {};
+    if (Number.isFinite(campaignId) && campaignId > 0) queryParams['campaignId'] = campaignId;
+    const profileId = this.profileIdOf(row);
+    if (profileId != null) queryParams['influencerId'] = profileId;
+    this.closeDetails();
+    this.router.navigate(
+      ['/home/view-pending-influencer-metrics', assignmentId],
+      {
+        ...(Object.keys(queryParams).length > 0 ? { queryParams } : {}),
+        fragment: 'negotiation',
+      },
+    );
+    // this.router.navigate(['/home/negotiations']);
+  }
+
+  menuViewProfile(row: CampaignInfluencer): void {
+    this.closeDetails();
+    this.viewMore(row);
+  }
+
   // Live roster from GET /campaign-influencer/campaign/{campaignId} (signals so the
   // zoneless view updates as soon as the data lands, without waiting for a tab click).
-  influencers = signal<CampaignInfluencerRow[]>([]);
+  influencers = signal<CampaignInfluencer[]>([]);
   influencersLoading = signal(false);
   influencersError = signal<string | null>(null);
   influencerSearch = signal('');
@@ -251,14 +323,14 @@ export class CampaignSummary implements OnInit, OnDestroy {
    * silently disappear from both tabs. */
   readonly rosterInfluencers = computed(() =>
     this.influencers().filter(
-      (inf) => !CampaignSummary.PENDING_STATUSES.includes(inf.status.trim().toLowerCase()),
+      (inf) => !CampaignSummary.PENDING_STATUSES.includes(this.statusOf(inf).trim().toLowerCase()),
     ),
   );
 
   /** Second tab: pending pipeline (invited/applied). */
   readonly pendingInfluencers = computed(() =>
     this.influencers().filter((inf) =>
-      CampaignSummary.PENDING_STATUSES.includes(inf.status.trim().toLowerCase()),
+      CampaignSummary.PENDING_STATUSES.includes(this.statusOf(inf).trim().toLowerCase()),
     ),
   );
 
@@ -266,8 +338,10 @@ export class CampaignSummary implements OnInit, OnDestroy {
     const q = this.influencerSearch().trim().toLowerCase();
     return this.rosterInfluencers().filter((inf) => {
       const matchesSearch =
-        !q || inf.name.toLowerCase().includes(q) || inf.handle.toLowerCase().includes(q);
-      return matchesSearch && this.matchesStatusFilter(inf.status);
+        !q ||
+        this.displayName(inf).toLowerCase().includes(q) ||
+        this.handleOf(inf).toLowerCase().includes(q);
+      return matchesSearch && this.matchesStatusFilter(this.statusOf(inf));
     });
   });
 
@@ -275,8 +349,10 @@ export class CampaignSummary implements OnInit, OnDestroy {
     const q = this.inviteSearch().trim().toLowerCase();
     return this.pendingInfluencers().filter((inf) => {
       const matchesSearch =
-        !q || inf.name.toLowerCase().includes(q) || inf.handle.toLowerCase().includes(q);
-      return matchesSearch && this.matchesPendingFilter(inf.status);
+        !q ||
+        this.displayName(inf).toLowerCase().includes(q) ||
+        this.handleOf(inf).toLowerCase().includes(q);
+      return matchesSearch && this.matchesPendingFilter(this.statusOf(inf));
     });
   });
 
@@ -285,9 +361,9 @@ export class CampaignSummary implements OnInit, OnDestroy {
     const norm = (s: string) => s.trim().toLowerCase();
     return {
       total: list.length,
-      active: list.filter((i) => ['active', 'contracted'].includes(norm(i.status))).length,
-      completed: list.filter((i) => norm(i.status) === 'completed').length,
-      cancelled: list.filter((i) => norm(i.status) === 'cancelled').length,
+      active: list.filter((i) => ['active', 'contracted'].includes(norm(this.statusOf(i)))).length,
+      completed: list.filter((i) => norm(this.statusOf(i)) === 'completed').length,
+      cancelled: list.filter((i) => norm(this.statusOf(i)) === 'cancelled').length,
     };
   });
 
@@ -299,7 +375,7 @@ export class CampaignSummary implements OnInit, OnDestroy {
     // Back-compat with the previous placeholder filter labels.
     if (selected === 'pending' && actual === 'invited') return true;
     if (selected === 'accepted' && ['contracted', 'active'].includes(actual)) return true;
-    if (selected === 'declined' && actual === 'cancelled') return true;
+    if (selected === 'declined' && ['cancelled', 'rejected'].includes(actual)) return true;
     return false;
   }
 
@@ -394,48 +470,166 @@ export class CampaignSummary implements OnInit, OnDestroy {
     return { ...row, influencerPosts: [...merged.values()] };
   }
 
-  private toInfluencerRow(row: CampaignInfluencer): CampaignInfluencerRow {
-    const user = (row?.influencer ?? {}) as Record<string, any>;
-    const display = userDisplayName(user);
-    const name = display === 'User' ? 'Unknown creator' : display;
-    const userName = user['user_name'] ?? user['userName'] ?? user['trendors_id'] ?? user['trendorsId'] ?? '';
-    const handle =
+  // ---------------------------------------------------------------------------
+  // Row display reads straight from the raw assignment + the actual
+  // `user.influencerProfile`. No fabrication: users without influencer data
+  // render by name only and expose no actions.
+  // ---------------------------------------------------------------------------
+
+  /** The assigned user, tolerating both `user` and legacy `influencer` keys. */
+  userOf(row: CampaignInfluencer): Record<string, any> {
+    const raw = (row ?? {}) as Record<string, any>;
+    const user = raw['user'] ?? raw['influencer'];
+    return user != null && typeof user === 'object' ? (user as Record<string, any>) : {};
+  }
+
+  /** The actual influencer profile, or null when the user has none. */
+  profileOf(row: CampaignInfluencer): Record<string, any> | null {
+    const user = this.userOf(row);
+    for (const key of ['influencerProfile', 'influncerProfile']) {
+      const value = user[key];
+      if (value != null && typeof value === 'object' && Object.keys(value).length > 0) {
+        return value as Record<string, any>;
+      }
+    }
+    return null;
+  }
+
+  /** Whether the row has real influencer data (gates every action). */
+  hasProfile(row: CampaignInfluencer): boolean {
+    return this.profileOf(row) != null;
+  }
+
+  /**
+   * Influencer-profile id for navigation. This is NOT the user id: the
+   * metrics page resolves it via the influencer-profiles endpoint.
+   */
+  profileIdOf(row: CampaignInfluencer): number | null {
+    const profile = this.profileOf(row);
+    const id = profile?.['id'];
+    return typeof id === 'number' ? id : null;
+  }
+
+  displayName(row: CampaignInfluencer): string {
+    const display = userDisplayName(this.userOf(row));
+    return display === 'User' ? 'Unknown creator' : display;
+  }
+
+  handleOf(row: CampaignInfluencer): string {
+    const user = this.userOf(row);
+    const userName =
+      user['user_name'] ?? user['userName'] ?? user['trendors_id'] ?? user['trendorsId'] ?? '';
+    return (
       (user['instagram_handle'] && `@${String(user['instagram_handle']).replace(/^@/, '')}`) ||
       (user['twitter_handle'] && `@${String(user['twitter_handle']).replace(/^@/, '')}`) ||
       (userName && `@${String(userName).replace(/^@/, '')}`) ||
-      (typeof user['email'] === 'string' ? `@${user['email'].split('@')[0]}` : '@unknown');
+      (typeof user['email'] === 'string' ? `@${user['email'].split('@')[0]}` : '@unknown')
+    );
+  }
+
+  avatarOf(row: CampaignInfluencer): string {
+    const user = this.userOf(row);
     const rawAvatar =
-      user['twitter_image'] ?? user['avatar'] ?? user['profile_image'] ?? user['profileImage'] ??
-      user['photo'] ?? user['image'] ?? (Array.isArray(user['users_media_data']) ? user['users_media_data'][0] : undefined) ?? '';
-    const platform = user['instagram_handle']
-      ? 'Instagram'
-      : user['twitter_handle']
-        ? 'X'
-        : user['facebook_username']
-          ? 'Facebook'
-          : '—';
-    const status = String(row?.status ?? 'invited');
-    const done = Number(row?.posts_published ?? 0) || 0;
-    const total = Number(row?.posts_agreed ?? 0) || 0;
-    const posts = this.toInfluencerPostRows((row as any)?.influencerPosts);
-    const sum = (pick: (p: InfluencerPostRow) => number) => posts.reduce((acc, p) => acc + pick(p), 0);
+      user['twitter_image'] ??
+      user['avatar'] ??
+      user['profile_image'] ??
+      user['profileImage'] ??
+      user['photo'] ??
+      user['image'] ??
+      (Array.isArray(user['users_media_data']) ? user['users_media_data'][0] : undefined) ??
+      '';
+    return this.resolveFileUrl(typeof rawAvatar === 'string' ? rawAvatar : '');
+  }
+
+  platformOf(row: CampaignInfluencer): string {
+    const user = this.userOf(row);
+    if (user['instagram_handle']) return 'Instagram';
+    if (user['twitter_handle']) return 'X';
+    if (user['facebook_username']) return 'Facebook';
+    return '—';
+  }
+
+  statusOf(row: CampaignInfluencer): string {
+    return String((row as Record<string, unknown>)?.['status'] ?? 'invited');
+  }
+
+  statusClassOf(row: CampaignInfluencer): string {
+    return this.influencerStatusClass(this.statusOf(row));
+  }
+
+  doneOf(row: CampaignInfluencer): number {
+    return Number((row as Record<string, unknown>)?.['posts_published'] ?? 0) || 0;
+  }
+
+  totalOf(row: CampaignInfluencer): number {
+    return Number((row as Record<string, unknown>)?.['posts_agreed'] ?? 0) || 0;
+  }
+
+  feeAgreedOf(row: CampaignInfluencer): number {
+    return Number((row as Record<string, unknown>)?.['fee_agreed'] ?? 0) || 0;
+  }
+
+  amountPaidOf(row: CampaignInfluencer): number {
+    return Number((row as Record<string, unknown>)?.['amount_paid'] ?? 0) || 0;
+  }
+
+  paymentStatusOf(row: CampaignInfluencer): string {
+    return String(
+      (row as Record<string, unknown>)?.['payment_status'] ??
+        (row as Record<string, unknown>)?.['paymentStatus'] ??
+        'pending',
+    );
+  }
+
+  /** Real submitted posts for the assignment (merged roster + posts endpoint). */
+  postsOf(row: CampaignInfluencer): InfluencerPostRow[] {
+    return this.toInfluencerPostRows((row as unknown as Record<string, unknown>)?.['influencerPosts']);
+  }
+
+  postTotals(row: CampaignInfluencer): {
+    count: number;
+    views: number;
+    likes: number;
+    comments: number;
+    shares: number;
+  } {
+    const posts = this.postsOf(row);
+    const sum = (pick: (p: InfluencerPostRow) => number) =>
+      posts.reduce((acc, p) => acc + pick(p), 0);
     return {
-      assignmentId: typeof row?.id === 'number' ? row.id : null,
-      influencerId: typeof user['id'] === 'number' ? user['id'] : null,
-      name: String(name),
-      handle: String(handle),
-      avatar: this.resolveFileUrl(typeof rawAvatar === 'string' ? rawAvatar : ''),
-      platform,
-      status: this.capitalize(status),
-      statusClass: this.influencerStatusClass(status),
-      done,
-      total,
-      posts,
-      totalViews: sum((p) => p.latest?.views ?? 0),
-      totalLikes: sum((p) => p.latest?.likes ?? 0),
-      totalComments: sum((p) => p.latest?.comments ?? 0),
-      totalShares: sum((p) => p.latest?.shares ?? 0),
+      count: posts.length,
+      views: sum((p) => p.latest?.views ?? 0),
+      likes: sum((p) => p.latest?.likes ?? 0),
+      comments: sum((p) => p.latest?.comments ?? 0),
+      shares: sum((p) => p.latest?.shares ?? 0),
     };
+  }
+
+  /** Actual profile text field, trying each key in order. */
+  profileText(row: CampaignInfluencer, keys: string[]): string {
+    const profile = this.profileOf(row);
+    if (!profile) return '';
+    for (const key of keys) {
+      const value = profile[key];
+      if (typeof value === 'string' && value.trim()) return value.trim();
+    }
+    return '';
+  }
+
+  /** Actual profile list field (array or single value). */
+  profileList(row: CampaignInfluencer, keys: string[]): string[] {
+    const profile = this.profileOf(row);
+    if (!profile) return [];
+    for (const key of keys) {
+      const value = profile[key];
+      if (Array.isArray(value)) {
+        const list = value.map((v) => String(v ?? '').trim()).filter(Boolean);
+        if (list.length > 0) return list;
+      } else if (typeof value === 'string' && value.trim()) {
+        return [value.trim()];
+      }
+    }
+    return [];
   }
 
   private toInfluencerPostRows(posts: unknown): InfluencerPostRow[] {
@@ -505,6 +699,7 @@ export class CampaignSummary implements OnInit, OnDestroy {
       case 'completed':
         return 'green';
       case 'cancelled':
+      case 'rejected':
         return 'red';
       case 'invited':
       case 'applied':
@@ -518,36 +713,29 @@ export class CampaignSummary implements OnInit, OnDestroy {
     if (img) img.style.visibility = 'hidden';
   }
 
-  trackInfluencerRow(_index: number, row: CampaignInfluencerRow): number | string {
-    return row.assignmentId ?? row.influencerId ?? row.handle;
-  }
+  // Arrow property: ngFor `trackBy` invokes the fn detached from the
+  // component, so `this` must be lexically captured.
+  trackInfluencerRow = (_index: number, row: CampaignInfluencer): number | string => {
+    const userId = (this.userOf(row) as Record<string, unknown>)?.['id'];
+    return row?.id ?? (typeof userId === 'number' ? userId : this.handleOf(row));
+  };
 
   expandedInfluencerKey: number | string | null = null;
 
-  toggleInfluencerPosts(row: CampaignInfluencerRow): void {
+  toggleInfluencerPosts(row: CampaignInfluencer): void {
+    if (!this.hasProfile(row)) return;
     const key = this.trackInfluencerRow(0, row);
     this.expandedInfluencerKey = this.expandedInfluencerKey === key ? null : key;
   }
 
-  isInfluencerExpanded(row: CampaignInfluencerRow): boolean {
+  isInfluencerExpanded(row: CampaignInfluencer): boolean {
     return this.expandedInfluencerKey === this.trackInfluencerRow(0, row);
   }
 
-  /** Full metrics are only meaningful once the influencer has submitted at least one post. */
-  canViewFullMetrics(row: CampaignInfluencerRow): boolean {
-    return row.posts.length > 0;
+  /** Actions need a real influencer profile; full metrics additionally need posts. */
+  canViewFullMetrics(row: CampaignInfluencer): boolean {
+    return this.hasProfile(row) && this.postsOf(row).length > 0;
   }
-
-  // Hardcoded placeholder escrow/deal progress until real negotiation data is wired up.
-  getEscrowStage(campaign: Campaign): EscrowStage {
-    const stages: EscrowStage[] = ['sent', 'negotiating', 'active', 'delivered', 'released'];
-    return stages[campaign.id % stages.length];
-  }
-
-  getEscrowAmount(campaign: Campaign): number {
-    return 50000 + ((campaign.id * 8317) % 450000);
-  }
-
 
   getPlatforms(raw: string[]): string[] {
     try {
@@ -566,12 +754,19 @@ export class CampaignSummary implements OnInit, OnDestroy {
     return platformLabel(platform);
   }
 
+  /** Cover is the first still image; videos can't render in the cover <img>. */
   campaignImage(campaign: Campaign): string {
-    return this.campaignImages(campaign)[0] ?? '';
+    return this.campaignImages(campaign).find((url) => !this.isVideoUrl(url)) ?? '';
   }
 
   hasImage(campaign: Campaign): boolean {
-    return this.campaignImages(campaign).length > 0;
+    return this.campaignImage(campaign) !== '';
+  }
+
+  /** Remaining media for the gallery, without repeating the cover. */
+  galleryMedia(campaign: Campaign): string[] {
+    const cover = this.campaignImage(campaign);
+    return this.campaignImages(campaign).filter((url) => url !== cover);
   }
 
   campaignInitial(campaign: Campaign): string {
@@ -612,7 +807,7 @@ export class CampaignSummary implements OnInit, OnDestroy {
   }
 
   readonly FALLBACK_IMAGE =
-    'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=200&h=200&fit=crop';
+    '/image-placeholder.svg';
 
   /** All usable media URLs for a campaign, after normalizing backend shapes. */
   campaignImages(campaign: Campaign): string[] {
@@ -714,9 +909,28 @@ export class CampaignSummary implements OnInit, OnDestroy {
     return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
   }
 
+  // Escape only dismisses overlays. It must never navigate: it also fires
+  // while typing in the search inputs.
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    this.goBack();
+    if (this.confirmCloseOpen()) {
+      this.confirmCloseOpen.set(false);
+      return;
+    }
+    if (this.editOpen()) {
+      this.closeEdit();
+      return;
+    }
+    if (this.inviteOpen()) {
+      this.closeInvite();
+      return;
+    }
+    if (this.drawerRow() != null) {
+      this.closeDetails();
+      return;
+    }
+    this.isFilterOpen = false;
+    this.isPendingFilterOpen = false;
   }
 
   getBadgedClass(pkg: string): string {
@@ -728,60 +942,307 @@ export class CampaignSummary implements OnInit, OnDestroy {
   }
 
 
-  acceptApplicant(applicant: Applicant): void {
-    applicant.status = 'accepted';
-  }
-
-  declineApplicant(applicant: Applicant): void {
-    applicant.status = 'declined';
-  }
-
   setActiveTab(tab: 'influencers' | 'invites'): void {
     this.activeTab = tab;
   }
 
-  acceptInvite(invite: CampaignInfluencerRow): void {
-    // Local-only until a status-update endpoint is wired up; moves the row to the Influencers tab.
-    this.updateRowStatus(invite, 'Contracted', 'blue');
+  acceptInvite(invite: CampaignInfluencer): void {
+    this.persistRowStatus(invite, UpdateCampaignInfluencerDto.StatusEnum.Contracted, 'accepted');
   }
 
-  negotiateWith(invite: CampaignInfluencerRow): void {
-    // Open negotiation modal or navigate to negotiation page
-    console.log('Negotiate with:', invite.name);
-    // TODO: Implement negotiation flow
+  declineInvite(invite: CampaignInfluencer): void {
+    this.persistRowStatus(invite, UpdateCampaignInfluencerDto.StatusEnum.Rejected, 'declined');
   }
 
-  declineInvite(invite: CampaignInfluencerRow): void {
-    // Local-only until a status-update endpoint is wired up; moves the row to the Influencers tab.
-    this.updateRowStatus(invite, 'Cancelled', 'red');
+  /** Optimistically move the row, save via PATCH /campaign-influencer/:id, roll back on failure. */
+  private persistRowStatus(
+    row: CampaignInfluencer,
+    status: UpdateCampaignInfluencerDto.StatusEnum,
+    verb: string,
+  ): void {
+    if (typeof row?.id !== 'number') {
+      this.toast.show('This applicant cannot be updated yet.', 'error');
+      return;
+    }
+    const previous = this.statusOf(row);
+    this.updateRowStatus(row, status);
+    this.campaignInfluencerApi
+      .campaignInfluencerControllerUpdate(row.id, { status })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.toast.show(`${this.displayName(row)} ${verb}.`, 'success'),
+        error: (err) => {
+          this.updateRowStatus(row, previous);
+          this.toast.show(err?.error?.message ?? `Could not update ${this.displayName(row)}.`, 'error');
+        },
+      });
   }
 
   /** Replace (not mutate) the row so computed tab partitions re-evaluate.
    * Stored as an override so late-arriving posts can't clobber the local status. */
-  private updateRowStatus(row: CampaignInfluencerRow, status: string, statusClass: string): void {
-    const key = row.assignmentId ?? row.influencerId;
-    if (key != null) {
-      this.statusOverrides.set(key, { status, statusClass });
-      this.refreshRows();
-    } else {
-      this.influencers.update((list) =>
-        list.map((item) => (item === row ? { ...item, status, statusClass } : item)),
-      );
-    }
+  private updateRowStatus(row: CampaignInfluencer, status: string): void {
+    if (typeof row?.id !== 'number') return;
+    this.statusOverrides.set(row.id, status);
+    this.refreshRows();
   }
 
-  viewInfluencerMetrics(influencer: CampaignInfluencerRow): void {
-    const id = influencer.influencerId ?? influencer.assignmentId ?? 1;
-    const campaignId = Number(this.route.snapshot.paramMap.get('id'));
-    this.router.navigate(
-      ['/home/view-influencer-metrics', id],
-      Number.isFinite(campaignId) && campaignId > 0 ? { queryParams: { campaignId } } : undefined,
+  // ---------------------------------------------------------------------------
+  // Campaign actions: pause / close / reopen, edit, invite influencers.
+  // ---------------------------------------------------------------------------
+
+  readonly campaignBusy = signal(false);
+  readonly confirmCloseOpen = signal(false);
+
+  campaignStatusOf(campaign: Campaign): CampaignLifecycle {
+    const status = String(campaign?.status ?? 'active').toLowerCase();
+    return status === 'paused' || status === 'closed' ? status : 'active';
+  }
+
+  /** Pause/resume/close/reopen. The API answers 200 with `error: true` on some failures, so check the body too. */
+  setCampaignStatus(campaign: Campaign, status: CampaignLifecycle): void {
+    if (campaign?.id == null || this.campaignBusy()) return;
+    this.campaignBusy.set(true);
+    this.campaignApi.campaignControllerUpdate(campaign.id, { status }).subscribe({
+      next: (res) => {
+        this.campaignBusy.set(false);
+        this.confirmCloseOpen.set(false);
+        if (res?.error) {
+          this.toast.show(res?.message || 'Could not update the campaign.', 'error');
+          return;
+        }
+        this.store.dispatch(CampaignActions.updateCampaignSuccess({ campaign: { id: campaign.id, status } }));
+        const done = { active: 'Campaign is active again.', paused: 'Campaign paused.', closed: 'Campaign closed.' };
+        this.toast.show(done[status], 'success');
+      },
+      error: (err) => {
+        this.campaignBusy.set(false);
+        this.toast.show(err?.error?.message || err?.message || 'Could not update the campaign.', 'error');
+      },
+    });
+  }
+
+  // --- Edit ---------------------------------------------------------------
+
+  readonly editOpen = signal(false);
+  readonly editSaving = signal(false);
+  readonly editError = signal<string | null>(null);
+  editForm = { name: '', description: '', link: '', start_date: '', end_date: '', hash_tags: '' };
+
+  private toDateInput(value: unknown): string {
+    if (!value) return '';
+    const date = new Date(String(value));
+    return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
+  }
+
+  openEdit(campaign: Campaign): void {
+    this.editForm = {
+      name: campaign.name ?? '',
+      description: campaign.description ?? '',
+      link: campaign.link ?? '',
+      start_date: this.toDateInput(campaign.start_date),
+      end_date: this.toDateInput(campaign.end_date),
+      hash_tags: this.hashTagList(campaign).join(' '),
+    };
+    this.editError.set(null);
+    this.editOpen.set(true);
+  }
+
+  closeEdit(): void {
+    if (this.editSaving()) return;
+    this.editOpen.set(false);
+  }
+
+  saveEdit(campaign: Campaign): void {
+    if (campaign?.id == null || this.editSaving()) return;
+    const f = this.editForm;
+    const name = f.name.trim();
+    if (!name) {
+      this.editError.set('Give the campaign a name.');
+      return;
+    }
+    if (f.start_date && f.end_date && f.end_date < f.start_date) {
+      this.editError.set('The end date can\'t be before the start date.');
+      return;
+    }
+    const hashTags = [
+      ...new Set(
+        f.hash_tags
+          .split(/[\s,]+/)
+          .map((t) => t.trim())
+          .filter(Boolean)
+          .map((t) => (t.startsWith('#') ? t : `#${t}`)),
+      ),
+    ];
+    const changes = {
+      name,
+      description: f.description.trim(),
+      link: f.link.trim(),
+      // Empty string clears the date on the server.
+      start_date: f.start_date,
+      end_date: f.end_date,
+      hash_tags: hashTags,
+    };
+
+    this.editSaving.set(true);
+    this.editError.set(null);
+    this.campaignApi.campaignControllerUpdate(campaign.id, changes).subscribe({
+      next: (res) => {
+        this.editSaving.set(false);
+        if (res?.error) {
+          this.editError.set(res?.message || 'Could not save your changes.');
+          return;
+        }
+        this.store.dispatch(
+          CampaignActions.updateCampaignSuccess({
+            campaign: {
+              id: campaign.id,
+              name,
+              description: changes.description,
+              link: changes.link || null,
+              start_date: f.start_date || null,
+              end_date: f.end_date || null,
+              hash_tags: hashTags as any,
+            },
+          }),
+        );
+        this.editOpen.set(false);
+        this.toast.show('Campaign updated.', 'success');
+      },
+      error: (err) => {
+        this.editSaving.set(false);
+        const message = err?.error?.message;
+        this.editError.set(
+          (Array.isArray(message) ? message.join(', ') : message) || err?.message || 'Could not save your changes.',
+        );
+      },
+    });
+  }
+
+  // --- Invite influencers ---------------------------------------------------
+
+  readonly inviteOpen = signal(false);
+  readonly inviteSending = signal(false);
+  readonly pickerQuery = signal('');
+  readonly pickerSearching = signal(false);
+  readonly pickerResults = signal<any[]>([]);
+  readonly pickerSelected = signal<any[]>([]);
+  private pickerQuery$ = new Subject<string>();
+
+  openInvite(): void {
+    this.pickerQuery.set('');
+    this.pickerResults.set([]);
+    this.pickerSelected.set([]);
+    this.inviteOpen.set(true);
+    this.pickerQuery$.next('');
+  }
+
+  closeInvite(): void {
+    if (this.inviteSending()) return;
+    this.inviteOpen.set(false);
+  }
+
+  onPickerSearch(query: string): void {
+    this.pickerQuery.set(query);
+    this.pickerQuery$.next(query.trim());
+  }
+
+  pickerUserId(profile: any): number | null {
+    const id = Number(profile?.user?.id);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  pickerName(profile: any): string {
+    const full = `${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim();
+    return full || userDisplayName(profile?.user ?? {}) || 'Creator';
+  }
+
+  /** Already invited, applied or working on this campaign. */
+  pickerInCampaign(profile: any): boolean {
+    const id = this.pickerUserId(profile);
+    return id != null && this.rawRoster.some((row) => Number(this.userOf(row)['id']) === id);
+  }
+
+  pickerIsSelected(profile: any): boolean {
+    const id = this.pickerUserId(profile);
+    return id != null && this.pickerSelected().some((p) => this.pickerUserId(p) === id);
+  }
+
+  togglePicked(profile: any): void {
+    if (this.pickerUserId(profile) == null || this.pickerInCampaign(profile)) return;
+    this.pickerSelected.update((list) =>
+      this.pickerIsSelected(profile)
+        ? list.filter((p) => this.pickerUserId(p) !== this.pickerUserId(profile))
+        : [...list, profile],
     );
   }
 
-  viewMore(invite: CampaignInfluencerRow): void {
-    const id = invite.influencerId ?? invite.assignmentId ?? 1;
-    this.router.navigate(['/home/view-pending-influencer-metrics', id]);
+  /** Each invite creates an `invited` assignment, which is what the Invites tab and negotiation work from. */
+  sendInvites(campaign: Campaign): void {
+    const picked = this.pickerSelected();
+    if (campaign?.id == null || picked.length === 0 || this.inviteSending()) return;
+    this.inviteSending.set(true);
+    forkJoin(
+      picked.map((profile) =>
+        this.campaignInfluencerApi
+          .campaignInfluencerControllerCreate({ campaignId: campaign.id, userId: this.pickerUserId(profile)! })
+          .pipe(
+            map(() => ({ ok: true, name: this.pickerName(profile), reason: '' })),
+            catchError((err) =>
+              of({ ok: false, name: this.pickerName(profile), reason: err?.error?.message || err?.message || 'failed' }),
+            ),
+          ),
+      ),
+    ).subscribe((results) => {
+      this.inviteSending.set(false);
+      const sent = results.filter((r) => r.ok).length;
+      const failed = results.filter((r) => !r.ok);
+      if (sent > 0) {
+        this.toast.show(`Invited ${sent} influencer${sent === 1 ? '' : 's'}.`, 'success');
+        this.reloadRoster(campaign.id);
+        this.setActiveTab('invites');
+      }
+      if (failed.length > 0) {
+        this.toast.show(`Could not invite ${failed.map((f) => f.name).join(', ')}: ${failed[0].reason}`, 'error', 6000);
+        // Keep only the failures selected so they can be retried.
+        this.pickerSelected.update((list) => list.filter((p) => failed.some((f) => f.name === this.pickerName(p))));
+      } else {
+        this.inviteOpen.set(false);
+      }
+    });
+  }
+
+  private reloadRoster(campaignId: number): void {
+    this.loadPostsForCampaign(campaignId);
+    this.rosterForCampaign(campaignId)
+      .pipe(take(1), catchError(() => of(null)))
+      .subscribe((roster) => {
+        if (roster == null) return;
+        this.rawRoster = roster;
+        this.refreshRows();
+      });
+  }
+
+  /** Hands the roster row over via router state: the posts-by-assignment endpoint doesn't embed the user, so the metrics page can't rebuild the header on its own. */
+  viewInfluencerMetrics(influencer: CampaignInfluencer, campaignName?: string): void {
+    if (influencer?.id == null) return;
+    const campaignId = Number(this.route.snapshot.paramMap.get('id'));
+    this.router.navigate(['/home/view-influencer-metrics', influencer.id], {
+      ...(Number.isFinite(campaignId) && campaignId > 0 ? { queryParams: { campaignId } } : {}),
+      state: { influencer, campaignName },
+    });
+  }
+
+  viewMore(invite: CampaignInfluencer): void {
+    if (invite?.id == null) return;
+    const campaignId = Number(this.route.snapshot.paramMap.get('id'));
+    const queryParams: Record<string, number> = {};
+    if (Number.isFinite(campaignId) && campaignId > 0) queryParams['campaignId'] = campaignId;
+    const profileId = this.profileIdOf(invite);
+    if (profileId != null) queryParams['influencerId'] = profileId;
+    this.router.navigate(
+      ['/home/view-pending-influencer-metrics', invite.id],
+      Object.keys(queryParams).length > 0 ? { queryParams } : undefined,
+    );
   }
 
   formatFollowers(count: number): string {
