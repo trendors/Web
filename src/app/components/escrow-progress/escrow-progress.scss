@@ -63,7 +63,7 @@
     justify-content: center;
     font-size: var(--fs-caption);
     font-weight: 700;
-    background: rgba(136, 136, 136, 0.12);
+    background: var(--surface-3);
     color: var(--text-muted);
     border: 2px solid transparent;
     transition:
@@ -73,7 +73,7 @@
 
 .escrow-step.done .escrow-step-dot {
     background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
+    color: var(--success);
 }
 
 .escrow-step.active .escrow-step-dot {

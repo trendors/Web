@@ -434,7 +434,7 @@
 }
 
 .stat-card {
-  background: #f5f5f5;
+  background: var(--surface-2);
   border-radius: 8px;
   padding: 10px 12px;
 }
@@ -442,12 +442,12 @@
 .stat-val {
   font-size: var(--fs-section);
   font-weight: 500;
-  color: #111;
+  color: var(--text);
 }
 
 .stat-lbl {
   font-size: var(--fs-caption);
-  color: #888;
+  color: var(--muted);
   margin-top: 2px;
 }
 
@@ -455,7 +455,7 @@
 .empty-state {
   text-align: center;
   padding: 48px 16px;
-  color: #aaa;
+  color: var(--muted);
 }
 
 .empty-state i {
@@ -470,8 +470,8 @@
 
 /* ── Share card ── */
 .share-card {
-  background: #fff;
-  border: 0.5px solid #e5e5e5;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 10px;
@@ -495,7 +495,7 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: #f5f5f5;
+  background: var(--surface-2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -504,27 +504,27 @@
 
 .ad-icon i {
   font-size: var(--fs-card-title);
-  color: #555;
+  color: var(--text2);
 }
 
 .ad-title {
   font-size: var(--fs-secondary);
   font-weight: 500;
-  color: #111;
+  color: var(--text);
 }
 
 .ad-meta {
   font-size: var(--fs-caption);
-  color: #aaa;
+  color: var(--muted);
   margin-top: 2px;
 }
 
 .tracking-code {
   font-family: var(--font-mono);
-  background: #f5f5f5;
+  background: var(--surface-2);
   padding: 1px 5px;
   border-radius: 4px;
-  color: #666;
+  color: var(--muted);
 }
 
 /* ── Status pills ── */
@@ -537,15 +537,15 @@
   white-space: nowrap;
 }
 
-.status-ready   { background: #EAF3DE; color: #3B6D11; }
-.status-pending { background: #FAEEDA; color: #854F0B; }
-.status-claimed { background: #E6F1FB; color: #185FA5; }
-.status-failed  { background: #FCEBEB; color: #A32D2D; }
+.status-ready   { background: var(--success-soft); color: var(--success); }
+.status-pending { background: var(--accent-soft); color: var(--warning); }
+.status-claimed { background: var(--info-soft); color: var(--info); }
+.status-failed  { background: var(--danger-soft); color: var(--danger); }
 
 /* ── Divider ── */
 .divider {
   height: 0.5px;
-  background: #e5e5e5;
+  background: var(--surface-3);
   margin: 10px 0;
 }
 
@@ -565,28 +565,28 @@
 
 .timer-icon {
   font-size: var(--fs-body);
-  color: #aaa;
+  color: var(--muted);
 }
 
-.ready-icon  { color: #3B6D11; }
-.claimed-icon { color: #185FA5; }
-.failed-icon { color: #A32D2D; }
+.ready-icon  { color: var(--success); }
+.claimed-icon { color: var(--info); }
+.failed-icon { color: var(--danger); }
 
 .timer-label {
   font-size: var(--fs-caption);
-  color: #aaa;
+  color: var(--muted);
 }
 
 .timer-val {
   font-size: var(--fs-secondary);
   font-weight: 500;
-  color: #111;
+  color: var(--text);
   font-family: var(--font-mono);
 }
 
-.ready-val   { color: #3B6D11; }
-.claimed-val { color: #185FA5; }
-.failed-val  { color: #A32D2D; }
+.ready-val   { color: var(--success); }
+.claimed-val { color: var(--info); }
+.failed-val  { color: var(--danger); }
 
 .reward-block {
   text-align: right;
@@ -596,15 +596,15 @@
 .reward-val {
   font-size: var(--fs-secondary);
   font-weight: 500;
-  color: #3B6D11;
+  color: var(--success);
 }
 
-.reward-claimed { color: #185FA5; }
-.reward-failed  { color: #A32D2D; }
+.reward-claimed { color: var(--info); }
+.reward-failed  { color: var(--danger); }
 
 .reward-lbl {
   font-size: var(--fs-caption);
-  color: #aaa;
+  color: var(--muted);
 }
 
 /* ── Progress bar ── */
@@ -614,7 +614,7 @@
 
 .progress-bar {
   height: 4px;
-  background: #e5e5e5;
+  background: var(--surface-3);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -639,11 +639,11 @@
 
 .share-meta {
   font-size: var(--fs-caption);
-  color: #aaa;
+  color: var(--muted);
 }
 
 .share-meta span {
-  color: #666;
+  color: var(--muted);
 }
 
 /* ── Buttons ── */
@@ -667,9 +667,9 @@
 
 .btn-claim {
   // background: #EAF3DE;
-  color: #3B6D11;
+  color: var(--success);
   // border-color: #C0DD97;
-  border-color: #e5e5e5;
+  border-color: var(--border);
 }
 
 .btn-claim:hover {
@@ -677,23 +677,23 @@
 }
 
 .btn-waiting {
-  background: #f5f5f5;
-  color: #aaa;
-  border-color: #e5e5e5;
+  background: var(--surface-2);
+  color: var(--muted);
+  border-color: var(--border);
   cursor: not-allowed;
 }
 
 .btn-claimed {
-  background: #E6F1FB;
-  color: #185FA5;
-  border-color: #B5D4F4;
+  background: var(--info-soft);
+  color: var(--info);
+  border-color: var(--info-soft);
   cursor: default;
 }
 
 .btn-failed {
-  background: #FCEBEB;
-  color: #A32D2D;
-  border-color: #F7C1C1;
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger-soft);
   cursor: default;
 }
 

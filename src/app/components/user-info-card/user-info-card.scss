@@ -122,17 +122,17 @@
 // // ─────────────────────────────────────────────
 
 // // Design tokens (adjust to match your system)
-// $ink: #14161a;
-// $muted: #6b7280;
+// $ink: var(--text);
+// $muted: var(--muted);
 // $hairline: rgba(20, 22, 26, 0.1);
-// $surface: #fff;
-// $surface-sunken: #f5f6f8;
+// $surface: var(--surface);
+// $surface-sunken: var(--surface-2);
 
 // $brand: #3a5ba0;
-// $brand-tint: #eef2fa;
+// $brand-tint: var(--info-soft);
 
 // $creative: #8a4baf;
-// $creative-tint: #f6eefa;
+// $creative-tint: color-mix(in srgb, #8a4baf 14%, transparent);
 
 // $radius-pill: 999px;
 // $radius-sm: 8px;
@@ -223,8 +223,8 @@
 // Design tokens
 $ink: #14161a;
 $muted: #6b7280;
-$faint: #9ca3af;
-$hairline: rgba(20, 22, 26, 0.08);
+$faint: var(--placeholder);
+$hairline: var(--border);
 $surface: #fff;
 $surface-sunken: #f5f6f8;
 

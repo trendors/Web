@@ -11,7 +11,7 @@
     height: 28px;
     position: absolute;
     border-radius: 50%;
-    border: 2px solid #ffffff;
+    border: 2px solid var(--border);
     /* Use your dynamic logic */
     left: calc(var(--i) * 14px); 
     z-index: calc(10 - var(--i)); /* Reverse z-index looks better for letters */
@@ -22,22 +22,22 @@
     align-items: center;
     
     /* Modern Look */
-    background-color: #f0f0f0; 
+    background-color: var(--surface-2); 
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .initial {
     font-size: var(--fs-caption);
     font-weight: 700;
-    color: #444;
+    color: var(--text2);
     text-transform: none;
     line-height: 1;
 }
 
 /* Optional: Different colors for variety */
-.avatar-frame:nth-child(1) { background-color: #e3f2fd; color: #1976d2; }
-.avatar-frame:nth-child(2) { background-color: #f1f8e9; color: #689f38; }
-.avatar-frame:nth-child(3) { background-color: #fff3e0; color: #ef6c00; }
+.avatar-frame:nth-child(1) { background-color: var(--info-soft); color: var(--info); }
+.avatar-frame:nth-child(2) { background-color: var(--success-soft); color: var(--success); }
+.avatar-frame:nth-child(3) { background-color: var(--accent-soft); color: var(--warning); }
 
 .avatar-frame img {
     width: 100%;
@@ -49,7 +49,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #f4f7f6; 
+    background-color: var(--surface-2); 
     display: flex;
     justify-content: center; 
 }
@@ -63,8 +63,8 @@ body {
 }
 
 .notification-trigger {
-    background-color: #ffffff; 
-    border: 2px solid #e0e0e0;
+    background-color: var(--surface); 
+    border: 2px solid var(--border);
     border-radius: 50px;    
     padding: 5px;
     display: flex;
@@ -73,7 +73,7 @@ body {
 }
 
 .notification-trigger:hover {
-    background-color: #fcfcfc;
+    background-color: var(--surface);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
 }
@@ -95,13 +95,13 @@ body {
     width: 24px;
     height: 24px;
     border-radius: 50%; 
-    border: 2px solid #ffffff; 
+    border: 2px solid var(--border); 
     position: absolute;
     box-sizing: border-box; 
     background-size: cover;     
     background-position: center;
     background-repeat: no-repeat;
-    background-color: #e0e0e0;  
+    background-color: var(--surface-3);  
 }
 
 
@@ -128,7 +128,7 @@ body {
 .notification-text {
     font-size: var(--fs-secondary);
     font-weight: 600;
-    color: #333333;
+    color: var(--text);
     user-select: none; 
 }
 

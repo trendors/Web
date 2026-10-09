@@ -505,16 +505,13 @@
       <span>By launching, you agree to our terms. Your campaign will be reviewed within a few minutes
         before going live. You can pause or edit it at any time from your dashboard.</span>
     </div>
-    @if (showTopup) {
-
-    <app-topup-modal [amount]="topupShortfall > 0 ? topupShortfall : 5000" [fixedAmount]="true" (closed)="showTopup = false" (topupSuccess)="onTopupSuccess()">
-    </app-topup-modal>
-    }
     <button type="button" class="checkout-btn checkout-btn-full" (click)="onCheckout()" [disabled]="isSubmitting()">
       @if (isSubmitting()) {
-      <span>Creating campaign…</span>
+      <span>Saving campaign…</span>
+      } @else if (selectedAccess === 'open') {
+      <span>Save and pay</span>
       } @else {
-      <span>Review and pay</span>
+      <span>Create campaign</span>
       }
     </button>
     @if (submitStatus() === 'success') {
@@ -549,38 +546,51 @@
 <div class="ui-sheet pay-sheet" role="dialog" aria-modal="true" aria-labelledby="pay-title">
   <div>
     <div class="modal-head">
-      <h3 id="pay-title">Confirm payment</h3>
-      <button type="button" class="ui-icon-btn" aria-label="Close" (click)="closePayAlert()"><i class="ti ti-x" aria-hidden="true"></i></button>
+      <h3 id="pay-title">Pay to launch</h3>
+      <button type="button" class="ui-icon-btn" aria-label="Close" [disabled]="!!payStep()" (click)="closePayAlert()"><i class="ti ti-x" aria-hidden="true"></i></button>
     </div>
+
+    <p class="ui-sheet__sub">“{{ pendingPayment()?.name }}” is saved. It goes live as soon as it's paid for.</p>
 
     <div class="rv-card">
       <div class="rv-row">
-        <div class="rv-key">Campaign cost</div>
-        <div class="rv-val">₦{{ computedBudget | number }}</div>
+        <div class="rv-key">Campaign budget</div>
+        <div class="rv-val">₦{{ payBreakdown.budget | number }}</div>
       </div>
       <div class="rv-row">
-        <div class="rv-key">Wallet balance</div>
+        <div class="rv-key">From your wallet</div>
         <div class="rv-val">
           @if (walletLoading()) {
             <span class="empty">Checking…</span>
-          } @else if (walletBalance() == null) {
-            <span class="empty">Unavailable</span>
           } @else {
-            ₦{{ walletBalance() | number }}
+            ₦{{ payBreakdown.fromWallet | number }}
           }
         </div>
       </div>
+      @if (!walletLoading() && payBreakdown.byCard > 0) {
+        <div class="rv-row">
+          <div class="rv-key">By card or transfer</div>
+          <div class="rv-val">₦{{ payBreakdown.byCard | number }}</div>
+        </div>
+      }
     </div>
 
-    <button type="button" class="checkout-btn checkout-btn-full" (click)="payFromWallet()" [disabled]="walletLoading() || isSubmitting()">
-      @if (isSubmitting()) {
-        <span>Processing payment…</span>
-      } @else {
-        <span>Pay ₦{{ computedBudget | number }}</span>
+    <button type="button" class="checkout-btn checkout-btn-full" (click)="payNow()" [disabled]="walletLoading() || !!payStep()">
+      @switch (payStep()) {
+        @case ('starting') { <span>Starting payment…</span> }
+        @case ('card') { <span>Complete payment in the Paystack window…</span> }
+        @case ('confirming') { <span>Confirming your payment…</span> }
+        @default {
+          @if (payBreakdown.byCard > 0) {
+            <span>Pay ₦{{ payBreakdown.byCard | number }} with Paystack</span>
+          } @else {
+            <span>Pay ₦{{ payBreakdown.budget | number }} from wallet</span>
+          }
+        }
       }
     </button>
-    <button class="checkout-btn checkout-btn-full checkout-btn--ghost" (click)="closePayAlert()" [disabled]="isSubmitting()" type="button">
-      <span>Cancel</span>
+    <button class="checkout-btn checkout-btn-full checkout-btn--ghost" (click)="closePayAlert()" [disabled]="!!payStep()" type="button">
+      <span>Pay later</span>
     </button>
     @if (payError()) {
       <div class="rv-note error" role="alert">
@@ -588,6 +598,7 @@
         <span>{{ payError() }}</span>
       </div>
     }
+    <p class="ui-sheet__fineprint">Card payments are confirmed by Paystack before your campaign goes live. If anything goes wrong, nothing is charged twice and your money stays in your wallet.</p>
   </div>
 </div>
 }

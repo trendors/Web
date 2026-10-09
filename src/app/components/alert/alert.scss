@@ -21,7 +21,7 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: conic-gradient(from 0deg, #222222 0deg 120deg, transparent 120deg 360deg);
+      background: conic-gradient(from 0deg, var(--text) 0deg 120deg, transparent 120deg 360deg);
       mask: radial-gradient(circle, transparent 64%, black 65%);
       -webkit-mask: radial-gradient(circle, transparent 64%, black 65%);
       animation: rotateOuter 2.2s linear infinite;
@@ -36,7 +36,7 @@
       width: 75%;
       height: 75%;
       border-radius: 50%;
-      background: conic-gradient(from 0deg, #222222 0deg 180deg, transparent 180deg 360deg);
+      background: conic-gradient(from 0deg, var(--text) 0deg 180deg, transparent 180deg 360deg);
       mask: radial-gradient(circle, transparent 56%, black 57%);
       -webkit-mask: radial-gradient(circle, transparent 56%, black 57%);
       animation: rotateInner 1.6s linear infinite;
@@ -68,7 +68,7 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      border: 1px solid rgba(0,0,0,0.03);
+      border: 1px solid var(--border);
       top: 0;
       left: 0;
       pointer-events: none;

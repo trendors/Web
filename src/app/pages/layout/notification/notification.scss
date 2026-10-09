@@ -1,14 +1,14 @@
 .notifications-container {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   overflow: hidden;
   max-width: 100%;
 }
 
 .notification-item {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
   display: flex;
   gap: 12px;
   align-items: flex-start;
@@ -21,15 +21,15 @@
 }
 
 .notification-item.unread {
-  background: #eff6ff;
+  background: var(--info-soft);
 }
 
 .notification-item.read {
-  background: #f9fafb;
+  background: var(--surface-2);
 }
 
 .notification-item:hover {
-  background-color: #f3f4f6;
+  background-color: var(--surface-2);
 }
 
 .notification-icon {
@@ -44,13 +44,13 @@
 }
 
 .notification-item.unread .notification-icon {
-  background: #dbeafe;
-  color: #0284c7;
+  background: var(--info-soft);
+  color: var(--info);
 }
 
 .notification-item.read .notification-icon {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--surface-2);
+  color: var(--muted);
 }
 
 .notification-content {
@@ -69,28 +69,28 @@
 .notification-type {
   font-size: var(--fs-secondary);
   font-weight: 600;
-  color: #111827;
+  color: var(--text);
 }
 
 .notification-item.unread .notification-type {
-  color: #0284c7;
+  color: var(--info);
 }
 
 .notification-timestamp {
   font-size: var(--fs-caption);
-  color: #9ca3af;
+  color: var(--muted);
   white-space: nowrap;
 }
 
 .notification-message {
   font-size: var(--fs-secondary);
-  color: #111827;
+  color: var(--text);
   line-height: 1.5;
   margin-bottom: 6px;
 }
 
 .notification-item.read .notification-message {
-  color: #6b7280;
+  color: var(--muted);
 }
 
 .notification-meta {
@@ -98,7 +98,7 @@
   gap: 8px;
   align-items: center;
   font-size: var(--fs-caption);
-  color: #9ca3af;
+  color: var(--muted);
 }
 
 .badge {
@@ -111,18 +111,18 @@
 }
 
 .badge-post {
-  background: #dbeafe;
-  color: #0284c7;
+  background: var(--info-soft);
+  color: var(--info);
 }
 
 .badge-event {
-  background: #f3e8ff;
+  background: var(--info-soft);
   color: #9333ea;
 }
 
 .badge-invitation {
-  background: #dcfce7;
-  color: #16a34a;
+  background: var(--success-soft);
+  color: var(--success);
 }
 
 .unread-indicator {
@@ -137,13 +137,13 @@
 .empty-state {
   padding: 2rem 1.25rem;
   text-align: center;
-  color: #9ca3af;
+  color: var(--muted);
 }
 
 .empty-state-icon {
   font-size: 32px;
   margin-bottom: 8px;
-  color: #d1d5db;
+  color: var(--border-strong);
 }
 
 /* Responsive adjustments */

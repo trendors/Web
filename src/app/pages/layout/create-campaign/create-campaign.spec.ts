@@ -12,6 +12,8 @@ import {
   WalletService as WalletApiService,
 } from '../../../core/api';
 import { ToastService } from '../../../components/toast/toast.service';
+import { Router } from '@angular/router';
+import { CampaignCheckoutService } from '../../../core/services/payment/campaign-checkout.service';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 
@@ -27,6 +29,8 @@ describe('CreateCampaign', () => {
   };
 
   let assignmentApi: { campaignInfluencerControllerCreate: ReturnType<typeof vi.fn> };
+  let checkout: { pay: ReturnType<typeof vi.fn> };
+  let router: { navigate: ReturnType<typeof vi.fn> };
 
   /** Valid step-0 basics so a test can focus on the later steps. */
   function fillBasics(title = 'Test Campaign'): void {
@@ -44,6 +48,8 @@ describe('CreateCampaign', () => {
     actions$ = new Subject();
     assignmentApi = { campaignInfluencerControllerCreate: vi.fn(() => of({})) };
     toast = { show: vi.fn() };
+    checkout = { pay: vi.fn(async () => 'paid') };
+    router = { navigate: vi.fn(async () => true) };
     walletApi = {
       walletControllerGetUserWallet: vi.fn(() => of({ data: { balance: 60000 } })),
       walletControllerPayFromWallet: vi.fn(() => of({ error: false, data: { balance: 10000 } })),
@@ -57,6 +63,8 @@ describe('CreateCampaign', () => {
         { provide: InfluencerProfilesService, useValue: {} },
         { provide: ToastService, useValue: toast },
         { provide: WalletApiService, useValue: walletApi },
+        { provide: CampaignCheckoutService, useValue: checkout },
+        { provide: Router, useValue: router },
       ],
     }).compileComponents();
 
@@ -190,15 +198,47 @@ describe('CreateCampaign', () => {
     expect(toast.show).toHaveBeenCalledWith('Something broke', 'error');
   });
 
-  it('should open the pay alert only for valid open campaigns', () => {
+  /** Save an open campaign through the effect and land on the pay sheet. */
+  async function saveOpenCampaign(budget = 50000): Promise<void> {
+    fillBasics('Paid Campaign');
+    component.selectedAccess = 'open';
+    component.openBudget.set(budget);
+    component.onCheckout();
+    await untilDispatched();
+    actions$.next(
+      CampaignActions.createCampaignSuccess({
+        campaign: { id: 7, name: 'Paid Campaign', budget: String(budget), payment_status: 'awaiting_payment' } as any,
+      }),
+    );
+    await vi.waitFor(() => expect(component.showPayAlert()).toBe(true));
+    await fixture.whenStable();
+  }
+
+  it('does nothing for an invalid open campaign', () => {
+    const dispatchSpy = vi.spyOn(store, 'dispatch');
     component.selectedAccess = 'open';
     component.onCheckout();
     expect(component.showPayAlert()).toBe(false);
+    expect(dispatchSpy).not.toHaveBeenCalled();
+  });
 
+  it('saves an open campaign FIRST, then opens the pay sheet for it (nothing charged yet)', async () => {
+    await saveOpenCampaign(50000);
+    expect(component.pendingPayment()).toEqual({ id: 7, name: 'Paid Campaign', budget: 50000 });
+    expect(component.submitMessage()).toBe('Campaign saved. Complete payment to launch it.');
+    expect(checkout.pay).not.toHaveBeenCalled();
+  });
+
+  it('never opens payment when the campaign could not be saved', async () => {
     fillBasics();
+    component.selectedAccess = 'open';
     component.openBudget.set(50000);
     component.onCheckout();
-    expect(component.showPayAlert()).toBe(true);
+    await untilDispatched();
+    actions$.next(CampaignActions.createCampaignFailure({ error: 'boom' }));
+    await vi.waitFor(() => expect(component.submitStatus()).toBe('error'));
+    expect(component.showPayAlert()).toBe(false);
+    expect(checkout.pay).not.toHaveBeenCalled();
   });
 
   it('should create invite-only campaigns without payment, then invite the drafted creators', async () => {
@@ -227,80 +267,62 @@ describe('CreateCampaign', () => {
     expect(component.walletBalance()).toBe(60000);
   });
 
-  it('should pay from the wallet then create the campaign on proceed', async () => {
-    const dispatchSpy = vi.spyOn(store, 'dispatch');
-    fillBasics('Paid Campaign');
-    component.selectedAccess = 'open';
-    component.openBudget.set(50000);
+  it('splits the cost between wallet and card using the live balance', async () => {
+    await saveOpenCampaign(90000); // balance 60,000
+    expect(component.payBreakdown).toEqual({ budget: 90000, fromWallet: 60000, byCard: 30000 });
+    walletApi.walletControllerGetUserWallet.mockReturnValueOnce(of({ data: { balance: 89950 } }));
     component.openPayAlert();
-    await fixture.whenStable();
-    component.payFromWallet();
-    await untilDispatched();
-    expect(walletApi.walletControllerPayFromWallet).toHaveBeenCalledWith({
-      trendorsId: 'trend-1',
-      amount: 50000,
-      description: 'Campaign: Paid Campaign',
-    });
+    await vi.waitFor(() => expect(component.walletBalance()).toBe(89950));
+    // Paystack's ₦100 minimum; the extra ₦50 stays in the wallet
+    expect(component.payBreakdown.byCard).toBe(100);
+  });
+
+  it('pays, then takes the brand to their live campaign', async () => {
+    await saveOpenCampaign();
+    await component.payNow();
+    expect(checkout.pay).toHaveBeenCalledWith(7, expect.any(Function));
     expect(component.showPayAlert()).toBe(false);
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ type: '[Campaign Action Flow] Create Campaign' }),
-    );
-    actions$.next(CampaignActions.createCampaignSuccess({ campaign: { id: 7 } as any }));
-    await vi.waitFor(() => expect(component.submitStatus()).toBe('success'));
+    expect(toast.show).toHaveBeenCalledWith('Payment confirmed. Your campaign is live!', 'success');
+    expect(router.navigate).toHaveBeenCalledWith(['/home/view-campaign', 7]);
   });
 
-  it('should never charge the wallet when the form is invalid', async () => {
-    component.selectedAccess = 'open';
-    component.openBudget.set(50000); // no title or dates
-    component.payFromWallet();
-    await fixture.whenStable();
-    expect(walletApi.walletControllerPayFromWallet).not.toHaveBeenCalled();
-    expect(component.payError()).toBe('Give your campaign a title.');
-  });
-
-  it('should not charge when the known balance is too low', async () => {
-    fillBasics();
-    component.selectedAccess = 'open';
-    component.openBudget.set(90000);
-    component.openPayAlert();
-    await fixture.whenStable(); // balance 60,000
-    component.payFromWallet();
-    expect(walletApi.walletControllerPayFromWallet).not.toHaveBeenCalled();
-    expect(component.payError()).toContain('balance is too low');
-  });
-
-  it('should tell the user they were charged when creation fails after payment', async () => {
-    fillBasics();
-    walletApi.walletControllerPayFromWallet.mockReturnValueOnce(
-      of({ error: false, data: { balance: 10000, transactionId: 'TX-1' } }),
-    );
-    component.selectedAccess = 'open';
-    component.openBudget.set(50000);
-    component.payFromWallet();
-    await untilDispatched();
-    actions$.next(CampaignActions.createCampaignFailure({ error: 'boom' }));
-    await vi.waitFor(() =>
-      expect(component.submitMessage()).toContain('Your wallet was charged ₦50,000 (payment reference TX-1)'),
-    );
-    expect(component.isSubmitting()).toBe(false);
-  });
-
-  it('should show the wallet payment failure and not create the campaign', async () => {
-    const dispatchSpy = vi.spyOn(store, 'dispatch');
-    walletApi.walletControllerPayFromWallet.mockReturnValueOnce(
-      of({ error: true, message: 'Insufficient funds' }),
-    );
-    fillBasics();
-    component.selectedAccess = 'open';
-    component.openBudget.set(50000);
-    component.openPayAlert();
-    await fixture.whenStable();
-    component.payFromWallet();
-    await vi.waitFor(() => expect(component.payError()).toBe('Insufficient funds'));
+  it('keeps the sheet open, nothing charged, when the card window is closed', async () => {
+    checkout.pay.mockResolvedValueOnce('cancelled');
+    await saveOpenCampaign();
+    await component.payNow();
     expect(component.showPayAlert()).toBe(true);
-    expect(component.isSubmitting()).toBe(false);
-    expect(dispatchSpy).not.toHaveBeenCalledWith(
-      expect.objectContaining({ type: '[Campaign Action Flow] Create Campaign' }),
-    );
+    expect(component.payError()).toContain('Nothing was charged');
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('moves on with a heads-up when confirmation is still on its way', async () => {
+    checkout.pay.mockResolvedValueOnce('pending');
+    await saveOpenCampaign();
+    await component.payNow();
+    expect(toast.show).toHaveBeenCalledWith(expect.stringContaining('confirming your payment'), 'info', 8000);
+    expect(router.navigate).toHaveBeenCalledWith(['/home/view-campaign', 7]);
+  });
+
+  it("shows the server's reason when payment cannot start", async () => {
+    checkout.pay.mockRejectedValueOnce({ error: { message: 'Your wallet is frozen. Contact support.' } });
+    await saveOpenCampaign();
+    await component.payNow();
+    expect(component.payError()).toBe('Your wallet is frozen. Contact support.');
+    expect(component.payStep()).toBeNull();
+  });
+
+  it('"Pay later" keeps the saved campaign and opens it', async () => {
+    await saveOpenCampaign();
+    component.closePayAlert();
+    expect(component.showPayAlert()).toBe(false);
+    expect(toast.show).toHaveBeenCalledWith(expect.stringContaining('Your campaign is saved'), 'info', 6000);
+    expect(router.navigate).toHaveBeenCalledWith(['/home/view-campaign', 7]);
+  });
+
+  it('cannot close the sheet while a payment is in flight', async () => {
+    await saveOpenCampaign();
+    component.payStep.set('confirming');
+    component.closePayAlert();
+    expect(component.showPayAlert()).toBe(true);
   });
 });

@@ -25,6 +25,7 @@ import type { CampaignInfluencer } from '../../../core/api/model/campaignInfluen
 import type { CampaignInfluencerPost } from '../../../core/api/model/campaignInfluencerPost';
 import { Negotiation } from "../../../components/negotiation/negotiation";
 import { RealtimeEvent, SocketService } from '../../../socket.service';
+import { CampaignCheckoutService, CheckoutStep } from '../../../core/services/payment/campaign-checkout.service';
 
 export interface Applicant {
   id: number;
@@ -102,6 +103,15 @@ export class CampaignSummary implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe((c) => this.reloadRoster(c.campaignId!));
+
+    // Payment confirmed elsewhere (webhook, another tab): go live here too.
+    this.socket
+      .changes(RealtimeEvent.CampaignUpdated)
+      .pipe(
+        filter((c) => c.payment === 'paid' && c.campaignId === Number(this.route.snapshot.paramMap.get('id'))),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((c) => this.markPaid(c.campaignId!));
 
     // Influencer picker search (Invite influencers dialog).
     this.pickerQuery$
@@ -991,6 +1001,47 @@ export class CampaignSummary implements OnInit, OnDestroy {
   // ---------------------------------------------------------------------------
 
   readonly campaignBusy = signal(false);
+
+  // --- Payment (open campaigns are paid up front) ----------------------------
+
+  readonly payStep = signal<CheckoutStep | null>(null);
+  private checkout = inject(CampaignCheckoutService);
+
+  isAwaitingPayment(campaign: Campaign): boolean {
+    return campaign?.payment_status === 'awaiting_payment';
+  }
+
+  budgetOf(campaign: Campaign): number {
+    return Number(campaign?.budget ?? 0) || 0;
+  }
+
+  async completePayment(campaign: Campaign): Promise<void> {
+    if (campaign?.id == null || this.payStep()) return;
+    try {
+      const outcome = await this.checkout.pay(campaign.id, (step) => this.payStep.set(step));
+      this.payStep.set(null);
+      if (outcome === 'paid') {
+        this.markPaid(campaign.id);
+        this.toast.show('Payment confirmed. Your campaign is live!', 'success');
+      } else if (outcome === 'pending') {
+        this.toast.show("We're confirming your payment. You'll get a notification as soon as it's live.", 'info', 8000);
+      } else {
+        this.toast.show('Payment cancelled. Nothing was charged.', 'info');
+      }
+    } catch (err: any) {
+      this.payStep.set(null);
+      const message = err?.error?.message;
+      this.toast.show((Array.isArray(message) ? message.join(', ') : message) || err?.message || 'Payment could not start.', 'error');
+    }
+  }
+
+  private markPaid(campaignId: number): void {
+    this.store.dispatch(
+      CampaignActions.updateCampaignSuccess({
+        campaign: { id: campaignId, payment_status: 'paid', paid_at: new Date().toISOString() },
+      }),
+    );
+  }
   readonly confirmCloseOpen = signal(false);
 
   campaignStatusOf(campaign: Campaign): CampaignLifecycle {

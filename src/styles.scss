@@ -112,6 +112,16 @@
 
   --focus-ring: 0 0 0 3px rgba(255, 107, 53, 0.25);
 
+  // Theme-aware helpers (redefined for dark below)
+  --surface-3: #eceef1;          // a step above surface-2 (hover on grey, skeletons)
+  --inverse: #14161a;            // dark chips/buttons on a light page
+  --on-inverse: #ffffff;
+  --overlay: rgba(17, 24, 39, 0.45);   // modal/sheet backdrops
+  --hover-tint: rgba(17, 24, 39, 0.04);
+  --press-tint: rgba(17, 24, 39, 0.08);
+  --logo-filter: none;
+  color-scheme: light;
+
   // Shape & size
   --radius: 16px;
   --radius-md: 12px;
@@ -157,6 +167,72 @@
 }
 
 // ---------------------------------------------------------------------------
+// Night mode. Only the base colours change; every alias above follows them.
+// `data-theme` on <html> is set by ThemeService: "dark", "light", or absent
+// (= follow the device). index.html applies it before first paint.
+// ---------------------------------------------------------------------------
+@mixin dark-tokens {
+  color-scheme: dark;
+
+  --text: #eef0f3;
+  --text2: #c9cdd4;
+  --muted: #9aa1ad;
+  --placeholder: #6b7280;
+  --page-bg: #0f1115;
+  --bg: #0b0d10;
+  --surface: #171a20;
+  --surface-2: #1f232b;
+  --surface-3: #282d36;
+  --white: #171a20;
+  --border: #2a2f38;
+  --border-hover: #3a404b;
+  --border-strong: #4b5563;
+
+  --accent: #ff7a47;
+  --accent-dark: #ff6b35;
+  --accent-soft: rgba(255, 122, 71, 0.16);
+  --on-accent: #ffffff;
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.14);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.14);
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.14);
+  --info: #60a5fa;
+  --info-soft: rgba(96, 165, 250, 0.14);
+
+  --inverse: #eef0f3;
+  --on-inverse: #111318;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --hover-tint: rgba(255, 255, 255, 0.05);
+  --press-tint: rgba(255, 255, 255, 0.09);
+  --focus-ring: 0 0 0 3px rgba(255, 122, 71, 0.35);
+
+  // Shadows barely show on dark; borders and lighter surfaces do the lifting.
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-sheet: 0 -8px 32px rgba(0, 0, 0, 0.6);
+
+  // The logo is a black disc; invert it to a white disc on dark pages.
+  --logo-filter: invert(1);
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-tokens;
+  }
+}
+
+img[src$='logo6.png'],
+img[src$='Trendors_logo.png'] {
+  filter: var(--logo-filter);
+}
+
+// ---------------------------------------------------------------------------
 // Reset
 // ---------------------------------------------------------------------------
 *,
@@ -175,6 +251,8 @@ html {
     color: (
       primary: mat.$orange-palette,
       tertiary: mat.$orange-palette,
+      // Emits light-dark() values, so Material follows `color-scheme` (night mode).
+      theme-type: color-scheme,
     ),
     typography: (
       plain-family: 'Inter Variable',
@@ -208,7 +286,6 @@ body {
 }
 
 body {
-  color-scheme: light;
   background: var(--page-bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -557,11 +634,25 @@ select.ui-input {
 // Modal that is a bottom sheet on phones and a centred dialog from tablet up.
 //   <div class="ui-sheet-backdrop" (click)="close()"></div>
 //   <div class="ui-sheet" role="dialog" aria-modal="true">…</div>
+// Supporting copy inside a sheet: a lead line under the title, small print at the end.
+.ui-sheet__sub {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: var(--fs-secondary);
+}
+
+.ui-sheet__fineprint {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+}
+
 .ui-sheet-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(17, 24, 39, 0.45);
+  background: var(--overlay);
 }
 
 .ui-sheet {

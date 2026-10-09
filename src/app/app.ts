@@ -1,3 +1,4 @@
+import { ThemeService } from './core/services/theme/theme.service';
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Header } from "./components/header/header";
@@ -15,5 +16,6 @@ export class App {
 
   constructor() {
     inject(RealtimeNotificationsService).start();
+    inject(ThemeService); // applies the saved theme and follows the device setting
   }
 }

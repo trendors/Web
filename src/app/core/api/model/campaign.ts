@@ -34,6 +34,12 @@ export interface Campaign {
      */
     status?: Campaign.StatusEnum;
     /**
+     * Open campaigns are paid up front; unpaid ones are saved but not live
+     */
+    payment_status?: 'not_required' | 'awaiting_payment' | 'paid';
+    budget?: number | null;
+    paid_at?: string | null;
+    /**
      * ID of the user who created the campaign
      */
     creator_id: number;

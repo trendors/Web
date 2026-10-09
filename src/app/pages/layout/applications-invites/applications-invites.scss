@@ -9,4 +9,4 @@
 .tab.active .count { background: rgba(255,255,255,0.25); color: #fff; }
 // .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
 // @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }.list-state { color: var(--ink-soft, #54615a); font-size: var(--fs-secondary); margin: 0 0 0.75rem; }
-.list-state--error { color: #b3261e; }
+.list-state--error { color: var(--danger); }

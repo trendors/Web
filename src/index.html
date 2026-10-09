@@ -5,6 +5,18 @@
   <meta charset="utf-8">
   <title>Trendors</title>
   <base href="/">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+  <!-- Night mode: apply the saved choice before first paint (no light flash). -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <link rel="icon" type="image/x-icon" href="logo6.png">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">

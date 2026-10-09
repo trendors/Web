@@ -270,7 +270,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--surface);
     box-shadow: var(--shadow-sm);
     transition: transform 0.2s ease;
   }
@@ -422,7 +422,9 @@
   position: relative;
 }
 
-.search-input {
+// One expansion of the input mixin for both fields keeps this sheet under its size budget.
+.search-input,
+.deliverable-input {
   @include forms.input;
 }
 
@@ -816,7 +818,6 @@
 }
 
 .deliverable-input {
-  @include forms.input;
   @include forms.number-no-spin;
 }
 
@@ -1071,7 +1072,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(17, 24, 39, 0.45);
+  background: var(--overlay);
 
   @include bp.up(tablet) {
     align-items: center;

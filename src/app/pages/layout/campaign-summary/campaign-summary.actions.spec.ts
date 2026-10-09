@@ -16,6 +16,7 @@ import {
 import { selectCampaignList, selectCampaignLoading } from '../../../store/campaign/campaign.selector';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
+import { CampaignCheckoutService } from '../../../core/services/payment/campaign-checkout.service';
 import {
   mockBrandUser,
   mockCampaigns,
@@ -41,6 +42,7 @@ describe('CampaignSummary campaign actions', () => {
   };
 
   const campaign = () => mockCampaigns[0];
+  const checkout = { pay: vi.fn(async (): Promise<string> => 'paid') };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -62,6 +64,7 @@ describe('CampaignSummary campaign actions', () => {
         { provide: InfluencerProfilesService, useValue: profilesApi },
         { provide: CampaignInfluencerService, useValue: rosterApi },
         { provide: CampaignInfluencerPostService, useValue: postsApi },
+        { provide: CampaignCheckoutService, useValue: checkout },
       ],
     }).compileComponents();
 
@@ -194,5 +197,38 @@ describe('CampaignSummary campaign actions', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(labels()).toEqual(['Edit', 'Invite influencers', 'Reopen']);
+  });
+
+  describe('unpaid open campaigns', () => {
+    const unpaid = () => ({ ...mockCampaigns[0], payment_status: 'awaiting_payment', budget: '60000' }) as any;
+
+    async function showUnpaid() {
+      store.overrideSelector(selectCampaignList, [unpaid(), ...mockCampaigns.slice(1)]);
+      store.refreshState();
+      fixture.detectChanges();
+      await fixture.whenStable();
+    }
+
+    it('shows a "not live yet" banner with the budget and blocks invites', async () => {
+      await showUnpaid();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.campaign-notice--pay')?.textContent).toContain('₦60,000');
+      const invite = el.querySelectorAll('.campaign-actions button')[1] as HTMLButtonElement;
+      expect(invite.disabled).toBe(true);
+    });
+
+    it('completing payment marks the campaign paid', async () => {
+      await component.completePayment(unpaid());
+      expect(checkout.pay).toHaveBeenCalledWith(1, expect.any(Function));
+      expect(store.dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: CampaignActions.updateCampaignSuccess.type, campaign: expect.objectContaining({ id: 1, payment_status: 'paid' }) }),
+      );
+    });
+
+    it('a cancelled card window changes nothing', async () => {
+      checkout.pay.mockResolvedValueOnce('cancelled');
+      await component.completePayment(unpaid());
+      expect(store.dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: CampaignActions.updateCampaignSuccess.type }));
+    });
   });
 });

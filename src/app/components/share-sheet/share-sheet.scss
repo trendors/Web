@@ -26,7 +26,7 @@ i {
 .share-item span {
   font-size: var(--fs-caption);
   margin-top: 8px;
-  color: #1c1e21;
+  color: var(--text);
 }
 
 .icon-circle {
@@ -40,19 +40,19 @@ i {
 }
 
 /* Brand Colors */
-.link-bg { background-color: #e4e6eb; color: #1c1e21; }
+.link-bg { background-color: var(--surface-3); color: var(--text); }
 .whatsapp-bg { background-color: #25D366; }
 .twitter-bg { background-color: #1DA1F2; }
 .facebook-bg { background-color: #1877F2; }
 .linkedin-bg { background-color: #0077B5; }
-.tiktok-bg { background-color: #000000; }
+.tiktok-bg { background-color: #000000; } // theme-ok: brand colour
 .telegram-bg { background-color: #0088cc; } 
 
 .cancel-btn {
   width: 100%;
   padding: 12px;
   border: none;
-  background: #f0f2f5;
+  background: var(--surface-2);
   border-radius: 8px;
   font-weight: bold;
   margin-top: 10px;
@@ -70,7 +70,7 @@ margin-bottom: 5%;
 .section-label {
   font-size: var(--fs-caption);
   font-weight: bold;
-  color: #65676b;
+  color: var(--muted);
   margin-bottom: 4px;
 }
 
@@ -79,11 +79,11 @@ margin-bottom: 5%;
   align-items: flex-start; /* Changed from center to top-aligned */
   justify-content: space-between;
   padding: 12px;
-  border: 1px solid #e4e6eb;
+  border: 1px solid var(--border);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  background-color: #fafafa;
+  background-color: var(--surface-2);
   /* Remove overflow: hidden if you had it */
 }
 
@@ -95,7 +95,7 @@ margin-bottom: 5%;
 .preview-text {
   margin: 0;
   font-size: var(--fs-secondary);
-  color: #1c1e21;
+  color: var(--text);
   
   /* CLEANUP: Remove all truncation logic */
   display: block; 
@@ -112,7 +112,7 @@ margin-bottom: 5%;
 
 .version-label {
   font-size: var(--fs-caption);
-  color: #8a8d91;
+  color: var(--muted);
 }
 
 .check-icon {
@@ -141,8 +141,8 @@ margin-bottom: 5%;
   justify-content: center;
   padding: 5px 10px;
   border-radius: 999px;
-  background-color: #eef2ff;
-  color: #1d1e21;
+  background-color: var(--info-soft);
+  color: var(--text);
   font-size: var(--fs-caption);
   font-weight: 700;
   letter-spacing: 0.01em;
@@ -150,10 +150,10 @@ margin-bottom: 5%;
 
 .text-card.selected {
   border: 2px solid #4f46e5;
-  background: #eef2ff;
+  background: var(--info-soft);
 }
 
 .text-card.selected {
   border: 2px solid #4f46e5;
-  background-color: #eef2ff;
+  background-color: var(--info-soft);
 }

@@ -1,6 +1,7 @@
 export type CampaignStatus = 'open' | 'invite_only' | 'application'; // adjust to your actual status values
 
 export type CampaignLifecycle = 'active' | 'paused' | 'closed';
+export type CampaignPaymentState = 'not_required' | 'awaiting_payment' | 'paid';
 
 export interface Campaign {
   id: number;
@@ -12,6 +13,10 @@ export interface Campaign {
   access: string;
   /** Paused/closed campaigns take no new invites or applications. */
   status?: CampaignLifecycle;
+  /** Open campaigns are paid up front; unpaid ones are saved but not live. */
+  payment_status?: CampaignPaymentState;
+  budget?: number | string | null;
+  paid_at?: string | null;
   creator_id: number;
   link: string | null;
   description: string;

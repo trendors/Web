@@ -1,3 +1,4 @@
+import { ThemeToggle } from '../theme-toggle/theme-toggle';
 import { Component, DestroyRef, HostListener, inject, Input, Renderer2, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -11,7 +12,7 @@ import { userDisplayName } from '../../core/utils/user-display';
 
 @Component({
   selector: 'app-top-nav-filter',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, ThemeToggle],
   templateUrl: './top-nav-filter.html',
   styleUrl: './top-nav-filter.scss',
 })

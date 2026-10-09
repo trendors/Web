@@ -64,8 +64,8 @@
 
 
 .side-nav-card {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px 12px;
   position: sticky;
@@ -92,7 +92,7 @@
   font-weight: 700;
   text-transform: none;
   letter-spacing: 0.08em;
-  color: #888888;
+  color: var(--muted);
   padding: 4px 10px 4px;
 }
 
@@ -106,7 +106,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
-  color: #444444;
+  color: var(--text2);
   font-size: var(--fs-secondary);
   font-weight: 500;
   text-decoration: none;
@@ -127,20 +127,20 @@
 
 /* Hover State */
 .nav-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--surface-2);
   color: var(--primary, #007bff);
 }
 
 /* Active Route State */
 .nav-item.active {
-  background-color: #f0f7ff;
+  background-color: var(--info-soft);
   color: var(--primary, #007bff);
   font-weight: 600;
 }
 
 /* Logout Specific styling */
 .logout-btn:hover {
-  background-color: #fff1f0;
+  background-color: var(--danger-soft);
   color: #ff4d4f;
 }
 
@@ -154,4 +154,7 @@
   border-radius: 100px;
   font-weight: 700;
   line-height: 1;
+}
+.theme-slot {
+  margin: 8px 0;
 }

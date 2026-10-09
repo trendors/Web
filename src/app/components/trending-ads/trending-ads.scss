@@ -1,19 +1,19 @@
  
     .trending {
-      background: #ffffff;
-      border: 1px solid #e5e5e5;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 16px;
     }
 
     .trending__state {
       font-size: var(--fs-secondary);
-      color: #777;
+      color: var(--muted);
       padding: 8px 0;
     }
 
     .trending__state--error {
-      color: #c0392b;
+      color: var(--danger);
     }
  
     .trending__title {
@@ -22,18 +22,18 @@
       gap: 6px;
       font-size: var(--fs-secondary);
       font-weight: 500;
-      color: #111;
+      color: var(--text);
       margin-bottom: 12px;
     }
  
-    .trending__title i { font-size: var(--fs-body); color: #888; }
+    .trending__title i { font-size: var(--fs-body); color: var(--muted); }
  
     .trending__item {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 8px 0;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--border);
     }
  
     .trending__item:last-child { border-bottom: none; padding-bottom: 0; }
@@ -41,7 +41,7 @@
  
     .trending__rank {
       font-size: var(--fs-caption);
-      color: #bbb;
+      color: var(--placeholder);
       font-weight: 500;
       width: 14px;
       flex-shrink: 0;
@@ -52,21 +52,21 @@
       width: 30px;
       height: 30px;
       border-radius: 8px;
-      background: #f5f5f5;
+      background: var(--surface-2);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
  
-    .trending__icon i { font-size: var(--fs-body); color: #555; }
+    .trending__icon i { font-size: var(--fs-body); color: var(--text2); }
  
     .trending__info { flex: 1; min-width: 0; }
  
     .trending__name {
       font-size: var(--fs-caption);
       font-weight: 500;
-      color: #111;
+      color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -74,13 +74,13 @@
  
     .trending__shares {
       font-size: var(--fs-caption);
-      color: #aaa;
+      color: var(--muted);
       margin-top: 1px;
     }
  
     .trending__payout {
-      background: #EAF3DE;
-      color: #3B6D11;
+      background: var(--success-soft);
+      color: var(--success);
       font-size: var(--fs-caption);
       font-weight: 500;
       padding: 3px 7px;
@@ -91,7 +91,7 @@
     .trending__footer {
       margin-top: 12px;
       padding-top: 10px;
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid var(--border);
     }
  
     .trending__view-all {
@@ -100,7 +100,7 @@
       justify-content: center;
       gap: 4px;
       font-size: var(--fs-caption);
-      color: #185FA5;
+      color: var(--info);
       text-decoration: none;
       cursor: pointer;
     }

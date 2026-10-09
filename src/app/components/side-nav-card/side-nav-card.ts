@@ -1,3 +1,4 @@
+import { ThemeToggle } from '../theme-toggle/theme-toggle';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -14,7 +15,7 @@ import { ActiveProfileService } from '../../core/services/activeprofile.service'
 @Component({
   selector: 'app-side-nav-card',
   standalone: true,
-  imports: [AsyncPipe, RouterLink, RouterLinkActive, CommonModule],
+  imports: [AsyncPipe, RouterLink, RouterLinkActive, CommonModule, ThemeToggle],
   templateUrl: './side-nav-card.html',
   styleUrl: './side-nav-card.scss',
 })

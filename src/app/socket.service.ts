@@ -22,6 +22,8 @@ export interface RealtimeChange {
   postId?: number;
   status?: string;
   change?: string;
+  /** `paid` when a campaign's payment has been confirmed. */
+  payment?: string;
 }
 
 export type RealtimeStatus = 'disconnected' | 'connected' | 'unauthorized';

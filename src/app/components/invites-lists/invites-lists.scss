@@ -133,14 +133,14 @@
   border-radius: 20px; 
 }
 
-.badge-action { background: var(--gold-soft, #f6ebd2); color: #8a6a0d; }
-.badge-progress { background: #e7ecfb; color: #2f4eed; }
-.badge-live { background: #e5f0e8; color: #1b7a3d; }
-.badge-declined { background: #f5e3e0; color: var(--danger, #a3372b); }
+.badge-action { background: var(--gold-soft, #f6ebd2); color: var(--warning); }
+.badge-progress { background: var(--info-soft); color: var(--info); }
+.badge-live { background: var(--success-soft); color: var(--success); }
+.badge-declined { background: var(--danger-soft); color: var(--danger, #a3372b); }
 
 .deadline { 
   font-size: var(--fs-caption); 
-  color: #8a6a0d; 
+  color: var(--warning); 
   margin-top: 8px; 
   display: flex; 
   align-items: center; 

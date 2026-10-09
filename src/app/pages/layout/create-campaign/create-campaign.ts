@@ -16,12 +16,13 @@ import {
 } from '../../../store/invitation/invitation.selector';
 import { InvitationActions } from '../../../store/invitation/invitation.action';
 import { Calender } from "../../../components/calender/calender";
-import { TopupModalComponent } from "../../../components/topup-modal/topup-modal";
 import { CampaignInfluencerService, InfluencerProfilesService, WalletService as WalletApiService } from '../../../core/api';
 import { extractFollowers, formatCompactNumber } from '../../../core/utils/influencer-stats';
 import { toLocalDateString } from '../../../core/utils/date';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIcon } from "@angular/material/icon";
+import { Router } from '@angular/router';
+import { CampaignCheckoutService, CheckoutStep } from '../../../core/services/payment/campaign-checkout.service';
 
 interface CampaignFile {
   file: File;
@@ -53,7 +54,7 @@ interface Tier {
 
 @Component({
   selector: 'app-create-campaign',
-  imports: [CommonModule, FormsModule, Alert, Calender, TopupModalComponent, MatIcon],
+  imports: [CommonModule, FormsModule, Alert, Calender, MatIcon],
   templateUrl: './create-campaign.html',
   styleUrls: ['./create-campaign.scss'],
 })
@@ -89,7 +90,6 @@ export class CreateCampaign implements OnDestroy {
     { name: 'Macro', range: '200k+', amount: '₦90,000', color: '#ef4444' },
   ];
 
-  showTopup = false;
 
 
   selectedAccess = 'open';
@@ -133,15 +133,14 @@ export class CreateCampaign implements OnDestroy {
     this.selectedAccess = id;
   }
 
-  onTopupSuccess(): void {
-    // Refresh the balance shown in the payment alert.
-    void this.refreshWalletBalance();
-  }
-
-  /** Shortfall shown next to the top-up shortcut. */
-  get topupShortfall(): number {
-    const balance = this.walletBalance() ?? 0;
-    return Math.max(0, Math.ceil((this.computedBudget - balance) / 100) * 100);
+  /** Campaign cost and how it will be covered, for the pay sheet. */
+  get payBreakdown(): { budget: number; fromWallet: number; byCard: number } {
+    const budget = this.pendingPayment()?.budget ?? 0;
+    const balance = Math.max(0, this.walletBalance() ?? 0);
+    const short = Math.max(0, budget - balance);
+    // Paystack's minimum is ₦100; anything extra stays in the wallet.
+    const byCard = short > 0 ? Math.max(100, Math.ceil(short)) : 0;
+    return { budget, fromWallet: Math.min(balance, budget), byCard };
   }
 
   openPayAlert(): void {
@@ -150,7 +149,11 @@ export class CreateCampaign implements OnDestroy {
     void this.refreshWalletBalance();
   }
 
-  /** Only open campaigns take payment up front; other access types create directly. */
+  /**
+   * Open campaigns are paid up front. The campaign is created FIRST (saved,
+   * not live), then paid, so a failed or abandoned payment never loses the
+   * campaign and a payment can never land without one.
+   */
   onCheckout(): void {
     const error = this.validationError();
     if (error) {
@@ -158,15 +161,62 @@ export class CreateCampaign implements OnDestroy {
       return;
     }
     if (this.selectedAccess === 'open') {
-      this.openPayAlert();
+      void this.createThenPay();
     } else {
       void this.createCampaign();
     }
   }
 
+  private async createThenPay(): Promise<void> {
+    const campaign = await this.createCampaignRecord();
+    if (!campaign) return; // nothing was charged
+    if (campaign.payment_status !== 'awaiting_payment') return;
+    this.pendingPayment.set({
+      id: Number(campaign.id),
+      name: campaign.name ?? 'your campaign',
+      budget: Number(campaign.budget ?? 0),
+    });
+    this.openPayAlert();
+  }
+
+  /** Pay for the saved campaign: wallet if it covers it, otherwise card for the shortfall. */
+  async payNow(): Promise<void> {
+    const pending = this.pendingPayment();
+    if (!pending || this.payStep()) return;
+    this.payError.set('');
+    try {
+      const outcome = await this.checkout.pay(pending.id, (step) => this.payStep.set(step));
+      this.payStep.set(null);
+      if (outcome === 'cancelled') {
+        this.payError.set('Payment cancelled. Nothing was charged. Your campaign is saved, so you can pay whenever you are ready.');
+        return;
+      }
+      this.showPayAlert.set(false);
+      this.pendingPayment.set(null);
+      if (outcome === 'paid') {
+        this.toast.show('Payment confirmed. Your campaign is live!', 'success');
+      } else {
+        this.toast.show("We're confirming your payment. You'll get a notification as soon as your campaign is live.", 'info', 8000);
+      }
+      void this.router.navigate(['/home/view-campaign', pending.id]);
+    } catch (error: any) {
+      this.payStep.set(null);
+      const message = error?.error?.message;
+      this.payError.set(
+        (Array.isArray(message) ? message.join(', ') : message) || error?.message || 'Payment could not start. Please try again.',
+      );
+    }
+  }
+
   closePayAlert(): void {
-    if (this.isSubmitting()) return;
+    if (this.payStep()) return; // a payment is in flight
     this.showPayAlert.set(false);
+    const pending = this.pendingPayment();
+    if (pending) {
+      this.pendingPayment.set(null);
+      this.toast.show('Your campaign is saved. Complete payment from the campaign page to launch it.', 'info', 6000);
+      void this.router.navigate(['/home/view-campaign', pending.id]);
+    }
   }
 
   private async refreshWalletBalance(): Promise<void> {
@@ -190,69 +240,6 @@ export class CreateCampaign implements OnDestroy {
     } finally {
       this.walletLoading.set(false);
     }
-  }
-
-  payFromWallet(): void {
-    if (this.isSubmitting()) return;
-    this.payError.set('');
-
-    // Everything that can fail on our side is checked BEFORE money moves.
-    const validation = this.validationError();
-    if (validation) {
-      this.payError.set(validation);
-      return;
-    }
-    const amount = this.computedBudget;
-    const balance = this.walletBalance();
-    if (balance != null && balance < amount) {
-      this.payError.set('Your wallet balance is too low for this campaign. Top up and try again.');
-      return;
-    }
-
-    this.isSubmitting.set(true);
-    void (async () => {
-      let charged = false;
-      try {
-        const user = await firstValueFrom(this.user$);
-        const trendorsId = String((user as any)?.trendors_id ?? '');
-        if (!trendorsId) {
-          throw new Error('We could not confirm your account. Please log in again.');
-        }
-        const receipt: any = await firstValueFrom(
-          this.walletApi
-            .walletControllerPayFromWallet({
-              trendorsId,
-              amount,
-              description: `Campaign: ${this.campaignTitle().trim() || 'Untitled'}`,
-            })
-            .pipe(timeout(30000)),
-        );
-        if (receipt?.error === true) {
-          throw new Error(receipt?.message || 'Wallet payment failed.');
-        }
-        charged = true;
-        const transactionId = receipt?.data?.transactionId;
-        this.showPayAlert.set(false);
-        const created = await this.createCampaign();
-        if (!created) {
-          // The payment went through but the campaign did not. Never let this
-          // read as a generic failure: the user must know they were charged.
-          const ref = transactionId ? ` (payment reference ${transactionId})` : '';
-          this.showError(
-            `Your wallet was charged ₦${amount.toLocaleString()}${ref}, but the campaign could not be created. Please contact support so we can create it or refund you.`,
-          );
-        }
-      } catch (error: any) {
-        console.error('Wallet payment error:', error);
-        this.isSubmitting.set(false);
-        if (charged) return;
-        this.payError.set(
-          error?.name === 'TimeoutError'
-            ? 'Wallet payment timed out. Check your transactions before trying again.'
-            : (error?.error?.message ?? error?.message ?? 'Wallet payment failed.'),
-        );
-      }
-    })();
   }
 
   tierSlots = signal<Record<string, number>>(
@@ -333,6 +320,12 @@ export class CreateCampaign implements OnDestroy {
   walletBalance = signal<number | null>(null);
   walletLoading = signal(false);
   payError = signal('');
+  /** The saved-but-unpaid campaign the pay sheet is for. */
+  pendingPayment = signal<{ id: number; name: string; budget: number } | null>(null);
+  /** Where an in-flight payment is up to (null when idle). */
+  payStep = signal<CheckoutStep | null>(null);
+  private checkout = inject(CampaignCheckoutService);
+  private router = inject(Router);
 
   user$ = this.store.select(selectCurrentUser);
   pendingApplicants$: Observable<Invitation[]> = this.store.select(selectPendingApplicants);
@@ -755,6 +748,11 @@ export class CreateCampaign implements OnDestroy {
 
   /** Resolves true once the campaign exists on the server. */
   async createCampaign(): Promise<boolean> {
+    return (await this.createCampaignRecord()) != null;
+  }
+
+  /** Creates the campaign; resolves to it, or null if it could not be created. */
+  private async createCampaignRecord(): Promise<any | null> {
     this.isSubmitting.set(true);
 
     try {
@@ -829,22 +827,26 @@ export class CreateCampaign implements OnDestroy {
         const campaign = (outcome as ReturnType<typeof CampaignActions.createCampaignSuccess>).campaign;
         const campaignId = Number(campaign?.id);
         if (Number.isFinite(campaignId)) this.sendInvites(campaignId);
+        const awaitingPayment = (campaign as any)?.payment_status === 'awaiting_payment';
+        const message = awaitingPayment
+          ? 'Campaign saved. Complete payment to launch it.'
+          : 'Campaign created successfully.';
         this.submitStatus.set('success');
-        this.submitMessage.set('Campaign created successfully.');
-        this.toast.show('Campaign created successfully.', 'success');
+        this.submitMessage.set(message);
+        if (!awaitingPayment) this.toast.show(message, 'success');
         this.resetForm();
-        return true;
+        return campaign;
       }
       const message =
         (outcome as ReturnType<typeof CampaignActions.createCampaignFailure>).error ||
         'Failed to create campaign';
       this.showError(message);
-      return false;
+      return null;
     } catch (error: any) {
       console.error(error);
       this.isSubmitting.set(false);
       this.showError(error?.message || 'Failed to create campaign');
-      return false;
+      return null;
     }
   }
 }

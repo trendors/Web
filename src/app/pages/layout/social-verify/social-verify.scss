@@ -7,7 +7,7 @@
 }
 .social-card {
   height: fit-content;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid var(--divider);
   border-radius: 12px;
   padding: 24px;
@@ -15,8 +15,8 @@
 }
 
 .card {
-  background: #ffffff;
- border: 1px solid #e0e0e0;
+  background: var(--surface);
+ border: 1px solid var(--border);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
@@ -70,12 +70,12 @@
   justify-content: center;
   flex-shrink: 0;
 
-  &.twitter-icon  { background: #000; color: #fff; }
+  &.twitter-icon  { background: #000; color: #fff; } // theme-ok: brand colour
   &.instagram-icon {
     background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
     color: #fff;
   }
-  &.tiktok-icon   { background: #010101; color: #fff; }
+  &.tiktok-icon   { background: #010101; color: #fff; } // theme-ok: brand colour
 }
 
 .platform-meta {
@@ -115,7 +115,7 @@
   font-size: var(--fs-caption);
   font-weight: 500;
   letter-spacing: 0.05em;
-  color: #2d9f6e;
+  color: var(--success);
   background: rgba(45, 159, 110, 0.08);
   border: 1px solid rgba(45, 159, 110, 0.2);
   border-radius: 20px;
@@ -223,14 +223,14 @@
   transition: all 0.18s;
 
   &.active {
-    background: #fff;
+    background: var(--surface);
     border-color: var(--black);
     color: var(--black);
     font-weight: 500;
   }
 
   &:not(.active):hover {
-    border-color: #ccc;
+    border-color: var(--border-hover);
     color: var(--grey-dark);
   }
 }
@@ -328,7 +328,7 @@
   padding: 0 14px;
   border: 1px solid var(--divider);
   border-radius: 6px;
-  background: #fff;
+  background: var(--surface);
   font-size: var(--fs-input);
   font-weight: 400;
   color: var(--black);
@@ -336,7 +336,7 @@
   transition: border-color 0.2s;
   box-sizing: border-box;
 
-  &::placeholder { color: #bbb; }
+  &::placeholder { color: var(--placeholder); }
   &:focus { border-color: var(--black); }
 }
 
@@ -444,7 +444,7 @@
   flex-shrink: 0;
 
   &.connected-dot { background: #2d9f6e; }
-  &.pending-dot   { background: #ccc; }
+  &.pending-dot   { background: var(--border-strong); }
 }
 
 /* ── Per-platform status chip ── */
@@ -465,7 +465,7 @@
 
 .connected-chip {
   background: rgba(45, 159, 110, 0.08);
-  color: #2d9f6e;
+  color: var(--success);
   border: 1px solid rgba(45, 159, 110, 0.2);
 }
 
@@ -485,6 +485,6 @@
   &::before {
     content: '▲ ';
     font-size: var(--fs-caption);
-    color: #2d9f6e;
+    color: var(--success);
   }
 }

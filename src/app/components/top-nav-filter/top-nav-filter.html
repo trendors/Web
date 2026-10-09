@@ -105,6 +105,8 @@
     <a class="drawer__item" routerLink="/home/profile" routerLinkActive="active" (click)="closeDrawer()">
       <i class="ti ti-user" aria-hidden="true"></i>Profile and wallet
     </a>
+    <p class="drawer__label">Appearance</p>
+    <app-theme-toggle class="drawer__theme"></app-theme-toggle>
     <button class="drawer__item drawer__logout" type="button" (click)="logout()">
       <i class="ti ti-logout" aria-hidden="true"></i>Log out
     </button>

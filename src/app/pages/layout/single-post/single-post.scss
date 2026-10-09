@@ -565,7 +565,7 @@ a{color:inherit;}
   font-weight:600;
 }
 .body-copy p{
-  color:#D8D8DF;
+  color:var(--text2);
   font-size: var(--fs-body);
   margin:0 0 14px;
 }
@@ -581,7 +581,7 @@ a{color:inherit;}
   position:relative;
   padding-left:22px;
   font-size: var(--fs-body);
-  color:#D8D8DF;
+  color:var(--text2);
 }
 .highlights li::before{
   content:"";
@@ -668,7 +668,7 @@ a{color:inherit;}
   justify-content:center;
   gap:8px;
   background:var(--amber);
-  color:#1A1200;
+  color:var(--text);
   font-weight:600;
   font-size: var(--fs-body);
   text-decoration:none;
