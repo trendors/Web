@@ -1,0 +1,78 @@
+:host { display: block; margin-bottom: 16px; }
+
+.de {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.de__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h3 { margin: 0; font-size: var(--fs-card-title); font-weight: 700; color: var(--text); }
+}
+.de__sub { margin: 2px 0 0; font-size: var(--fs-secondary); color: var(--muted); }
+.de__total { font-size: var(--fs-secondary); font-weight: 700; color: var(--accent); }
+.de__empty, .de__note { margin: 0; font-size: var(--fs-secondary); color: var(--text2); }
+.de__note { color: var(--muted); font-size: var(--fs-caption); }
+
+.de__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.de__what { display: flex; flex-direction: column; gap: 2px; color: var(--text); text-transform: none; }
+.de__rate { font-size: var(--fs-secondary); color: var(--muted); }
+.de__actions, .de__edit, .de__form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+select, input[type='number'] {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 8px 10px;
+  font: inherit;
+  font-size: var(--fs-input);
+  box-sizing: border-box;
+}
+.de__num { width: 104px; }
+
+.btn {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-secondary);
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+.link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: var(--fs-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.link-btn--danger { color: var(--red); }

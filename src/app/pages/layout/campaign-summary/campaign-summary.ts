@@ -27,6 +27,7 @@ import { Negotiation } from "../../../components/negotiation/negotiation";
 import { EscrowPanel } from '../../../components/escrow-panel/escrow-panel';
 import { PostReview } from '../../../components/post-review/post-review';
 import { ChangeOrders } from '../../../components/change-orders/change-orders';
+import { DeliverablesEditor } from '../../../components/deliverables-editor/deliverables-editor';
 import { RealtimeEvent, SocketService } from '../../../socket.service';
 import { CampaignCheckoutService, CheckoutStep } from '../../../core/services/payment/campaign-checkout.service';
 
@@ -68,7 +69,7 @@ export interface InfluencerPostRow {
 
 @Component({
   selector: 'app-campaign-summary',
-  imports: [DatePipe, AsyncPipe, Negotiation, EscrowPanel, PostReview, ChangeOrders, NgSwitch,
+  imports: [DatePipe, AsyncPipe, Negotiation, EscrowPanel, PostReview, ChangeOrders, DeliverablesEditor, NgSwitch,
     NgSwitchCase, CommonModule, FormsModule,
     NgSwitchDefault],
   templateUrl: './campaign-summary.html',

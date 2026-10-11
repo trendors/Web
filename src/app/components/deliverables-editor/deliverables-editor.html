@@ -1,0 +1,62 @@
+@if (loaded()) {
+  <section class="de" aria-label="Deliverables">
+    <header class="de__head">
+      <div>
+        <h3>Deliverables</h3>
+        <p class="de__sub">What each creator is asked to deliver. This is the offer invited creators see.</p>
+      </div>
+      @if (rows().length > 0) {
+        <span class="de__total">₦{{ total | number }} per creator</span>
+      }
+    </header>
+
+    @if (rows().length === 0 && !adding()) {
+      <p class="de__empty">No deliverables yet. Creators you invite won't see an offer until you add some.</p>
+    }
+
+    @for (row of rows(); track row.id) {
+      <div class="de__row">
+        <div class="de__what">
+          <strong>{{ row.quantity }} × {{ row.platform }} {{ row.content_type }}</strong>
+          @if (editingId() !== row.id) {
+            <span class="de__rate">₦{{ row.rate_per_post | number }} each · ₦{{ row.quantity * row.rate_per_post | number }}</span>
+          }
+        </div>
+        @if (editingId() === row.id) {
+          <div class="de__edit">
+            <input type="number" min="1" step="1" [(ngModel)]="edit.quantity" aria-label="Quantity" class="de__num" />
+            <input type="number" min="0" step="100" [(ngModel)]="edit.rate_per_post" aria-label="Rate each (₦)" class="de__num" />
+            <button type="button" class="btn btn--primary" [disabled]="busy() || !editValid" (click)="saveEdit(row)">Save</button>
+            <button type="button" class="btn" [disabled]="busy()" (click)="editingId.set(null)">Cancel</button>
+          </div>
+        } @else {
+          <div class="de__actions">
+            <button type="button" class="link-btn" [disabled]="busy()" (click)="startEdit(row)">Edit</button>
+            <button type="button" class="link-btn link-btn--danger" [disabled]="busy()" (click)="remove(row)">Remove</button>
+          </div>
+        }
+      </div>
+    }
+
+    @if (adding()) {
+      <div class="de__form">
+        <select [(ngModel)]="draft.content_type" aria-label="Content type">
+          @for (t of contentTypes; track t) { <option [value]="t">{{ t }}</option> }
+        </select>
+        <select [(ngModel)]="draft.platform" aria-label="Platform">
+          @for (p of platforms; track p) { <option [value]="p">{{ p }}</option> }
+        </select>
+        <input type="number" min="1" step="1" [(ngModel)]="draft.quantity" aria-label="Quantity" class="de__num" />
+        <input type="number" min="0" step="100" [(ngModel)]="draft.rate_per_post" aria-label="Rate each (₦)" class="de__num" placeholder="₦ each" />
+        <button type="button" class="btn btn--primary" [disabled]="busy() || !draftValid" (click)="add()">{{ busy() ? 'Adding…' : 'Add' }}</button>
+        <button type="button" class="btn" [disabled]="busy()" (click)="adding.set(false)">Cancel</button>
+      </div>
+    } @else {
+      <button type="button" class="link-btn" (click)="adding.set(true)">+ Add a deliverable</button>
+    }
+
+    <p class="de__note">
+      Changes update invites that haven't been negotiated yet. Deals already signed keep the terms they agreed to.
+    </p>
+  </section>
+}

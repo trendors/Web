@@ -176,6 +176,8 @@
     </section>
 
     <!-- Tabs navigation -->
+    <app-deliverables-editor [campaignId]="data.id!" />
+
     <div class="tabs">
       <button class="tab" [class.active]="activeTab === 'influencers'" (click)="setActiveTab('influencers')">
         Influencers
