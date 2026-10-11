@@ -39,7 +39,13 @@
         }
       </details>
     } @else {
-      <p class="offer-empty">No offer details yet.</p>
+      <p class="offer-empty">
+        @if (viewMode === 'brand') {
+          This campaign has no deliverables yet, so there are no terms to offer.
+        } @else {
+          The brand hasn't set the deliverables for this campaign yet.
+        }
+      </p>
     }
     @if (deliverablesError && agreedError && currentItems.length === 0) {
       <p class="offer-empty offer-error">{{ agreedError }}</p>
