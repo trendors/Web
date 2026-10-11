@@ -24,6 +24,9 @@ import { userDisplayName } from '../../../core/utils/user-display';
 import type { CampaignInfluencer } from '../../../core/api/model/campaignInfluencer';
 import type { CampaignInfluencerPost } from '../../../core/api/model/campaignInfluencerPost';
 import { Negotiation } from "../../../components/negotiation/negotiation";
+import { EscrowPanel } from '../../../components/escrow-panel/escrow-panel';
+import { PostReview } from '../../../components/post-review/post-review';
+import { ChangeOrders } from '../../../components/change-orders/change-orders';
 import { RealtimeEvent, SocketService } from '../../../socket.service';
 import { CampaignCheckoutService, CheckoutStep } from '../../../core/services/payment/campaign-checkout.service';
 
@@ -55,6 +58,7 @@ export interface InfluencerPostRow {
   statusClass: string;
   payoutAmount: number;
   paymentStatus: string;
+  reviewNote: string;
   thumbnailUrl: string;
   snapshots: number;
   latest: InfluencerPostMetrics | null;
@@ -64,7 +68,7 @@ export interface InfluencerPostRow {
 
 @Component({
   selector: 'app-campaign-summary',
-  imports: [DatePipe, AsyncPipe, Negotiation, NgSwitch,
+  imports: [DatePipe, AsyncPipe, Negotiation, EscrowPanel, PostReview, ChangeOrders, NgSwitch,
     NgSwitchCase, CommonModule, FormsModule,
     NgSwitchDefault],
   templateUrl: './campaign-summary.html',
@@ -596,6 +600,30 @@ export class CampaignSummary implements OnInit, OnDestroy {
     return this.toInfluencerPostRows((row as unknown as Record<string, unknown>)?.['influencerPosts']);
   }
 
+  /** True when a brand-funded escrow exists for this assignment (loaded by its panel). */
+  private readonly fundedAssignments = signal(new Set<number>());
+
+  escrowFundedFor(row: CampaignInfluencer): boolean {
+    return (row.id != null && this.fundedAssignments().has(row.id)) || this.amountPaidOf(row) > 0;
+  }
+
+  setEscrowFunded(row: CampaignInfluencer, funded: boolean): void {
+    const id = row.id;
+    if (id == null || this.fundedAssignments().has(id) === funded) return;
+    this.fundedAssignments.update((set) => {
+      const next = new Set(set);
+      if (funded) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  /** The panel or a review changed money: pull the roster again. */
+  onEscrowChanged(row: CampaignInfluencer): void {
+    const campaignId = Number(this.route.snapshot.paramMap.get('id'));
+    if (campaignId) this.reloadRoster(campaignId);
+  }
+
   postTotals(row: CampaignInfluencer): {
     count: number;
     views: number;
@@ -663,6 +691,7 @@ export class CampaignSummary implements OnInit, OnDestroy {
         statusClass: this.postStatusClass(status),
         payoutAmount: Number(p['payout_amount'] ?? p['payoutAmount'] ?? 0) || 0,
         paymentStatus: String(p['payment_status'] ?? p['paymentStatus'] ?? 'pending'),
+        reviewNote: status.trim().toLowerCase() === 'doing' && typeof p['review_note'] === 'string' ? p['review_note'] : '',
         thumbnailUrl: this.resolveFileUrl(typeof p['thumbnail_url'] === 'string' ? p['thumbnail_url'] : (typeof p['thumbnailUrl'] === 'string' ? p['thumbnailUrl'] : '')),
         snapshots: snapshots.length,
         latest: latest
@@ -695,6 +724,8 @@ export class CampaignSummary implements OnInit, OnDestroy {
         return 'green';
       case 'submitted':
         return 'blue';
+      case 'doing':
+        return 'red';
       case 'pending':
       default:
         return 'amber';

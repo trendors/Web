@@ -1,0 +1,84 @@
+:host { display: block; }
+
+.co {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.co__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  h4 { margin: 0; font-size: var(--fs-card-title); font-weight: 700; color: var(--text); }
+}
+
+.co__order {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.co__who { margin: 0; font-size: var(--fs-secondary); color: var(--text); }
+.co__lines { margin: 0; padding-left: 18px; font-size: var(--fs-secondary); color: var(--text2); }
+.co__rate { color: var(--muted); margin-left: 6px; }
+.co__note { margin: 0; font-size: var(--fs-secondary); color: var(--text2); }
+
+.co__form { display: flex; flex-direction: column; gap: 8px; }
+
+.co__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+select, input[type='text'], input[type='number'], textarea {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 8px 10px;
+  font: inherit;
+  font-size: var(--fs-input);
+  box-sizing: border-box;
+}
+input[type='text'] { flex: 1 1 140px; min-width: 0; }
+.co__num { width: 96px; }
+textarea { width: 100%; resize: vertical; }
+
+.co__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-secondary);
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+.link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: var(--fs-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+}

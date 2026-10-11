@@ -30,6 +30,22 @@
         <i class="ti ti-clock" aria-hidden="true"></i>{{ app.deadline }}
       </p>
 
+      @if (assignmentId) {
+        <app-escrow-panel
+          class="escrow-slot"
+          viewer="influencer"
+          [assignmentId]="assignmentId"
+          [feeAgreed]="agreedFee"
+          assignmentStatus="contracted"
+          (changed)="fetchDeliverables()" />
+        <app-change-orders
+          class="escrow-slot"
+          viewer="influencer"
+          [assignmentId]="assignmentId"
+          assignmentStatus="contracted"
+          (changed)="fetchDeliverables()" />
+      }
+
       @if (deliverablesLoading) {
         <p class="list-state">Loading deliverables…</p>
       }
@@ -48,8 +64,11 @@
             <div class="post-row">
               <span class="post-index">Post {{ i + 1 }}</span>
               <a class="post-link" [href]="p['post_url']" target="_blank" rel="noopener">{{ p['post_url'] }}</a>
-              <span class="post-status">{{ p['status'] }}</span>
+              <span class="post-status">{{ changesRequested(p) ? 'changes requested' : p['status'] }}</span>
             </div>
+            @if (changesRequested(p)) {
+              <p class="list-state list-state--error">Brand's note: {{ p['review_note'] }}</p>
+            }
           }
 
           @if (remainingSlots(d) > 0) {

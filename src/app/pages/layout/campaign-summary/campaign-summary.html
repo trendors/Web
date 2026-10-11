@@ -295,6 +295,23 @@
             <button class="btn-action btn-view-more" [disabled]="!canViewFullMetrics(inf)" [title]="canViewFullMetrics(inf) ? 'Open full metrics' : 'No posts submitted yet'" (click)="$event.stopPropagation(); viewInfluencerMetrics(inf, data.name)">Full metrics</button>
           </div>
 
+          @if (['contracted', 'active', 'completed', 'cancelled', 'withdrawn'].includes(statusOf(inf).toLowerCase())) {
+            <app-escrow-panel
+              class="escrow-slot"
+              viewer="brand"
+              [assignmentId]="inf.id!"
+              [feeAgreed]="feeAgreedOf(inf)"
+              [assignmentStatus]="statusOf(inf)"
+              (funded)="setEscrowFunded(inf, $event)"
+              (changed)="onEscrowChanged(inf)" />
+            <app-change-orders
+              class="escrow-slot"
+              viewer="brand"
+              [assignmentId]="inf.id!"
+              [assignmentStatus]="statusOf(inf)"
+              (changed)="onEscrowChanged(inf)" />
+          }
+
           @if (postsOf(inf).length === 0) {
             <p class="influencers__state">No posts submitted by this influencer yet.</p>
           } @else {
@@ -321,6 +338,18 @@
                     <span class="post-card__date">₦{{ post.payoutAmount | number }} · {{ post.paymentStatus }}</span>
                   }
                 </div>
+                @if (post.reviewNote) {
+                  <div class="post-card__recorded">Changes requested: {{ post.reviewNote }}</div>
+                }
+                @if (post.id !== null) {
+                  <app-post-review
+                    [postId]="post.id"
+                    [status]="post.status"
+                    [paymentStatus]="post.paymentStatus"
+                    [payout]="post.payoutAmount"
+                    [escrowFunded]="escrowFundedFor(inf)"
+                    (changed)="onEscrowChanged(inf)" />
+                }
                 @if (post.latest) {
                   <div class="metric-chips">
                     <span class="metric-chip"><strong>{{ post.latest.views | number }}</strong> views</span>

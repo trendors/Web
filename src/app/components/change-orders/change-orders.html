@@ -1,0 +1,64 @@
+@if (applicable) {
+  <section class="co" aria-label="Change orders">
+    <header class="co__head">
+      <h4>Extra work</h4>
+      @if (!composing() && orders().length === 0) {
+        <button type="button" class="link-btn" (click)="composing.set(true)">Propose extra work</button>
+      }
+    </header>
+
+    @for (order of orders(); track order.id) {
+      <article class="co__order">
+        <p class="co__who">
+          {{ mine(order) ? 'You proposed' : (order.proposed_by === 'brand' ? 'The brand proposed' : 'The influencer proposed') }}
+          extra work worth <strong>₦{{ order.total | number }}</strong>
+        </p>
+        <ul class="co__lines">
+          @for (l of order.lines; track $index) {
+            <li>{{ lineLabel(l) }} <span class="co__rate">₦{{ l.rate | number }} each</span></li>
+          }
+        </ul>
+        @if (order.message) { <p class="co__note">“{{ order.message }}”</p> }
+        @if (mine(order)) {
+          <p class="co__note">Waiting for the other side to answer.</p>
+        } @else {
+          <div class="co__actions">
+            <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="answer(order, 'accepted')">Accept</button>
+            <button type="button" class="btn" [disabled]="busy()" (click)="answer(order, 'declined')">Decline</button>
+          </div>
+        }
+      </article>
+    }
+
+    @if (composing()) {
+      <div class="co__form">
+        @for (line of draft; track $index; let i = $index) {
+          <div class="co__row">
+            <select [(ngModel)]="line.content_type" [attr.aria-label]="'Content type for line ' + (i + 1)">
+              @for (t of contentTypes; track t) { <option [value]="t">{{ t === 'other' ? 'Other work' : t }}</option> }
+            </select>
+            @if (line.content_type === 'other') {
+              <input type="text" [(ngModel)]="line.title" placeholder="What is the work?" aria-label="Work description" />
+            } @else {
+              <select [(ngModel)]="line.platform" [attr.aria-label]="'Platform for line ' + (i + 1)">
+                @for (p of platforms; track p) { <option [value]="p">{{ p }}</option> }
+              </select>
+            }
+            <input type="number" min="1" step="1" [(ngModel)]="line.quantity" aria-label="Quantity" class="co__num" />
+            <input type="number" min="0" step="100" [(ngModel)]="line.rate" aria-label="Rate each (₦)" class="co__num" placeholder="₦ each" />
+            @if (draft.length > 1) {
+              <button type="button" class="link-btn" (click)="removeLine(i)" aria-label="Remove line">✕</button>
+            }
+          </div>
+        }
+        <button type="button" class="link-btn" (click)="addLine()">+ Add another</button>
+        <textarea rows="2" [(ngModel)]="message" placeholder="Note (optional)" aria-label="Note"></textarea>
+        <p class="co__note">Adds <strong>₦{{ draftTotal | number }}</strong> to the fee once the other side accepts.</p>
+        <div class="co__actions">
+          <button type="button" class="btn btn--primary" [disabled]="busy() || !draftValid" (click)="submit()">{{ busy() ? 'Sending…' : 'Send change order' }}</button>
+          <button type="button" class="btn" [disabled]="busy()" (click)="composing.set(false)">Cancel</button>
+        </div>
+      </div>
+    }
+  </section>
+}

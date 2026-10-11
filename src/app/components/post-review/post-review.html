@@ -1,0 +1,31 @@
+@if (reviewable) {
+  <div class="review" (click)="$event.stopPropagation()">
+    @switch (mode()) {
+      @case ('confirm-approve') {
+        <p class="review__text">
+          @if (escrowFunded && payout > 0) { Approve and pay ₦{{ payout | number }} from escrow now? } @else { Approve this post? }
+        </p>
+        <div class="review__actions">
+          <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="approve()">{{ busy() ? 'Working…' : 'Yes, approve' }}</button>
+          <button type="button" class="btn" [disabled]="busy()" (click)="mode.set('idle')">Cancel</button>
+        </div>
+      }
+      @case ('changes') {
+        <label class="review__label" for="changes-{{ postId }}">What needs to change?</label>
+        <textarea id="changes-{{ postId }}" rows="3" [(ngModel)]="note" placeholder="Be specific so they can fix it in one go"></textarea>
+        <div class="review__actions">
+          <button type="button" class="btn btn--primary" [disabled]="busy() || !note.trim()" (click)="sendBack()">{{ busy() ? 'Sending…' : 'Send back' }}</button>
+          <button type="button" class="btn" [disabled]="busy()" (click)="mode.set('idle')">Cancel</button>
+        </div>
+      }
+      @default {
+        <div class="review__actions">
+          <button type="button" class="btn btn--primary" (click)="mode.set('confirm-approve')">
+            {{ escrowFunded && payout > 0 ? 'Approve & pay' : 'Approve' }}
+          </button>
+          <button type="button" class="btn" (click)="mode.set('changes')">Request changes</button>
+        </div>
+      }
+    }
+  </div>
+}

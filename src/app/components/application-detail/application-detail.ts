@@ -6,6 +6,8 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CampaignInfluencerPostService, CampaignOfferService } from '../../core/api';
 import { extractApiList } from '../../core/utils/api-response';
+import { EscrowPanel } from '../escrow-panel/escrow-panel';
+import { ChangeOrders } from '../change-orders/change-orders';
 
 function isHttpUrl(value: string): boolean {
   try {
@@ -28,7 +30,7 @@ interface DeliverableRow {
 
 @Component({
   selector: 'app-application-detail',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EscrowPanel, ChangeOrders],
   templateUrl: './application-detail.html',
   styleUrl: './application-detail.scss',
 })
@@ -56,7 +58,7 @@ export class ApplicationDetail implements OnInit {
     this.fetchDeliverables();
   }
 
-  private get assignmentId(): number | null {
+  get assignmentId(): number | null {
     const id = Number(this.application?.assignmentId ?? this.application?.id);
     return Number.isFinite(id) && id > 0 ? id : null;
   }
@@ -98,12 +100,26 @@ export class ApplicationDetail implements OnInit {
           platform,
           quantity: Number(d['quantity'] ?? 0) || 0,
           ratePerPost: Number(d['rate'] ?? d['rate_per_post'] ?? 0) || 0,
-          posts: posts.filter((p) => p['content_type'] === contentType && p['platform'] === platform),
+          // Unfilled trackers (no link yet) are slots still to deliver, not submissions.
+          posts: posts.filter(
+            (p) => p['content_type'] === contentType && p['platform'] === platform && !!p['post_url'],
+          ),
         };
       });
       this.deliverablesLoading = false;
       this.cdr.markForCheck();
     });
+  }
+
+  /** Work the brand sent back: say what to fix instead of just "doing". */
+  changesRequested(p: Record<string, any>): boolean {
+    return String(p['status']).toLowerCase() === 'doing' && !!p['review_note'];
+  }
+
+  /** The fee as agreed so far (signed deal plus accepted change orders), once loaded. */
+  get agreedFee(): number {
+    if (this.deliverables.length === 0) return Number(this.application?.payout) || 0;
+    return this.deliverables.reduce((sum, d) => sum + d.quantity * d.ratePerPost, 0);
   }
 
   remainingSlots(d: DeliverableRow): number {

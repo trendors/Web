@@ -1,0 +1,80 @@
+@if (loaded()) {
+  @if (escrow(); as e) {
+    <section class="escrow" aria-label="Escrow">
+      <header class="escrow__head">
+        <h4>Escrow</h4>
+        <span class="pill" [ngClass]="'pill--' + statusClass">{{ statusLabel }}</span>
+      </header>
+
+      <dl class="escrow__stats">
+        <div><dt>Funded</dt><dd>₦{{ e.amount | number }}</dd></div>
+        <div><dt>Held</dt><dd>₦{{ e.held | number }}</dd></div>
+        <div><dt>Paid out</dt><dd>₦{{ e.released | number }}</dd></div>
+        @if (e.refunded > 0) {
+          <div><dt>Refunded</dt><dd>₦{{ e.refunded | number }}</dd></div>
+        }
+      </dl>
+
+      @if (topUp > 0 && e.status !== 'disputed' && e.status !== 'refunded') {
+        @if (viewer === 'brand') {
+          <p class="escrow__note escrow__note--alert">
+            The agreed fee is now ₦{{ feeAgreed | number }}. Add ₦{{ topUp | number }} so the extra work is covered.
+          </p>
+          <button type="button" class="btn btn--primary" [disabled]="busy() === 'fund'" (click)="fund()">
+            {{ busy() === 'fund' ? 'Working…' : 'Top up ₦' + (topUp | number) }}
+          </button>
+        } @else {
+          <p class="escrow__note">The fee went up to ₦{{ feeAgreed | number }}. The brand still needs to add ₦{{ topUp | number }} to the escrow.</p>
+        }
+      }
+
+      @if (e.status === 'disputed') {
+        <p class="escrow__note escrow__note--alert">
+          {{ e.disputed_by === viewer ? 'You opened a dispute' : (e.disputed_by === 'brand' ? 'The brand opened a dispute' : 'The influencer opened a dispute') }}.
+          The held money is frozen until an admin decides.
+          @if (e.dispute_reason) { <span class="escrow__reason">“{{ e.dispute_reason }}”</span> }
+        </p>
+      } @else if (viewer === 'influencer' && e.held > 0) {
+        <p class="escrow__note">The brand has secured this fee. Each post is paid out as soon as it is approved.</p>
+      } @else if (viewer === 'brand' && e.held > 0) {
+        <p class="escrow__note">Approving a post pays it out of escrow. Unreviewed work is paid automatically after a few days.</p>
+      }
+
+      @if (canDispute) {
+        @if (disputing()) {
+          <div class="escrow__form">
+            <label for="dispute-reason-{{ assignmentId }}">What went wrong?</label>
+            <textarea id="dispute-reason-{{ assignmentId }}" rows="3" [(ngModel)]="reason" placeholder="Explain the problem so an admin can decide fairly"></textarea>
+            <div class="escrow__actions">
+              <button type="button" class="btn btn--danger" [disabled]="busy() === 'dispute' || !reason.trim()" (click)="submitDispute()">
+                {{ busy() === 'dispute' ? 'Opening…' : 'Open dispute' }}
+              </button>
+              <button type="button" class="btn" [disabled]="busy() === 'dispute'" (click)="disputing.set(false)">Cancel</button>
+            </div>
+          </div>
+        } @else {
+          <button type="button" class="link-btn" (click)="disputing.set(true)">Report a problem</button>
+        }
+      }
+    </section>
+  } @else if (needsFunding) {
+    <section class="escrow escrow--unfunded" aria-label="Escrow">
+      <header class="escrow__head">
+        <h4>Escrow</h4>
+        <span class="pill pill--amber">{{ viewer === 'brand' ? 'Needs funding' : 'Awaiting funds' }}</span>
+      </header>
+      @if (viewer === 'brand') {
+        <p class="escrow__note">
+          Secure ₦{{ feeAgreed | number }} so work can start. It stays held and is paid out as you approve each post.
+        </p>
+        <button type="button" class="btn btn--primary" [disabled]="busy() === 'fund'" (click)="fund()">
+          {{ busy() === 'fund' ? 'Working…' : 'Fund ₦' + (feeAgreed | number) }}
+        </button>
+      } @else {
+        <p class="escrow__note">
+          The brand hasn't secured the ₦{{ feeAgreed | number }} fee yet. Work starts once it's funded, so you're guaranteed payment.
+        </p>
+      }
+    </section>
+  }
+}
