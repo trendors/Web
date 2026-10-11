@@ -117,6 +117,32 @@ describe('ApplicationsInvites', () => {
     expect(component.applications).toHaveLength(2);
   });
 
+  it('never repeats the campaign title as the brand when the brand is unknown', () => {
+    for (const card of component.applications) {
+      expect(card.brand).not.toBe(card.campaignTitle);
+      expect(card.brand).toBe('Unknown brand');
+    }
+  });
+
+  it('shows the brand name when the owner is sent with the campaign', async () => {
+    assignmentApi.campaignInfluencerControllerFindByUser.mockReturnValueOnce(
+      of({
+        data: {
+          list: [
+            {
+              id: 401, status: 'applied', fee_agreed: 1000,
+              campaign: { name: 'Glow week', platforms: ['instagram'], creator: { id: 4, user_name: 'glowco', brandProfile: { brand_name: 'Glow Co' } } },
+              influencerPosts: [],
+            },
+          ],
+        },
+      }) as any,
+    );
+    component.ngOnInit();
+    await fixture.whenStable();
+    expect(component.applications[0]).toMatchObject({ brand: 'Glow Co', campaignTitle: 'Glow week' });
+  });
+
   it('should map assignments to application cards instead of hardcoded data', () => {
     const [first, second] = component.applications;
     expect(first.campaignTitle).toBe('Ramadan promo');
@@ -137,7 +163,8 @@ describe('ApplicationsInvites', () => {
     expect(invited.status).toBe('awaiting_response');
     expect(invited.campaign.name).toBe('Lagos Food Fest');
     expect(invited.campaign.platforms).toEqual(['youtube']);
-    expect(invited.user.user_name).toBe('Lagos Food Fest');
+    // an unknown brand is not papered over with the campaign's own name
+    expect(invited.user.user_name).toBe('Unknown brand');
   });
 
   it('should clear the list when the fetch fails', () => {

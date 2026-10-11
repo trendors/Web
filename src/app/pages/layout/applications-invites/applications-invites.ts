@@ -185,7 +185,7 @@ export class ApplicationsInvites implements OnInit {
     const brandName = String(
       brandProfile['brand_name'] ?? brandProfile['brandName'] ??
       creator['user_name'] ?? creator['userName'] ??
-      campaign['name'] ?? 'Unknown brand'
+      'Unknown brand'
     );
     return {
       id: a?.['id'] ?? null,
@@ -223,7 +223,7 @@ export class ApplicationsInvites implements OnInit {
       brand: String(
         brandProfile['brand_name'] ?? brandProfile['brandName'] ??
         creator['user_name'] ?? creator['userName'] ??
-        campaign['name'] ?? 'Unknown brand'
+        'Unknown brand'
       ),
       campaignTitle: String(campaign['name'] ?? 'Untitled campaign'),
       tier: String(
