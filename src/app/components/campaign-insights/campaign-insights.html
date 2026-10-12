@@ -1,0 +1,259 @@
+<section class="ci" aria-label="Campaign statistics">
+  <header class="ci__head">
+    <h3>How it's going</h3>
+    @if (data(); as d) {
+      @if (d.schedule.end) {
+        <span class="ci__schedule">
+          Ends {{ d.schedule.end | date: 'MMM d' }}@if (d.schedule.daysLeft !== null) { · {{ d.schedule.daysLeft === 0 ? 'last day' : d.schedule.daysLeft + (d.schedule.daysLeft === 1 ? ' day left' : ' days left') }} }
+        </span>
+      }
+    }
+  </header>
+
+  @if (loading() && !data()) {
+    <p class="ci__state">Loading statistics…</p>
+  } @else if (failed() && !data()) {
+    <p class="ci__state">Couldn't load the statistics. <button type="button" class="link-btn" (click)="retry()">Try again</button></p>
+  } @else if (data(); as d) {
+    <!-- Headline figures -->
+    <div class="tiles">
+      <article class="tile">
+        <span class="tile__label">Delivery</span>
+        <span class="tile__value">{{ d.delivery.delivered }}<span class="tile__of"> / {{ d.delivery.agreed }}</span></span>
+        <div class="meter" role="img" [attr.aria-label]="d.delivery.percent + '% of agreed posts delivered'">
+          <span class="meter__fill" [style.width.%]="d.delivery.percent"></span>
+        </div>
+        <span class="tile__sub">{{ deliverySub() }}</span>
+      </article>
+
+      <article class="tile">
+        <span class="tile__label">Creators</span>
+        <span class="tile__value">{{ d.creators.total }}</span>
+        <span class="tile__sub">{{ d.creators.active + d.creators.contracted }} working · {{ d.creators.invited + d.creators.applied }} pending@if (d.creators.completed) { · {{ d.creators.completed }} done }</span>
+      </article>
+
+      <article class="tile">
+        <span class="tile__label">Views</span>
+        <span class="tile__value">{{ compact(d.performance.views) }}</span>
+        <span class="tile__sub">across {{ d.performance.posts }} measured {{ d.performance.posts === 1 ? 'post' : 'posts' }}</span>
+      </article>
+
+      <article class="tile">
+        <span class="tile__label">Engagement rate</span>
+        <span class="tile__value">{{ measured() ? rate(d.performance.engagementRate) : '—' }}</span>
+        <span class="tile__sub">{{ compact(d.performance.engagement) }} likes, comments and shares</span>
+      </article>
+
+      <article class="tile">
+        <span class="tile__label">Paid out</span>
+        <span class="tile__value">{{ naira(d.spend.paidOut) }}</span>
+        <span class="tile__sub">of {{ naira(d.spend.agreed) }} agreed@if (d.spend.budget) { · budget {{ naira(d.spend.budget) }} }</span>
+      </article>
+    </div>
+
+    <!-- What needs the brand -->
+    <div class="attention" aria-label="Needs your attention">
+      @if (attention().length === 0) {
+        <p class="attention__ok"><i class="ti ti-circle-check" aria-hidden="true"></i> Nothing needs your attention right now.</p>
+      } @else {
+        <ul>
+          @for (item of attention(); track item.text) {
+            <li><i class="ti" [ngClass]="item.icon" aria-hidden="true"></i><span>{{ item.text }}</span></li>
+          }
+        </ul>
+      }
+    </div>
+
+    @if (!measured()) {
+      <p class="ci__state ci__state--block">
+        No results yet. Views and engagement appear once creators publish and their numbers are recorded.
+      </p>
+    } @else {
+      <div class="grid">
+        <!-- Results over time -->
+        <figure class="card card--wide">
+          <figcaption class="card__head">
+            <div>
+              <h4>{{ metric() === 'views' ? 'Views' : 'Engagement' }} over time</h4>
+              <p>Running total, last {{ d.trend.length }} {{ d.trend.length === 1 ? 'day' : 'days' }}</p>
+            </div>
+            <div class="controls">
+              <div class="seg" role="group" aria-label="Measure">
+                <button type="button" [class.on]="metric() === 'views'" (click)="setMetric('views')">Views</button>
+                <button type="button" [class.on]="metric() === 'engagement'" (click)="setMetric('engagement')">Engagement</button>
+              </div>
+              <button type="button" class="link-btn" (click)="trendTable.set(!trendTable())">{{ trendTable() ? 'View chart' : 'View as table' }}</button>
+            </div>
+          </figcaption>
+
+          @if (trendTable()) {
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th class="num">Views</th><th class="num">Engagement</th></tr></thead>
+                <tbody>
+                  @for (row of d.trend; track row.date) {
+                    <tr><td>{{ row.date | date: 'MMM d, y' }}</td><td class="num">{{ row.views | number }}</td><td class="num">{{ row.engagement | number }}</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="plot" tabindex="0" role="img"
+                 [attr.aria-label]="(metric() === 'views' ? 'Views' : 'Engagement') + ' over time. Use the arrow keys to read each day, or switch to the table view.'"
+                 (keydown)="chartKey($event)" (blur)="hover.set(null)">
+              <svg [attr.viewBox]="'0 0 ' + box.width + ' ' + box.height" (pointermove)="pointerMove($event)" (pointerleave)="hover.set(null)">
+                @for (t of yAxis(); track t.value) {
+                  <line class="grid-line" [attr.x1]="box.left" [attr.x2]="box.width - box.right" [attr.y1]="t.y" [attr.y2]="t.y" />
+                  <text class="axis" [attr.x]="box.left - 8" [attr.y]="t.y + 4" text-anchor="end">{{ t.label }}</text>
+                }
+                @for (t of xAxis(); track t.date) {
+                  <text class="axis" [attr.x]="t.x" [attr.y]="box.height - 8" text-anchor="middle">{{ t.date | date: 'MMM d' }}</text>
+                }
+                <path class="area" [attr.d]="geometry().area" />
+                <path class="line" [attr.d]="geometry().line" />
+                @if (hovered(); as h) {
+                  <line class="cursor" [attr.x1]="h.x" [attr.x2]="h.x" [attr.y1]="box.top" [attr.y2]="geometry().baseline" />
+                }
+                @if (geometry().points.length > 0) {
+                  <circle class="dot" [attr.cx]="(hovered() ?? geometry().points[geometry().points.length - 1]).x" [attr.cy]="(hovered() ?? geometry().points[geometry().points.length - 1]).y" r="4" />
+                }
+              </svg>
+              @if (hovered(); as h) {
+                <div class="tip" [style.left.%]="h.xPct" [style.top.%]="h.yPct" [class.tip--left]="h.xPct > 62">
+                  <strong>{{ h.value | number }}</strong>
+                  <span><i class="key"></i>{{ metric() === 'views' ? 'Views' : 'Engagement' }} · {{ h.date | date: 'MMM d' }}</span>
+                </div>
+              }
+            </div>
+          }
+        </figure>
+
+        <!-- By platform / format -->
+        <figure class="card">
+          <figcaption class="card__head">
+            <div>
+              <h4>Views by {{ breakdownBy() }}</h4>
+              <p>Where the results come from</p>
+            </div>
+            <div class="controls">
+              <div class="seg" role="group" aria-label="Group by">
+                <button type="button" [class.on]="breakdownBy() === 'platform'" (click)="breakdownBy.set('platform')">Platform</button>
+                <button type="button" [class.on]="breakdownBy() === 'format'" (click)="breakdownBy.set('format')">Format</button>
+              </div>
+              <button type="button" class="link-btn" (click)="breakdownTable.set(!breakdownTable())">{{ breakdownTable() ? 'View chart' : 'View as table' }}</button>
+            </div>
+          </figcaption>
+
+          @if (breakdown().length === 0) {
+            <p class="ci__state">Nothing to compare yet.</p>
+          } @else if (breakdownTable()) {
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>{{ label(breakdownBy()) }}</th><th class="num">Posts</th><th class="num">Views</th><th class="num">Engagement</th><th class="num">Rate</th></tr></thead>
+                <tbody>
+                  @for (row of breakdown(); track row.key) {
+                    <tr><td>{{ label(row.key) }}</td><td class="num">{{ row.posts }}</td><td class="num">{{ row.views | number }}</td><td class="num">{{ row.engagement | number }}</td><td class="num">{{ rate(row.engagementRate) }}</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <ul class="bars">
+              @for (row of breakdown(); track row.key) {
+                <li class="bar" tabindex="0">
+                  <span class="bar__label">{{ label(row.key) }}</span>
+                  <span class="bar__track"><span class="bar__fill" [style.width.%]="row.pct"></span></span>
+                  <span class="bar__value">{{ compact(row.views) }}</span>
+                  <span class="tip tip--static">
+                    <strong>{{ row.views | number }} views</strong>
+                    <span>{{ row.posts }} {{ row.posts === 1 ? 'post' : 'posts' }} · {{ row.engagement | number }} interactions · {{ rate(row.engagementRate) }} engagement</span>
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+        </figure>
+
+        <!-- Spend -->
+        <figure class="card">
+          <figcaption class="card__head">
+            <div>
+              <h4>Spend</h4>
+              <p>{{ naira(d.spend.agreed) }} agreed across {{ d.creators.contracted + d.creators.active + d.creators.completed }} {{ (d.creators.contracted + d.creators.active + d.creators.completed) === 1 ? 'creator' : 'creators' }}</p>
+            </div>
+          </figcaption>
+
+          @if (d.spend.agreed === 0) {
+            <p class="ci__state">No fees agreed yet.</p>
+          } @else {
+            <div class="stack" role="img" [attr.aria-label]="'Paid out ' + naira(d.spend.paidOut) + ', held ' + naira(d.spend.held) + ', still to fund ' + naira(d.spend.toFund)">
+              @for (seg of spendSegments(); track seg.key) {
+                @if (seg.pct > 0) {
+                  <span class="stack__seg" [ngClass]="'stack__seg--' + seg.key" [style.flex-basis.%]="seg.pct" tabindex="0">
+                    <span class="tip tip--static"><strong>{{ naira(seg.value) }}</strong><span>{{ seg.label }}</span></span>
+                  </span>
+                }
+              }
+            </div>
+            <ul class="legend">
+              @for (seg of spendSegments(); track seg.key) {
+                <li><i class="swatch" [ngClass]="'swatch--' + seg.key"></i><span class="legend__label">{{ seg.label }}</span><strong>{{ naira(seg.value) }}</strong></li>
+              }
+            </ul>
+            <dl class="costs">
+              <div><dt>Cost per 1,000 views</dt><dd>{{ d.spend.costPer1kViews !== null ? naira(d.spend.costPer1kViews) : '—' }}</dd></div>
+              <div><dt>Cost per interaction</dt><dd>{{ d.spend.costPerEngagement !== null ? naira(d.spend.costPerEngagement) : '—' }}</dd></div>
+            </dl>
+            <p class="note">Costs use the agreed fee for the work delivered so far.</p>
+          }
+        </figure>
+
+        <!-- Creators -->
+        <figure class="card card--wide">
+          <figcaption class="card__head">
+            <div>
+              <h4>Creators</h4>
+              <p>Ranked by interactions</p>
+            </div>
+          </figcaption>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Creator</th><th class="num">Posts</th><th class="num">Views</th><th class="num">Interactions</th><th class="num">Rate</th><th class="num">Cost / 1K views</th></tr></thead>
+              <tbody>
+                @for (c of d.topCreators.slice(0, 10); track c.assignmentId) {
+                  <tr>
+                    <td>{{ c.name }}</td>
+                    <td class="num">{{ c.posts }}</td>
+                    <td class="num">{{ c.views | number }}</td>
+                    <td class="num">{{ c.engagement | number }}</td>
+                    <td class="num">{{ c.views > 0 ? rate(c.engagementRate) : '—' }}</td>
+                    <td class="num">{{ c.costPer1kViews !== null ? naira(c.costPer1kViews) : '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (d.topPosts.length > 0) {
+            <h5 class="sub-head">Best posts</h5>
+            <ul class="posts">
+              @for (p of d.topPosts; track p.postId) {
+                <li>
+                  <div>
+                    <strong>{{ p.title }}</strong>
+                    <span class="posts__meta">{{ p.creator }}@if (p.platform) { · {{ label(p.platform) }} }@if (p.format) { {{ p.format }} }</span>
+                  </div>
+                  <div class="posts__nums">
+                    <span><strong>{{ compact(p.views) }}</strong> views</span>
+                    <span><strong>{{ compact(p.engagement) }}</strong> interactions</span>
+                    @if (p.url) { <a [href]="p.url" target="_blank" rel="noopener">View post</a> }
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </figure>
+      </div>
+    }
+  }
+</section>

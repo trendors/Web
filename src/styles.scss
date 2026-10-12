@@ -10,6 +10,13 @@
 // Tokens — the single source of truth. Components use these, not hex values.
 // ---------------------------------------------------------------------------
 :root {
+  // Chart colours (validated with the dataviz checks against the card surface).
+  // --viz-1: the one series colour. --viz-paid / --viz-held: an ordered
+  // one-hue ramp for "paid out" and "held" in the spend bar.
+  --viz-1: #2a78d6;
+  --viz-paid: #256abf;
+  --viz-held: #86b6ef;
+
   --font-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-display: var(--font-sans);
@@ -215,6 +222,10 @@
 
   // The logo is a black disc; invert it to a white disc on dark pages.
   --logo-filter: invert(1);
+
+  --viz-1: #3987e5;
+  --viz-paid: #9ec5f4;
+  --viz-held: #3987e5;
 }
 
 :root[data-theme='dark'] {
