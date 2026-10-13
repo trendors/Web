@@ -4,6 +4,7 @@ import { RouterOutlet } from '@angular/router';
 import { Header } from "./components/header/header";
 import { ToastComponent } from './components/toast/toast.component';
 import { RealtimeNotificationsService } from './core/services/realtime/realtime-notifications.service';
+import { PushNotificationsService } from './core/services/realtime/push-notifications.service';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ export class App {
 
   constructor() {
     inject(RealtimeNotificationsService).start();
+    inject(PushNotificationsService).start();
     inject(ThemeService); // applies the saved theme and follows the device setting
   }
 }

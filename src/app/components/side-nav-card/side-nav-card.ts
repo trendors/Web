@@ -10,6 +10,7 @@ import { NotificationActions } from '../../store/notification/notification.actio
 import { logoutUser } from '../../store/auth/logout/logout.action';
 import { selectUnreadCount } from '../../store/notification/notification.selector';
 import { AsyncPipe } from '@angular/common';
+import { PendingInvitesService } from '../../core/services/invitation/pending-invites.service';
 import { ActiveProfileService } from '../../core/services/activeprofile.service';
 
 @Component({
@@ -26,6 +27,7 @@ export class SideNavCard implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
+  pendingInvites = inject(PendingInvitesService).count;
   unreadCount$ = this.store.select(selectUnreadCount);
   currentUser$ = this.store.select(selectCurrentUser);
 

@@ -1,0 +1,39 @@
+<div class="tc">
+  <div class="tc__head">
+    <h1>Trending campaigns</h1>
+    <p class="tc__sub">Browse the latest campaigns. Open one to see the details.</p>
+  </div>
+
+  <div class="tc__filters">
+    <input class="tc__search" type="search" placeholder="Search campaigns" [(ngModel)]="query" (ngModelChange)="onSearch()" />
+    <select class="tc__select" [(ngModel)]="platform" aria-label="Filter by platform">
+      <option value="">All platforms</option>
+      @for (p of platformOptions; track p) { <option [value]="p">{{ p }}</option> }
+    </select>
+  </div>
+
+  @if (error) {
+    <p class="tc__state tc__state--error">{{ error }}</p>
+  }
+
+  <div class="tc__list">
+    @for (c of visible; track c.id) {
+      <button type="button" class="tc__item" (click)="open(c)">
+        <div class="tc__top">
+          <span class="tc__name">{{ c.name }}</span>
+          <span class="tc__chip">{{ c.package }}</span>
+        </div>
+        @if (c.description) { <p class="tc__desc">{{ c.description }}</p> }
+        @if (c.platforms.length) { <div class="tc__meta">{{ c.platforms.join(' · ') }}</div> }
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <p class="tc__state">Loading campaigns…</p>
+  } @else if (!error && visible.length === 0) {
+    <p class="tc__state">No campaigns found.</p>
+  } @else if (hasMore) {
+    <button type="button" class="tc__more" (click)="load(false)">Load more</button>
+  }
+</div>

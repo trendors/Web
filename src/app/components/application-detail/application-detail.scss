@@ -1,4 +1,4 @@
-.detail-panel { background: var(--panel, #fff); border: 0.5px solid var(--line, #e1dfd5); border-radius: 14px; padding: 1.75rem; position: relative; }
+.detail-panel { background: var(--panel, #fff); border: 1px solid var(--line, #e1dfd5); border-radius: 14px; padding: 1.75rem; position: relative; }
 .close-btn { position: absolute; top: 16px; right: 16px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line, #e1dfd5); background: var(--surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .head { display: flex; align-items: center; gap: 14px; margin-bottom: 1.25rem; }
 .avatar-lg { width: 52px; height: 52px; border-radius: 50%; background: var(--emerald-soft, #e4ede7); color: var(--emerald, #1b4332); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: var(--fs-card-title); flex-shrink: 0; }

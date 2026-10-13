@@ -9,6 +9,7 @@ import {
   InvitationsService,
   RespondToInvitationDto,
 } from '../../../core/api';
+import { PendingInvitesService } from '../../../core/services/invitation/pending-invites.service';
 import { InvitesLists } from '../../../components/invites-lists/invites-lists';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { ToastService } from '../../../components/toast/toast.service';
@@ -25,6 +26,7 @@ export class ApplicationsInvites implements OnInit {
   private readonly campaignInfluencerService = inject(CampaignInfluencerService);
   private readonly store = inject(Store);
   private readonly toast = inject(ToastService);
+  private readonly pendingInvites = inject(PendingInvitesService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly socket = inject(SocketService);
 
@@ -144,6 +146,7 @@ export class ApplicationsInvites implements OnInit {
           // Only pending invitations are listed, so drop the answered one.
           this.invitationCards = this.invitationCards.filter((c) => c.invitationId !== event.id);
           this.mergeInvites();
+          this.pendingInvites.refresh();
         },
         error: (err) =>
           this.toast.show(err?.error?.message ?? 'Could not respond to the invitation.', 'error'),

@@ -6,6 +6,7 @@ import { Store } from '@ngrx/store';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 import { WalletService } from '../../core/api';
 import { catchError, distinctUntilChanged, filter, map, of, switchMap } from 'rxjs';
+import { PendingInvitesService } from '../../core/services/invitation/pending-invites.service';
 import { ActiveProfileService } from '../../core/services/activeprofile.service';
 import { logoutUser } from '../../store/auth/logout/logout.action';
 import { userDisplayName } from '../../core/utils/user-display';
@@ -22,7 +23,7 @@ export class TopNavFilter {
   /** Wallet balance, formatted in naira. */
   balance = signal('₦0');
   /** Number badge shown on the menu button and next to "Invites and applications". 0 hides both. */
-  @Input() pendingCount = 0;
+  pendingCount = inject(PendingInvitesService).count;
 
   private renderer = inject(Renderer2);
   private store = inject(Store);

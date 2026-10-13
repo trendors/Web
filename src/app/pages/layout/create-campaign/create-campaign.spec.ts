@@ -35,8 +35,11 @@ describe('CreateCampaign', () => {
   /** Valid step-0 basics so a test can focus on the later steps. */
   function fillBasics(title = 'Test Campaign'): void {
     component.campaignTitle.set(title);
-    component.start_date.set('2026-11-01');
-    component.end_date.set('2026-11-30');
+    component.campaignDescription.set('A test campaign');
+    component.link = 'https://example.com';
+    component.togglePlatform('twitter');
+    component.start_date.set('2099-11-01');
+    component.end_date.set('2099-11-30');
   }
 
   /** Wait until createCampaign has dispatched and is awaiting the effect. */
@@ -91,7 +94,7 @@ describe('CreateCampaign', () => {
     expect(component.totalSteps).toBe(5);
     expect(component.steps.map((s) => s.label)).toEqual([
       'Basics',
-      'Plan & Access',
+      'Access',
       'Media',
       'Deliverables',
       'Review',
@@ -101,12 +104,24 @@ describe('CreateCampaign', () => {
   it('should track deliverables per platform, format, qty and fee', () => {
     expect(component.totalDeliverables).toBe(0);
     expect(component.deliverablesSummary).toBe('None set');
+    component.togglePlatform('twitter');
+    component.togglePlatform('instagram');
     component.updateDeliverableRow(0, { platform: 'twitter', format: 'reel', qty: 2, fee: 150 });
     component.addDeliverableRow();
     component.updateDeliverableRow(1, { platform: 'instagram', format: 'story', qty: 1, fee: 40 });
     expect(component.totalDeliverables).toBe(3);
     expect(component.deliverablesSummary).toContain('Twitter');
     expect(component.selectedPlatforms).toEqual(['twitter', 'instagram']);
+  });
+
+  it('labels every format correctly, singular and plural', () => {
+    expect(component.formatLabel('story')).toBe('Story');
+    expect(component.formatLabel('reel')).toBe('Reel');
+    component.togglePlatform('twitter');
+    component.updateDeliverableRow(0, { format: 'story', qty: 1 });
+    expect(component.deliverablesSummary).toBe('1 × Twitter Story');
+    component.updateDeliverableRow(0, { qty: 3 });
+    expect(component.deliverablesSummary).toBe('3 × Twitter Stories');
   });
 
   it('should clamp deliverable quantities and fees at zero', () => {
@@ -156,10 +171,10 @@ describe('CreateCampaign', () => {
     expect(component.currentStep).toBe(0);
     expect(toast.show).toHaveBeenCalledWith('Give your campaign a title.', 'error');
     fillBasics();
-    component.end_date.set('2026-10-01');
+    component.end_date.set('2098-10-01');
     component.next();
     expect(component.currentStep).toBe(0);
-    component.end_date.set('2026-11-30');
+    component.end_date.set('2099-11-30');
     component.next();
     expect(component.currentStep).toBe(1);
   });
@@ -245,6 +260,7 @@ describe('CreateCampaign', () => {
     const dispatchSpy = vi.spyOn(store, 'dispatch');
     fillBasics('Invite Campaign');
     component.selectedAccess = 'invite_only';
+    component.updateDeliverableRow(0, { qty: 1 });
     component.selectMember({ id: 3, user: { id: 42 }, first_name: 'Ada' });
     component.onCheckout();
     await untilDispatched();
@@ -257,6 +273,59 @@ describe('CreateCampaign', () => {
     await vi.waitFor(() => expect(component.submitStatus()).toBe('success'));
     // Invites are assignments now, so they show on the campaign page and can be negotiated.
     expect(assignmentApi.campaignInfluencerControllerCreate).toHaveBeenCalledWith({ campaignId: 9, userId: 42 });
+    // No payment step, so the brand lands on the new campaign instead of a blank form.
+    await vi.waitFor(() => expect(router.navigate).toHaveBeenCalledWith(['/home/view-campaign', 9]));
+  });
+
+  it('requires a description, a valid link and a platform on the Basics step', () => {
+    fillBasics();
+    component.campaignDescription.set('  ');
+    expect(component.stepError(0)).toBe('Describe what this campaign is about.');
+    component.campaignDescription.set('About');
+    component.link = 'not a link';
+    expect(component.stepError(0)).toBe('Enter a valid link starting with https://');
+    component.link = 'https://example.com';
+    component.togglePlatform('twitter'); // un-pick
+    expect(component.stepError(0)).toBe('Choose at least one platform.');
+  });
+
+  it('rejects a start date in the past', () => {
+    fillBasics();
+    component.start_date.set('2020-01-01');
+    expect(component.stepError(0)).toBe('The start date cannot be in the past.');
+  });
+
+  it('needs a creator for invite-only and a deliverable for non-open campaigns', () => {
+    fillBasics();
+    component.selectedAccess = 'invite_only';
+    expect(component.stepError(1)).toBe('Add at least one creator to invite.');
+    expect(component.stepError(3)).toBe('Add at least one deliverable with a quantity above 0.');
+    component.selectedAccess = 'open';
+    expect(component.stepError(3)).toBeNull();
+  });
+
+  it('jumps to the step with the problem when checkout fails', () => {
+    fillBasics();
+    component.selectedAccess = 'open';
+    component.openBudget.set(null);
+    component.goTo(4);
+    component.onCheckout();
+    expect(component.currentStep).toBe(1);
+  });
+
+  it('does not let the step buttons skip past an incomplete step', () => {
+    component.goToStep(3);
+    expect(component.currentStep).toBe(0);
+    fillBasics();
+    component.goToStep(2); // access defaults to open, which needs a budget
+    expect(component.currentStep).toBe(1);
+  });
+
+  it('keeps deliverable platforms within the chosen platforms', () => {
+    component.togglePlatform('instagram');
+    expect(component.deliverableRows()[0].platform).toBe('instagram');
+    component.togglePlatform('instagram');
+    expect(component.deliverableRows()[0].platform).toBe('');
   });
 
   it('should show the wallet balance in the pay alert', async () => {

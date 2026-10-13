@@ -37,7 +37,7 @@
   align-self: stretch; // belt-and-suspenders in case a parent overrides align-items
   box-sizing: border-box;
   background: var(--panel, #fff); 
-  border: 0.5px solid var(--line, #e1dfd5); 
+  border: 1px solid var(--line, #e1dfd5); 
   border-radius: 14px; 
   padding: 1.1rem 1.25rem; 
   cursor: pointer; 
@@ -53,13 +53,11 @@
   border-color: var(--ink-faint, #9aa39c); 
 }
 
-.item.needs-action { 
-  border-color: var(--gold, #b8860b); 
-}
+
 
 .item.selected { 
-  border-color: var(--emerald, #1b4332); 
-  background: var(--emerald-soft, #e4ede7); 
+  border-color: var(--border-strong); 
+  background: var(--surface-2); 
 }
 
 .item-top { 
@@ -74,8 +72,8 @@
   width: 40px; 
   height: 40px; 
   border-radius: 10px; 
-  background: var(--emerald-soft, #e4ede7); 
-  color: var(--emerald, #1b4332); 
+  background: var(--surface-2); 
+  color: var(--text2); 
   display: flex; 
   align-items: center; 
   justify-content: center; 
@@ -131,16 +129,17 @@
   font-weight: 600; 
   padding: 4px 10px; 
   border-radius: 20px; 
+  align-self: flex-start; // don't stretch across the card
 }
 
-.badge-action { background: var(--gold-soft, #f6ebd2); color: var(--warning); }
-.badge-progress { background: var(--info-soft); color: var(--info); }
-.badge-live { background: var(--success-soft); color: var(--success); }
-.badge-declined { background: var(--danger-soft); color: var(--danger, #a3372b); }
+.badge-action { background: color-mix(in srgb, var(--success) 12%, transparent); color: color-mix(in srgb, var(--success) 70%, var(--text)); }
+.badge-progress { background: var(--surface-2); color: var(--muted); }
+.badge-live { background: var(--surface-2); color: var(--text2); }
+.badge-declined { background: var(--surface-2); color: var(--danger); }
 
 .deadline { 
   font-size: var(--fs-caption); 
-  color: var(--warning); 
+  color: var(--muted); 
   margin-top: 8px; 
   display: flex; 
   align-items: center; 
@@ -175,14 +174,18 @@
   }
 
   .btn-accept {
-    border: none;
-    background: var(--emerald, #1b4332);
-    color: #fff;
+    border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+    background: color-mix(in srgb, var(--success) 12%, transparent);
+    color: color-mix(in srgb, var(--success) 70%, var(--text));
+
+    &:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
   }
 
   .btn-decline {
-    border: 1px solid var(--line, #e1dfd5);
+    border: 1px solid var(--border);
     background: transparent;
-    color: inherit;
+    color: var(--text2);
+
+    &:hover { background: var(--surface-2); }
   }
 }

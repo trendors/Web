@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "590752906163",
+    "project_id": "trendors",
+    "storage_bucket": "trendors.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:590752906163:android:c28ae5f875abcc0e52a9c6",
+        "android_client_info": {
+          "package_name": "com.trendors.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfsRJ1GMQUmSJ9LcXgbHhE-MExZtCiYso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

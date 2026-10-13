@@ -1,5 +1,8 @@
 import { Component, ChangeDetectorRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { CampaignPreview } from '../campaign-preview/campaign-preview';
 import { CampaignService } from '../../core/api';
 import { extractApiList } from '../../core/utils/api-response';
 import { platformIconKey, platformLabel } from '../../core/utils/platform-icon';
@@ -14,13 +17,14 @@ export interface TrendingCampaign {
 
 @Component({
   selector: 'app-trending-ads',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './trending-ads.html',
   styleUrl: './trending-ads.scss',
 })
 export class TrendingAds implements OnInit {
   private campaignApi = inject(CampaignService);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
 
   campaigns: TrendingCampaign[] = [];
   loading = false;
@@ -28,6 +32,10 @@ export class TrendingAds implements OnInit {
 
   ngOnInit(): void {
     this.fetchCampaigns();
+  }
+
+  openCampaign(campaign: TrendingCampaign): void {
+    this.dialog.open(CampaignPreview, { data: { id: campaign.id, name: campaign.name } });
   }
 
   fetchCampaigns(): void {

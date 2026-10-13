@@ -13,9 +13,6 @@
         <div class="title">{{ inv.campaign?.name }}</div>
         <div class="meta" *ngIf="inv.campaign?.platforms?.length">{{ inv.campaign.platforms.join(', ') }}</div>
       </div>
-      <div class="right">
-        <div class="amt-lbl">{{ needsAction(inv.status) ? 'offer' : 'deal value' }}</div>
-      </div>
     </div>
     <span class="badge" [ngClass]="statusClass(inv.status)">{{ statusLabel(inv.status) }}</span>
     <div class="deadline" *ngIf="inv.campaign?.end_date">

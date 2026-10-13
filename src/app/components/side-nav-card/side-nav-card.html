@@ -38,6 +38,9 @@
       <a routerLink="/home/invites-and-applications" routerLinkActive="active" class="nav-item">
         <span class="icon">✉️</span>
         <span class="nav-label">Invites And Applications</span>
+        @if (pendingInvites() > 0) {
+          <span class="badge">{{ pendingInvites() }}</span>
+        }
       </a>
     </div>
   }

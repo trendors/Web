@@ -3,7 +3,7 @@
   <div class="top-bar">
     <div class="top-steps">
       <button *ngFor="let step of steps; let i = index" class="step-btn" [class.active]="i === currentStep"
-        [class.done]="i < currentStep" [attr.aria-current]="i === currentStep ? 'step' : null" (click)="goTo(i)" type="button">
+        [class.done]="i < currentStep" [attr.aria-current]="i === currentStep ? 'step' : null" (click)="goToStep(i)" type="button">
         <span class="step-num">@if (i < currentStep) {<i class="ti ti-check" aria-hidden="true"></i>} @else {{{ i + 1 }}}</span>
             <span class="step-name">{{ step.label }}</span>
       </button>
@@ -37,6 +37,21 @@
           <span class="hint">Registration, sign-up, download or purchase link</span>
 
         </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Platforms <span class="req">*</span></div>
+      <div class="card">
+        <div class="platform-chips" role="group" aria-label="Platforms">
+          @for (p of platforms; track p.id) {
+            <button type="button" class="platform-chip" [class.selected]="isPlatformChosen(p.id)"
+              [attr.aria-pressed]="isPlatformChosen(p.id)" (click)="togglePlatform(p.id)">
+              {{ p.name }}
+            </button>
+          }
+        </div>
+        <span class="hint">Where creators will post. Pick one or more.</span>
       </div>
     </div>
 
@@ -117,15 +132,15 @@
         <div class="grid-3">
           <div class="field">
             <label>Campaign budget (₦)</label>
-            <input type="number" inputmode="numeric" min="25000" step="1000" [(ngModel)]="openBudget" placeholder="e.g. 50000"
+            <input type="number" inputmode="numeric" [min]="OPEN_MIN_BUDGET" step="1000" [(ngModel)]="openBudget" placeholder="e.g. 50000"
               class="input" />
-            <div class="hint">Minimum spend to launch an open campaign is ₦25,000</div>
+            <div class="hint">Minimum spend to launch an open campaign is ₦{{ OPEN_MIN_BUDGET | number }}</div>
           </div>
 
           <div class="field">
             <label>Estimated clicks</label>
             <div class="payout-val">{{ estimatedClicks | number }}</div>
-            <div class="hint">At ₦50 per verified share</div>
+            <div class="hint">At ₦{{ OPEN_RATE }} per verified click</div>
           </div>
 
           <div class="field">
@@ -137,7 +152,7 @@
         <div class="hint bonus-list">
           <div>
             <ul>
-              <li>₦50 per verified share</li>
+              <li>₦{{ OPEN_RATE }} per verified click</li>
               <li>₦20 bonus for 5+ clicks</li>
               <li>₦40 bonus for 20+ clicks</li>
               <li>₦70 bonus for 50+ clicks</li>
@@ -247,44 +262,10 @@
 
         <div class="tier-summary">
           <span>{{ totalTierSlots }} slot{{ totalTierSlots === 1 ? '' : 's' }} selected</span>
-          <span class="budget-val">₦{{ applicationBudget }}</span>
+          <span class="budget-val">₦{{ applicationBudget | number }}</span>
         </div>
       </div>
     </div>
-    @if (viewingProfile()) {
-    <div class="modal-overlay" (click)="onOverlayClick($event)">
-      <div class="modal">
-        <div class="modal-head">
-          <h3>Profile</h3>
-          <button type="button" class="ui-icon-btn" aria-label="Close" (click)="viewingProfile.set(null)"><i class="ti ti-x" aria-hidden="true"></i></button>
-        </div>
-        <div class="modal-avatar">
-          {{ initials(viewingProfile()!.user.name || viewingProfile()!.name || '') }}
-        </div>
-        <div class="modal-name">
-          {{ viewingProfile()!.user?.name || viewingProfile()!.name }}
-        </div>
-        <div class="modal-id">
-          ID: {{ viewingProfile()!.id }} · {{ viewingProfile()!.status }}
-        </div>
-        <div class="modal-divider"></div>
-        <div class="modal-section-title">Social Platforms</div>
-        <div class="modal-platforms">
-          @for (
-          p of viewingProfile()!.user?.influencerProfile?.platforms ||
-          viewingProfile()!['platforms'] ||
-          [];
-          track p.name
-          ) {
-          <div class="modal-plat-row">
-            <span class="modal-plat-name">{{ p.name }}</span>
-            <span class="modal-plat-followers">{{ p.followers }}</span>
-          </div>
-          }
-        </div>
-      </div>
-    </div>
-    }
     }
   </div>
   <div class="page-content" *ngIf="currentStep === 2">
@@ -342,12 +323,12 @@
         <div class="deliverable-row">
           <div class="deliverable-menu">
             <button type="button" class="deliverable-input deliverable-select" (click)="toggleRowMenu($index, 'platform')">
-              <span>{{ platformDisplayName(row.platform) }}</span>
+              <span>{{ platformDisplayName(row.platform) || 'Platform' }}</span>
               <i class="ti ti-chevron-down deliverable-caret" aria-hidden="true"></i>
             </button>
             @if (isRowMenuOpen($index, 'platform')) {
               <div class="deliverable-options">
-                @for (p of platforms; track p.id) {
+                @for (p of platformOptions; track p.id) {
                   <div class="deliverable-option" [class.active]="row.platform === p.id" (click)="pickRowOption($index, 'platform', p.id)">
                     {{ p.name }}
                   </div>
@@ -404,7 +385,7 @@
       </div>
       <div class="checkout-cost">
         <div class="checkout-cost-label">Total cost</div>
-        <div class="checkout-cost-val">₦{{ computedBudget }}</div>
+        <div class="checkout-cost-val">{{ costDisplay }}</div>
       </div>
     </div>
     <div class="rv-section">
@@ -440,7 +421,7 @@
     <div class="rv-section">
       <div class="rv-head">
         Content
-        <button type="button" class="rv-edit" (click)="goTo(1)">Edit</button>
+        <button type="button" class="rv-edit" (click)="goTo(0)">Edit</button>
       </div>
       <div class="rv-card">
         <div class="rv-row">
@@ -473,6 +454,7 @@
             ? selectedImages().length + ' file' + (selectedImages().length > 1 ? 's' : '') + ' uploaded'
             : 'No files uploaded'
             }}
+            <button type="button" class="rv-edit" (click)="goTo(2)">Edit</button>
           </div>
         </div>
         <div class="rv-row">
@@ -487,16 +469,16 @@
     <div class="rv-section">
       <div class="rv-head">
         Access & Pricing
-        <button type="button" class="rv-edit" (click)="goTo(2)">Edit</button>
+        <button type="button" class="rv-edit" (click)="goTo(1)">Edit</button>
       </div>
       <div class="rv-card">
         <div class="rv-row">
           <div class="rv-key">Access Type</div>
-          <div class="rv-val">{{ selectedAccess }}</div>
+          <div class="rv-val">{{ accessLabel }}</div>
         </div>
         <div class="rv-row">
           <div class="rv-key">Total cost</div>
-          <div class="rv-val">₦{{ computedBudget }}</div>
+          <div class="rv-val">{{ costDisplay }}</div>
         </div>
       </div>
     </div>

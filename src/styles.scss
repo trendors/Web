@@ -42,8 +42,8 @@
   --surface: #ffffff;
   --surface-2: #f3f4f6;
   --white: #ffffff;
-  --border: #e5e7eb;
-  --border-hover: #c9ccd3;
+  --border: #d4d8de;
+  --border-hover: #b4bac4;
   --border-strong: #9ca3af;
   --accent: #ff6b35;
   --accent-dark: #e8551f;
@@ -136,6 +136,7 @@
   --radius-sm: 8px;
   --radius-pill: 999px;
   --control-h: 48px;
+  --header-h: 0px; // height of the pinned top bar; sticky elements sit below it
   --tap: 44px;
   --shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.06);
   --shadow-md: 0 4px 16px rgba(17, 24, 39, 0.08);
@@ -289,6 +290,11 @@ html {
   scroll-padding-top: 4rem;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+}
+
+// The sticky top bar only exists below the desktop breakpoint (the sidebar replaces it above it).
+@media (max-width: 1023.98px) {
+  :root { --header-h: 56px; }
 }
 
 html,

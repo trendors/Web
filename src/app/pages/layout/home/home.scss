@@ -1,5 +1,11 @@
 @use 'breakpoints' as bp;
 
+:host {
+  // Custom elements default to inline, which can shrink the area the sticky
+  // top bar is allowed to stick within.
+  display: block;
+}
+
 // Phone/tablet: one column between the sticky top bar and the bottom nav.
 // Desktop: left sidebar + feed. Wide: + right sidebar.
 .shell {

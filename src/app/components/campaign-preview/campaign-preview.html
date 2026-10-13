@@ -1,0 +1,48 @@
+<div class="cp">
+  <div class="cp__head">
+    <h2 class="cp__title">{{ campaign?.['name'] || data.name || 'Campaign' }}</h2>
+    <button class="cp__close" type="button" (click)="close()" aria-label="Close">
+      <i class="ti ti-x" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  @if (loading) {
+    <p class="cp__state">Loading campaign…</p>
+  } @else if (error) {
+    <p class="cp__state cp__state--error">{{ error }}</p>
+  } @else if (campaign) {
+    <div class="cp__chips">
+      @for (p of platforms; track p) { <span class="cp__chip">{{ p }}</span> }
+      @if (campaign['package']) { <span class="cp__chip">{{ campaign['package'] }}</span> }
+    </div>
+
+    @if (campaign['description']) {
+      <p class="cp__desc">{{ campaign['description'] }}</p>
+    }
+
+    <dl class="cp__meta">
+      @if (campaign['start_date']) {
+        <div><dt>Starts</dt><dd>{{ campaign['start_date'] | date: 'mediumDate' }}</dd></div>
+      }
+      @if (campaign['end_date']) {
+        <div><dt>Ends</dt><dd>{{ campaign['end_date'] | date: 'mediumDate' }}</dd></div>
+      }
+      @if (campaign['hash_tags']) {
+        <div><dt>Hashtags</dt><dd>{{ campaign['hash_tags'] }}</dd></div>
+      }
+    </dl>
+  }
+
+  @if (!loading && !error && isInfluencer && campaign) {
+    <div class="cp__actions">
+      @if (existingStatus) {
+        <span class="cp__applied"><i class="ti ti-check" aria-hidden="true"></i>
+          {{ existingStatus === 'applied' ? 'Application sent' : 'Already ' + existingStatus }}</span>
+      } @else if (canApply) {
+        <button type="button" class="cp__apply" [disabled]="applying" (click)="apply()">
+          {{ applying ? 'Applying…' : 'Apply to this campaign' }}
+        </button>
+      }
+    </div>
+  }
+</div>

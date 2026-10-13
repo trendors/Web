@@ -1,4 +1,5 @@
 <div class="feed-controls">
+  <div class="search-wrap" [class.collapsed]="searchHidden()">
   <label class="search-bar">
     <i class="ti ti-search" aria-hidden="true"></i>
     <span class="sr-only">Search posts</span>
@@ -11,6 +12,7 @@
       [formControl]="searchControl"
     />
   </label>
+  </div>
 
   <div class="ui-tabs" role="tablist" aria-label="Post type">
     <button
@@ -21,7 +23,8 @@
       [attr.aria-selected]="activePostTab === 'open'"
       (click)="selectPostTab('open')"
     >
-      Open posts
+      <i class="ti ti-layout-list" aria-hidden="true"></i>
+      Feed
     </button>
     <button
       type="button"
@@ -31,7 +34,8 @@
       [attr.aria-selected]="activePostTab === 'application'"
       (click)="selectPostTab('application')"
     >
-      Campaigns to apply for
+      <i class="ti ti-speakerphone" aria-hidden="true"></i>
+      Campaigns
     </button>
   </div>
 </div>
@@ -46,7 +50,8 @@
 
 <div class="posts-list">
   @let posts = (posts$ | async) ?? [];
-  @if (posts.length > 0) {
+  @let reloading = (loading$ | async) ?? false;
+  @if (posts.length > 0 && !reloading) {
     @for (post of posts; track trackById($index, post)) {
       <article class="ui-card post-card">
         <header class="post-header">
@@ -231,7 +236,7 @@
     } @else if (hasMore$ | async) {
       <button type="button" class="ui-btn secondary block" (click)="onLoadMore()">Load more</button>
     }
-  } @else if (loading$ | async) {
+  } @else if (reloading) {
     @for (s of [1, 2, 3]; track s) {
       <div class="ui-card post-card skeleton" aria-hidden="true">
         <div class="sk-row"><span class="sk-circle"></span><span class="sk-line w40"></span></div>

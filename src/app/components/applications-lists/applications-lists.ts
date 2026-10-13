@@ -45,6 +45,12 @@ export class ApplicationsLists {
     }
   }
 
+  isUrgent(app: any): boolean {
+    if (!app.deadline || app.status === 'paid' || app.status === 'declined') return false;
+    const t = Date.parse(String(app.deadline).replace(/^Deliver by\s*/i, ''));
+    return !isNaN(t) && t - Date.now() < 48 * 60 * 60 * 1000;
+  }
+
   initials(name: string): string {
     return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: lets the app reach a backend on http://localhost
+     (forwarded from the dev machine with `adb reverse tcp:6001 tcp:6001`).
+     Release builds keep Android's default of HTTPS only. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application
+        android:usesCleartextTraffic="true"
+        tools:replace="android:usesCleartextTraffic" />
+</manifest>

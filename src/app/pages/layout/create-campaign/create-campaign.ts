@@ -22,6 +22,7 @@ import { toLocalDateString } from '../../../core/utils/date';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIcon } from "@angular/material/icon";
 import { Router } from '@angular/router';
+import { PlatformSettingsService } from '../../../core/services/settings/platform-settings.service';
 import { CampaignCheckoutService, CheckoutStep } from '../../../core/services/payment/campaign-checkout.service';
 
 interface CampaignFile {
@@ -60,35 +61,53 @@ interface Tier {
 })
 export class CreateCampaign implements OnDestroy {
 
-  readonly OPEN_RATE = 70;
+  private platformSettings = inject(PlatformSettingsService);
+
+  /** Admin-controlled; the server applies the same values on its own. */
+  get OPEN_RATE(): number {
+    return this.platformSettings.openRate();
+  }
+  get OPEN_MIN_BUDGET(): number {
+    return this.platformSettings.openMinBudget();
+  }
+
   platforms = [
-    { id: 'twitter', emoji: '𝕏', name: 'Twitter', selected: true },
-    { id: 'instagram', emoji: '📸', name: 'Instagram', selected: false },
-    { id: 'tiktok', emoji: '🎵', name: 'TikTok', selected: false },
-    { id: 'facebook', emoji: '👥', name: 'Facebook', selected: false },
-    { id: 'youtube', emoji: '▶️', name: 'YouTube', selected: false },
+    { id: 'twitter', emoji: '𝕏', name: 'Twitter' },
+    { id: 'instagram', emoji: '📸', name: 'Instagram' },
+    { id: 'tiktok', emoji: '🎵', name: 'TikTok' },
+    { id: 'facebook', emoji: '👥', name: 'Facebook' },
+    { id: 'youtube', emoji: '▶️', name: 'YouTube' },
   ];
   steps: Step[] = [
     { label: 'Basics', sub: 'Name, dates, link' },
-    { label: 'Plan & Access', sub: 'Subscription & sharers' },
-    { label: 'Media', sub: 'Media' },
+    { label: 'Access', sub: 'Who can join' },
+    { label: 'Media', sub: 'Photos & files' },
     { label: 'Deliverables', sub: 'Content per creator' },
     { label: 'Review', sub: 'Confirm & launch' },
   ];
 
 
-  accessTypes = [
-    { value: 'open', icon: '🌍', title: 'Open', desc: 'Pay per verified click. Fast, high-volume reach.', extra: 'From ₦70/click · ₦25,000 min spend' },
-    { value: 'invite_only', icon: '📩', title: 'Invite Only', desc: 'Direct escrow deal with one creator.', extra: 'From ₦200,000 per deal' },
-    { value: 'application', icon: '📋', title: 'Application', desc: 'Vetted creator slots, priced by reach.', extra: 'From ₦8,000/slot · 1 slot min' },
+  get accessTypes() {
+    const minSlot = Math.min(...Object.values(this.platformSettings.tierPrices()));
+    return [
+      { value: 'open', icon: '🌍', title: 'Open', desc: 'Pay per verified click. Fast, high-volume reach.', extra: `From ₦${this.OPEN_RATE.toLocaleString('en-NG')}/click · ₦${this.OPEN_MIN_BUDGET.toLocaleString('en-NG')} min spend` },
+      { value: 'invite_only', icon: '📩', title: 'Invite Only', desc: 'Invite creators directly. Each deal is held in escrow.', extra: 'From ₦200,000 per deal' },
+      { value: 'application', icon: '📋', title: 'Application', desc: 'Vetted creator slots, priced by reach.', extra: `From ₦${minSlot.toLocaleString('en-NG')}/slot · 1 slot min` },
+    ];
+  }
+
+  private readonly tierDefs = [
+    { name: 'Nano', range: '1k–10k', color: '#0ea5e9' },
+    { name: 'Micro', range: '10k–50k', color: '#8b5cf6' },
+    { name: 'Mid', range: '50k–200k', color: '#f59e0b' },
+    { name: 'Macro', range: '200k+', color: '#ef4444' },
   ];
 
-  tiers: Tier[] = [
-    { name: 'Nano', range: '1k–10k', amount: '₦8,000', color: '#0ea5e9' },
-    { name: 'Micro', range: '10k–50k', amount: '₦18,000', color: '#8b5cf6' },
-    { name: 'Mid', range: '50k–200k', amount: '₦40,000', color: '#f59e0b' },
-    { name: 'Macro', range: '200k+', amount: '₦90,000', color: '#ef4444' },
-  ];
+  /** Tier rows with the current admin-set price per slot. */
+  get tiers(): Tier[] {
+    const prices = this.platformSettings.tierPrices();
+    return this.tierDefs.map((t) => ({ ...t, amount: `₦${(prices[t.name] ?? 0).toLocaleString('en-NG')}` }));
+  }
 
 
 
@@ -107,8 +126,6 @@ export class CreateCampaign implements OnDestroy {
   maxSlots = signal<number | null>(null);
   openBudget = signal<number | null>(null); // total budget for open campaigns; clicks are derived from this
   status = signal<'draft' | 'active' | 'paused' | 'closed'>('draft');
-  bonusTiers = signal<any | null>(null); // optional JSON structure for invite-only bonuses
-  bonusTiersInput = '';
   campaignTitle = signal('');
   campaignDescription = signal('');
   campaignCategory = signal('');
@@ -128,6 +145,26 @@ export class CreateCampaign implements OnDestroy {
   language = 'English';
   mediaType = 'Image';
   files: CampaignFile[] = [];
+
+  /** Platforms the campaign runs on, picked on the Basics step. */
+  chosenPlatforms = signal<string[]>([]);
+
+  get platformOptions() {
+    return this.platforms.filter((p) => this.chosenPlatforms().includes(p.id));
+  }
+
+  isPlatformChosen(id: string): boolean {
+    return this.chosenPlatforms().includes(id);
+  }
+
+  togglePlatform(id: string): void {
+    this.chosenPlatforms.update((list) => (list.includes(id) ? list.filter((p) => p !== id) : [...list, id]));
+    // Deliverable rows can only use a chosen platform.
+    const chosen = this.chosenPlatforms();
+    this.deliverableRows.update((rows) =>
+      rows.map((row) => (chosen.includes(row.platform) ? row : { ...row, platform: chosen[0] ?? '' })),
+    );
+  }
 
   selectAccess(id: string): void {
     this.selectedAccess = id;
@@ -155,16 +192,24 @@ export class CreateCampaign implements OnDestroy {
    * campaign and a payment can never land without one.
    */
   onCheckout(): void {
-    const error = this.validationError();
-    if (error) {
-      this.showError(error);
+    const issue = this.validationIssue();
+    if (issue) {
+      this.goTo(issue.step);
+      this.showError(issue.message);
       return;
     }
     if (this.selectedAccess === 'open') {
       void this.createThenPay();
     } else {
-      void this.createCampaign();
+      void this.createThenOpen();
     }
+  }
+
+  /** Application and invite-only campaigns need no payment: save, then open the campaign. */
+  private async createThenOpen(): Promise<void> {
+    const campaign = await this.createCampaignRecord();
+    const id = Number(campaign?.id);
+    if (campaign && Number.isFinite(id)) void this.router.navigate(['/home/view-campaign', id]);
   }
 
   private async createThenPay(): Promise<void> {
@@ -243,21 +288,21 @@ export class CreateCampaign implements OnDestroy {
   }
 
   tierSlots = signal<Record<string, number>>(
-    this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
+    this.tierDefs.map((t) => t.name).reduce((acc, name) => ({ ...acc, [name]: 0 }), {} as Record<string, number>),
   );
 
   // Content types creators must deliver (matches the backend deliverable enum),
   // tracked per selected social media platform.
   deliverableTypes = [
-    { value: 'reel', label: 'Reels', icon: '🎬' },
-    { value: 'story', label: 'Stories', icon: '📸' },
-    { value: 'post', label: 'Posts', icon: '📝' },
-    { value: 'video', label: 'Videos', icon: '🎥' },
+    { value: 'reel', label: 'Reels', singular: 'Reel', icon: '🎬' },
+    { value: 'story', label: 'Stories', singular: 'Story', icon: '📸' },
+    { value: 'post', label: 'Posts', singular: 'Post', icon: '📝' },
+    { value: 'video', label: 'Videos', singular: 'Video', icon: '🎥' },
   ];
 
   /** One row per deliverable: platform + format + quantity + fee each. */
   deliverableRows = signal<{ platform: string; format: string; qty: number; fee: number }[]>([
-    { platform: 'instagram', format: 'reel', qty: 0, fee: 0 },
+    { platform: '', format: 'reel', qty: 0, fee: 0 },
   ]);
 
   /** Which row dropdown is open (platform or format picker). */
@@ -266,7 +311,7 @@ export class CreateCampaign implements OnDestroy {
   addDeliverableRow(): void {
     this.deliverableRows.update((rows) => [
       ...rows,
-      { platform: this.platforms[0]?.id ?? 'instagram', format: 'reel', qty: 0, fee: 0 },
+      { platform: this.chosenPlatforms()[0] ?? '', format: 'reel', qty: 0, fee: 0 },
     ]);
   }
 
@@ -291,8 +336,7 @@ export class CreateCampaign implements OnDestroy {
   }
 
   formatLabel(value: string): string {
-    const found = this.deliverableTypes.find((t) => t.value === value);
-    return found ? found.label.replace(/s$/, '') : value;
+    return this.deliverableTypes.find((t) => t.value === value)?.singular ?? value;
   }
 
   updateDeliverableRow(index: number, patch: Partial<{ platform: string; format: string; qty: number; fee: number }>): void {
@@ -331,7 +375,6 @@ export class CreateCampaign implements OnDestroy {
   pendingApplicants$: Observable<Invitation[]> = this.store.select(selectPendingApplicants);
   activeMembers$: Observable<Invitation[]> = this.store.select(selectActiveMembers);
   invitationLoading$: Observable<boolean> = this.store.select(selectInvitationLoading);
-  viewingProfile = signal<any | null>(null);
 
   @ViewChild('searchSectionRef') searchSectionRef?: ElementRef<HTMLElement>;
 
@@ -426,12 +469,6 @@ export class CreateCampaign implements OnDestroy {
     }
   }
 
-  onOverlayClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.viewingProfile.set(null);
-    }
-  }
-
   // end of real database logic
 
   searchQuery = signal('');
@@ -453,10 +490,6 @@ export class CreateCampaign implements OnDestroy {
     return Math.round(((this.currentStep + 1) / this.totalSteps) * 100);
   }
 
-  get nextLabel(): string {
-    return this.currentStep === this.totalSteps - 2 ? 'Review →' : 'Continue →';
-  }
-
   goTo(step: number): void {
     this.currentStep = step;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -476,30 +509,79 @@ export class CreateCampaign implements OnDestroy {
   stepError(step: number): string | null {
     if (step === 0) {
       if (!this.campaignTitle().trim()) return 'Give your campaign a title.';
+      if (!this.campaignDescription().trim()) return 'Describe what this campaign is about.';
+      if (!this.link.trim()) return 'Add the link people should land on.';
+      if (!this.isHttpUrl(this.link.trim())) return 'Enter a valid link starting with https://';
+      if (this.chosenPlatforms().length === 0) return 'Choose at least one platform.';
       if (!this.start_date() || !this.end_date()) return 'Pick a start and end date.';
+      if (this.start_date() < toLocalDateString(new Date())) return 'The start date cannot be in the past.';
       if (this.end_date() < this.start_date()) return 'The end date must be after the start date.';
     }
     if (step === 1) {
       if (!['open', 'invite_only', 'application'].includes(this.selectedAccess)) {
         return 'Choose how creators join the campaign.';
       }
-      if (this.selectedAccess === 'open' && Number(this.openBudget() ?? 0) < 25000) {
-        return 'Open campaigns need a budget of at least ₦25,000.';
+      if (this.selectedAccess === 'open' && Number(this.openBudget() ?? 0) < this.OPEN_MIN_BUDGET) {
+        return `Open campaigns need a budget of at least ₦${this.OPEN_MIN_BUDGET.toLocaleString('en-US')}.`;
       }
       if (this.selectedAccess === 'application' && this.totalTierSlots <= 0) {
         return 'Select at least one creator tier slot.';
       }
+      if (this.selectedAccess === 'invite_only' && this.selectedMembers().length === 0) {
+        return 'Add at least one creator to invite.';
+      }
+    }
+    if (step === 3 && this.selectedAccess !== 'open' && this.totalDeliverables <= 0) {
+      return 'Add at least one deliverable with a quantity above 0.';
+    }
+    return null;
+  }
+
+  private isHttpUrl(value: string): boolean {
+    try {
+      const url = new URL(value);
+      return (url.protocol === 'https:' || url.protocol === 'http:') && url.hostname.includes('.');
+    } catch {
+      return false;
+    }
+  }
+
+  /** First problem anywhere in the form, with the step it belongs to. */
+  validationIssue(): { step: number; message: string } | null {
+    for (let step = 0; step < this.totalSteps; step++) {
+      const message = this.stepError(step);
+      if (message) return { step, message };
     }
     return null;
   }
 
   /** First problem anywhere in the form (checked before checkout/payment). */
   validationError(): string | null {
-    for (let step = 0; step < this.totalSteps; step++) {
+    return this.validationIssue()?.message ?? null;
+  }
+
+  /** Step buttons: going back is free, going forward needs the steps in between to be complete. */
+  goToStep(target: number): void {
+    for (let step = this.currentStep; step < target; step++) {
       const error = this.stepError(step);
-      if (error) return error;
+      if (error) {
+        this.goTo(step);
+        this.showError(error);
+        return;
+      }
     }
-    return null;
+    this.goTo(target);
+  }
+
+  get accessLabel(): string {
+    return this.accessTypes.find((a) => a.value === this.selectedAccess)?.title ?? '—';
+  }
+
+  /** Invite-only fees are agreed per creator, so there is no up-front total. */
+  get costDisplay(): string {
+    return this.selectedAccess === 'invite_only'
+      ? 'Agreed per creator'
+      : '₦' + this.computedBudget.toLocaleString('en-NG');
   }
 
   private showError(message: string): void {
@@ -527,11 +609,8 @@ export class CreateCampaign implements OnDestroy {
   }
 
   get selectedPlatforms(): string[] {
-    const ids: string[] = [];
-    for (const row of this.deliverableRows()) {
-      if (row.platform && !ids.includes(row.platform)) ids.push(row.platform);
-    }
-    return ids;
+    const chosen = this.chosenPlatforms();
+    return this.platforms.map((p) => p.id).filter((id) => chosen.includes(id));
   }
 
 
@@ -650,13 +729,13 @@ export class CreateCampaign implements OnDestroy {
     this.maxSlots.set(null);
     this.openBudget.set(null);
     this.status.set('draft');
-    this.bonusTiers.set(null);
-    this.bonusTiersInput = '';
 
     this.tierSlots.set(
-      this.tiers.reduce((acc, t) => ({ ...acc, [t.name]: 0 }), {} as Record<string, number>),
+      this.tierDefs.map((t) => t.name).reduce((acc, name) => ({ ...acc, [name]: 0 }), {} as Record<string, number>),
     );
-    this.deliverableRows.set([{ platform: 'instagram', format: 'reel', qty: 0, fee: 0 }]);
+    this.deliverableRows.set([{ platform: '', format: 'reel', qty: 0, fee: 0 }]);
+    this.chosenPlatforms.set([]);
+    this.link = '';
   }
 
   get estimatedClicks(): number {
@@ -680,11 +759,6 @@ export class CreateCampaign implements OnDestroy {
     return 0;
   }
 
-  private parseTierAmount(amount: string): number {
-    const n = Number(amount.replace(/[^\d.]/g, ''));
-    return Number.isNaN(n) ? 0 : n;
-  }
-
   getTierSlots(name: string): number {
     return this.tierSlots()[name] ?? 0;
   }
@@ -698,10 +772,8 @@ export class CreateCampaign implements OnDestroy {
   }
 
   get applicationBudget(): number {
-    return this.tiers.reduce(
-      (sum, t) => sum + this.parseTierAmount(t.amount) * this.getTierSlots(t.name),
-      0,
-    );
+    const prices = this.platformSettings.tierPrices();
+    return this.tierDefs.reduce((sum, t) => sum + (prices[t.name] ?? 0) * this.getTierSlots(t.name), 0);
   }
 
   platformDisplayName(platformId: string): string {
@@ -734,16 +806,11 @@ export class CreateCampaign implements OnDestroy {
       .filter((row) => row.platform && row.format && row.qty > 0)
       .map((row) => {
         const type = this.deliverableTypes.find((t) => t.value === row.format);
-        const label = type?.label ?? row.format;
-        const name = row.qty === 1 ? label.replace(/s$/, '') : label;
+        const name = row.qty === 1 ? (type?.singular ?? row.format) : (type?.label ?? row.format);
         const fee = row.fee > 0 ? ` @ ₦${row.fee.toLocaleString()}` : '';
         return `${row.qty} × ${this.platformDisplayName(row.platform)} ${name}${fee}`;
       });
     return parts.length > 0 ? parts.join(' · ') : 'None set';
-  }
-
-  selectTier(): void {
-    alert('Tier selection coming soon!');
   }
 
   /** Resolves true once the campaign exists on the server. */
@@ -756,8 +823,11 @@ export class CreateCampaign implements OnDestroy {
     this.isSubmitting.set(true);
 
     try {
-      const error = this.validationError();
-      if (error) throw new Error(error);
+      const issue = this.validationIssue();
+      if (issue) {
+        this.goTo(issue.step);
+        throw new Error(issue.message);
+      }
 
       const user = await firstValueFrom(this.user$);
       if (!user?.id) throw new Error('We could not confirm your account. Please log in again.');
@@ -798,13 +868,6 @@ export class CreateCampaign implements OnDestroy {
         // there is no up-front budget. Slots = creators being invited.
         const slots = this.selectedMembers().length;
         if (slots > 0) formData.append('maxSlots', String(slots));
-        if (this.bonusTiersInput.trim()) {
-          try {
-            formData.append('bonusTiers', JSON.stringify(JSON.parse(this.bonusTiersInput)));
-          } catch {
-            throw new Error('Bonus tiers must be valid JSON.');
-          }
-        }
       }
 
       this.selectedImages().forEach((img) => formData.append('files', img.file));

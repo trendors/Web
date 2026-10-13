@@ -13,20 +13,20 @@
       <p class="trending__state">No campaigns yet.</p>
     } @else {
       @for (campaign of campaigns; track campaign.id) {
-        <div class="trending__item">
+        <button type="button" class="trending__item" (click)="openCampaign(campaign)">
           <span class="trending__rank">{{ $index + 1 }}</span>
           <div class="trending__icon"><i class="ti ti-device-mobile" aria-hidden="true"></i></div>
           <div class="trending__info">
             <div class="trending__name">{{ campaign.name }}</div>
             <div class="trending__shares">{{ campaign.platform }} · {{ campaign.package }}</div>
           </div>
-        </div>
+        </button>
       }
     }
 
     <div class="trending__footer">
-      <a class="trending__view-all" href="#">
-        View all trending
+      <a class="trending__view-all" routerLink="/home/trending">
+        View all campaigns
         <i class="ti ti-arrow-right" aria-hidden="true"></i>
       </a>
     </div>

@@ -22,7 +22,7 @@
       </div>
     </div>
     <span class="badge" [ngClass]="statusClass(app.status)">{{ statusLabel(app.status) }}</span>
-    <div class="deadline" *ngIf="app.deadline">
+    <div class="deadline" [class.urgent]="isUrgent(app)" *ngIf="app.deadline">
       <i class="ti ti-clock" aria-hidden="true"></i>{{ app.deadline }}
     </div>
   </div>

@@ -81,6 +81,11 @@ export const routes: Routes = [
           import('./pages/layout/transaction/transaction').then((m) => m.Transaction),
       },
       {
+        path: 'trending',
+        loadComponent: () =>
+          import('./pages/layout/trending-campaigns/trending-campaigns').then((m) => m.TrendingCampaigns),
+      },
+      {
         path:'negotiations',
         loadComponent: () => import('./components/negotiation/negotiation').then((m) => m.Negotiation),
       }

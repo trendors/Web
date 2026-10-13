@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, HostListener, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { AsyncPipe, SlicePipe } from '@angular/common';
 import {
   FormBuilder,
@@ -116,6 +116,20 @@ export class Posts implements OnInit, OnDestroy {
     const first = user.creativeProfile?.first_name ?? '';
     const last = user.creativeProfile?.last_name ?? '';
     return user.user_name || (first || last ? `${first}_${last}` : undefined);
+  }
+
+  /** Search row hides while scrolling down and returns on any upward scroll or at the top. */
+  searchHidden = signal(false);
+  private lastScrollY = 0;
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    const y = window.scrollY;
+    const delta = y - this.lastScrollY;
+    if (y < 80) this.searchHidden.set(false);
+    else if (delta > 8) this.searchHidden.set(true);
+    else if (delta < -8) this.searchHidden.set(false);
+    if (Math.abs(delta) > 8 || y < 80) this.lastScrollY = y;
   }
 
   selectPostTab(tab: 'open' | 'application'): void {
