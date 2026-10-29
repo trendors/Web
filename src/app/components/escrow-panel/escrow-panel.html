@@ -7,9 +7,15 @@
       </header>
 
       <dl class="escrow__stats">
-        <div><dt>Funded</dt><dd>₦{{ e.amount | number }}</dd></div>
+        <div><dt>{{ viewer === 'brand' ? 'Creator pay' : 'Funded' }}</dt><dd>₦{{ e.amount | number }}</dd></div>
         <div><dt>Held</dt><dd>₦{{ e.held | number }}</dd></div>
         <div><dt>Paid out</dt><dd>₦{{ e.released | number }}</dd></div>
+        @if (viewer === 'brand' && e.service_fee > 0) {
+          <div><dt>Service fee</dt><dd>₦{{ e.service_fee | number }}</dd></div>
+        }
+        @if (viewer === 'brand' && e.fee_refunded > 0) {
+          <div><dt>Fee returned</dt><dd>₦{{ e.fee_refunded | number }}</dd></div>
+        }
         @if (e.refunded > 0) {
           <div><dt>Refunded</dt><dd>₦{{ e.refunded | number }}</dd></div>
         }
@@ -19,9 +25,12 @@
         @if (viewer === 'brand') {
           <p class="escrow__note escrow__note--alert">
             The agreed fee is now ₦{{ feeAgreed | number }}. Add ₦{{ topUp | number }} so the extra work is covered.
+            @if (quote(topUp).serviceFee > 0) {
+              A {{ quote(topUp).pct }}% service fee (₦{{ quote(topUp).serviceFee | number }}) is added on top, so you pay ₦{{ quote(topUp).total | number }}.
+            }
           </p>
           <button type="button" class="btn btn--primary" [disabled]="busy() === 'fund'" (click)="fund()">
-            {{ busy() === 'fund' ? 'Working…' : 'Top up ₦' + (topUp | number) }}
+            {{ busy() === 'fund' ? 'Working…' : 'Top up ₦' + (quote(topUp).total | number) }}
           </button>
         } @else {
           <p class="escrow__note">The fee went up to ₦{{ feeAgreed | number }}. The brand still needs to add ₦{{ topUp | number }} to the escrow.</p>
@@ -35,7 +44,7 @@
           @if (e.dispute_reason) { <span class="escrow__reason">“{{ e.dispute_reason }}”</span> }
         </p>
       } @else if (viewer === 'influencer' && e.held > 0) {
-        <p class="escrow__note">The brand has secured this fee. Each post is paid out as soon as it is approved.</p>
+        <p class="escrow__note">The brand has secured this fee. Each post is paid out to you in full as soon as it is approved; Trendors' service fee is paid by the brand on top.</p>
       } @else if (viewer === 'brand' && e.held > 0) {
         <p class="escrow__note">Approving a post pays it out of escrow. Unreviewed work is paid automatically after a few days.</p>
       }
@@ -67,9 +76,19 @@
         <p class="escrow__note">
           Secure ₦{{ feeAgreed | number }} so work can start. It stays held and is paid out as you approve each post.
         </p>
-        <button type="button" class="btn btn--primary" [disabled]="busy() === 'fund'" (click)="fund()">
-          {{ busy() === 'fund' ? 'Working…' : 'Fund ₦' + (feeAgreed | number) }}
-        </button>
+        @if (quote(feeAgreed); as q) {
+          @if (q.serviceFee > 0) {
+            <dl class="escrow__quote" aria-label="What you pay">
+              <div><dt>Creator pay</dt><dd>₦{{ feeAgreed | number }}</dd></div>
+              <div><dt>Service fee ({{ q.pct }}%)</dt><dd>₦{{ q.serviceFee | number }}</dd></div>
+              <div class="escrow__quote-total"><dt>You pay</dt><dd>₦{{ q.total | number }}</dd></div>
+            </dl>
+            <p class="escrow__note">The service fee is added on top. It is never taken from the creator's pay, and any part not used is returned if the work is cancelled.</p>
+          }
+          <button type="button" class="btn btn--primary" [disabled]="busy() === 'fund'" (click)="fund()">
+            {{ busy() === 'fund' ? 'Working…' : 'Fund ₦' + (q.total | number) }}
+          </button>
+        }
       } @else {
         <p class="escrow__note">
           The brand hasn't secured the ₦{{ feeAgreed | number }} fee yet. Work starts once it's funded, so you're guaranteed payment.

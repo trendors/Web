@@ -5,9 +5,10 @@ import { vi } from 'vitest';
 import { EscrowPanel } from './escrow-panel';
 import { EscrowService, EscrowView } from '../../core/services/escrow/escrow.service';
 import { ToastService } from '../toast/toast.service';
+import { PlatformSettingsService } from '../../core/services/settings/platform-settings.service';
 
 const escrow = (extra: Partial<EscrowView> = {}): EscrowView => ({
-  id: 9, amount: 50000, released: 0, platform_fee: 0, refunded: 0, held: 50000,
+  id: 9, amount: 50000, released: 0, platform_fee: 0, service_fee: 0, fee_refunded: 0, refunded: 0, held: 50000,
   currency: 'NGN', status: 'held', dispute_reason: null, disputed_by: null, ...extra,
 });
 
@@ -16,7 +17,7 @@ describe('EscrowPanel', () => {
   let api: { get: ReturnType<typeof vi.fn>; fund: ReturnType<typeof vi.fn>; dispute: ReturnType<typeof vi.fn> };
   let toast: { show: ReturnType<typeof vi.fn> };
 
-  async function setup(current: EscrowView | null, inputs: Record<string, unknown> = {}) {
+  async function setup(current: EscrowView | null, inputs: Record<string, unknown> = {}, feePct = 0) {
     api = { get: vi.fn(() => of(current)), fund: vi.fn(async () => 'funded'), dispute: vi.fn(async () => ({})) };
     toast = { show: vi.fn() };
     await TestBed.configureTestingModule({
@@ -24,6 +25,7 @@ describe('EscrowPanel', () => {
       providers: [
         { provide: EscrowService, useValue: api },
         { provide: ToastService, useValue: toast },
+        { provide: PlatformSettingsService, useValue: { platformFeePct: () => feePct } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(EscrowPanel);
@@ -130,5 +132,48 @@ describe('EscrowPanel', () => {
     fixture.componentRef.setInput('assignmentId', 5);
     fixture.detectChanges();
     expect(funded).toHaveBeenCalledWith(true);
+  });
+
+  describe('service fee on top', () => {
+    it('shows the brand creator pay, the fee added on top, and the total before funding', async () => {
+      const el = await setup(null, {}, 10);
+      expect(el.textContent).toContain('Creator pay');
+      expect(el.textContent).toContain('Service fee (10%)');
+      expect(el.textContent).toContain('₦5,000');
+      expect(el.textContent).toContain('You pay');
+      expect(el.textContent).toContain('Fund ₦55,000');
+      expect(el.textContent).toContain('never taken from the creator');
+    });
+
+    it('shows no fee when there is none', async () => {
+      const el = await setup(null, {}, 0);
+      expect(el.querySelector('.escrow__quote')).toBeNull();
+      expect(el.textContent).toContain('Fund ₦50,000');
+    });
+
+    it('funding still asks the server to secure the creator amount', async () => {
+      const el = await setup(null, {}, 10);
+      (el.querySelector('.btn--primary') as HTMLButtonElement).click();
+      await fixture.whenStable();
+      expect(api.fund).toHaveBeenCalledWith(5, 50000);
+    });
+
+    it('shows the brand the fee it paid, and the creator never sees it', async () => {
+      const e = escrow({ service_fee: 5000, service_fee_pct: 10, platform_fee: 2000, released: 20000, held: 30000, status: 'partially_released' });
+      const brand = await setup(e, {}, 10);
+      expect(brand.textContent).toContain('Service fee');
+      expect(brand.textContent).toContain('₦5,000');
+      TestBed.resetTestingModule();
+      const creator = await setup(e, { viewer: 'influencer' }, 10);
+      expect(creator.textContent).not.toContain('Service fee');
+      expect(creator.textContent).toContain('in full');
+    });
+
+    it('a top-up is quoted with its fee on top', async () => {
+      const el = await setup(escrow({ service_fee_pct: 10 }), { feeAgreed: 60000 }, 10);
+      expect(el.textContent).toContain('Add ₦10,000');
+      expect(el.textContent).toContain('you pay ₦11,000');
+      expect(el.textContent).toContain('Top up ₦11,000');
+    });
   });
 });

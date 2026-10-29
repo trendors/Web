@@ -107,3 +107,27 @@
 
   &:hover { color: var(--red); }
 }
+
+/* What the brand pays: creator pay, service fee on top, total. */
+.escrow__quote {
+  margin: 0.75rem 0;
+  display: grid;
+  gap: 0.35rem;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+  }
+
+  dt { opacity: 0.75; }
+  dd { margin: 0; font-variant-numeric: tabular-nums; }
+}
+
+.escrow__quote-total {
+  padding-top: 0.4rem;
+  border-top: 1px solid currentColor;
+  font-weight: 600;
+
+  dt { opacity: 1; }
+}

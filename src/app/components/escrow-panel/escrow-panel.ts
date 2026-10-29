@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, inject, signal } fro
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../toast/toast.service';
 import { apiErrorMessage, EscrowService, EscrowView } from '../../core/services/escrow/escrow.service';
+import { PlatformSettingsService } from '../../core/services/settings/platform-settings.service';
 
 /**
  * The money side of one assignment, for the brand or the influencer. Shows
@@ -19,6 +20,7 @@ import { apiErrorMessage, EscrowService, EscrowView } from '../../core/services/
 export class EscrowPanel implements OnChanges {
   private readonly escrowApi = inject(EscrowService);
   private readonly toast = inject(ToastService);
+  private readonly settings = inject(PlatformSettingsService);
 
   @Input({ required: true }) assignmentId!: number;
   @Input() viewer: 'brand' | 'influencer' = 'brand';
@@ -58,6 +60,17 @@ export class EscrowPanel implements OnChanges {
       this.feeAgreed > 0 &&
       ['contracted', 'active'].includes(this.assignmentStatus.toLowerCase())
     );
+  }
+
+  /**
+   * What funding `creatorAmount` costs the brand. The service fee is added on
+   * top and never comes out of the creator's pay. This is for display; the
+   * server works out the real figure when it takes payment.
+   */
+  quote(creatorAmount: number): { pct: number; serviceFee: number; total: number } {
+    const pct = this.escrow()?.service_fee_pct ?? this.settings.platformFeePct();
+    const serviceFee = Math.round(creatorAmount * pct) / 100;
+    return { pct, serviceFee, total: Math.round((creatorAmount + serviceFee) * 100) / 100 };
   }
 
   /** The fee grew after funding (a change order): the escrow holds less than is owed. */

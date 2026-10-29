@@ -10,9 +10,16 @@ export interface EscrowView {
   id: number;
   amount: number;
   released: number;
+  /** Service fee Trendors has earned so far. It is charged to the brand on top of `amount`, never taken from the creator. */
   platform_fee: number;
+  /** Service fee the brand paid on top of `amount`. */
+  service_fee: number;
+  /** The rate (%) fixed when the escrow was first funded. */
+  service_fee_pct?: number;
+  /** Unearned service fee handed back to the brand. */
+  fee_refunded: number;
   refunded: number;
-  /** What is still held: amount - released - platform_fee - refunded. */
+  /** What is still held for the creator: amount - released - refunded. */
   held: number;
   currency: string;
   status: EscrowStatus;
@@ -24,6 +31,13 @@ type FundCheckout =
   | { status: 'funded' }
   | {
       status: 'payment_required';
+      /** Creator pay being funded. */
+      fee?: number;
+      /** Trendors service fee, charged on top of `fee`. */
+      serviceFee?: number;
+      /** What the brand pays in all. */
+      total?: number;
+      /** What the card is charged (the shortfall after the wallet). */
       amount: number;
       reference: string;
       accessCode: string | null;
@@ -113,6 +127,9 @@ export class EscrowService {
       amount: n(raw.amount),
       released: n(raw.released),
       platform_fee: n(raw.platform_fee),
+      service_fee: n(raw.service_fee),
+      service_fee_pct: n(raw.service_fee_pct),
+      fee_refunded: n(raw.fee_refunded),
       refunded: n(raw.refunded),
       held: n(raw.held),
       currency: raw.currency ?? 'NGN',
