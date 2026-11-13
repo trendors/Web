@@ -1,0 +1,55 @@
+<div class="pc">
+  @if (embedded) {
+    <p class="hint">Tell brands what you make content about. Campaigns that target a niche are only shown to creators who have it.</p>
+  } @else {
+    <header class="pc__head">
+      <div>
+        <h1>My niches</h1>
+        <p>Tell brands what you make content about. Campaigns that target a niche are only shown to creators who have it.</p>
+      </div>
+      <a class="btn" routerLink="/home/opportunities">Find campaigns</a>
+    </header>
+  }
+
+  @if (loading()) {
+    <section class="card"><p class="empty">Loading…</p></section>
+  } @else if (error()) {
+    <section class="card"><p class="empty" role="alert">{{ error() }}</p></section>
+  } @else {
+    @if (selected().length === 0) {
+      <p class="note note--warn" role="status">You have no niches yet, so you will not be matched to campaigns that target a niche.</p>
+    }
+
+    <section class="card">
+      <h2>Your niches <small>({{ selected().length }} of {{ maxNiches }})</small></h2>
+      @if (selected().length) {
+        <div class="chips">
+          @for (n of selected(); track n; let i = $index) {
+            <span class="chip on">{{ n }} <button type="button" class="x" (click)="remove(i)" [attr.aria-label]="'Remove ' + n">×</button></span>
+          }
+        </div>
+      } @else {
+        <p class="hint">Pick from the list below or add your own.</p>
+      }
+
+      @if (suggestions().length) {
+        <div>
+          <p class="hint">Suggestions</p>
+          <div class="chips">
+            @for (n of suggestions(); track n) {
+              <button type="button" class="chip" (click)="add(n)">+ {{ n }}</button>
+            }
+          </div>
+        </div>
+      }
+
+      <label class="f">Add your own
+        <input [(ngModel)]="draft" name="niche" [attr.maxlength]="maxLength" (keydown)="onKey($event)" (blur)="add(draft)" placeholder="e.g. Street wear, then press Enter" />
+      </label>
+    </section>
+
+    <div class="row row--end">
+      <button class="btn btn--primary" type="button" (click)="save()" [disabled]="saving() || (!dirty() && !draft.trim())">{{ saving() ? 'Saving…' : 'Save niches' }}</button>
+    </div>
+  }
+</div>

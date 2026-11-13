@@ -1,0 +1,145 @@
+<div class="pc">
+  <div class="pc__head">
+    <div><h1>My work</h1><p>What needs you now, what you have earned, and paid campaigns that fit you.</p></div>
+  </div>
+
+  <nav class="tabs">
+    <button type="button" [class.on]="tab() === 'mine'" (click)="tab.set('mine')">My work @if ((work$()?.needsYou?.length ?? 0) > 0) { <span class="pill pill--amber">{{ work$()!.needsYou.length }} to do</span> }</button>
+    <button type="button" [class.on]="tab() === 'discover'" (click)="tab.set('discover')">Find campaigns</button>
+  </nav>
+
+  @if (loading()) {
+    <div class="card"><p class="empty">Loading…</p></div>
+  } @else if (error()) {
+    <div class="card"><p class="note note--bad">{{ error() }}</p><button class="btn" type="button" (click)="reload()">Try again</button></div>
+  } @else {
+    @if (tab() === 'discover') {
+      @if (found(); as d) {
+        <div class="list">
+          @for (r of d.eligible; track r.campaignId) {
+            <div class="card">
+              <div class="top spread"><h3>{{ r.name }}</h3><span class="pill pill--green">Fit {{ r.evaluation.score }}%</span></div>
+              <p class="note">{{ r.product }} · {{ r.platforms.join(', ') }}@if (r.endsAt) { · ends {{ r.endsAt | date: 'mediumDate' }} }</p>
+              <div>@for (c of r.evaluation.checks; track c.key) { <div class="check ok">✓ {{ c.detail }}</div> }</div>
+              <label class="f">Why you? (optional)<input [(ngModel)]="pitches[r.campaignId]" maxlength="500" /></label>
+              <button class="btn btn--primary" type="button" (click)="apply(r)" [disabled]="busy() !== null">{{ busy() === 'ap' + r.campaignId ? 'Sending…' : 'Apply' }}</button>
+              <p class="hint">Applying does not reserve anything. You will see the full terms before you accept.</p>
+            </div>
+          } @empty {
+            <div class="card"><p class="empty">No open campaign fits you right now. Keep your <a routerLink="/home/profile" [queryParams]="{ tab: 'niches' }">niches</a>, location and <a routerLink="/home/profile" [queryParams]="{ tab: 'socials' }">connected accounts</a> up to date to be matched.</p></div>
+          }
+        </div>
+
+        @if (d.ineligibleCount > 0) {
+          <button class="link" type="button" (click)="showIneligible.set(!showIneligible())">{{ showIneligible() ? 'Hide' : 'Show' }} {{ d.ineligibleCount }} campaign(s) you are not eligible for</button>
+          @if (showIneligible()) {
+            <div class="list">
+              @for (r of d.ineligible ?? []; track r.campaignId) {
+                <div class="card">
+                  <h3>{{ r.name }}</h3>
+                  <span class="pill pill--red">Not open to you</span>
+                  @for (c of failedChecks(r); track c.key) { <div class="check no">✗ {{ c.detail }}</div> }
+                </div>
+              }
+            </div>
+          }
+        }
+      }
+    }
+
+    @if (tab() === 'mine') {
+      <section class="card">
+        <h2>Needs you now</h2>
+        @for (n of needs(); track n.key) {
+          <div class="item">
+            <div class="top">
+              <div><strong>{{ n.campaign }}</strong><div class="note">{{ n.label }}</div></div>
+              <div class="row row--tight">
+                @if (n.dueAt) { <span class="pill" [ngClass]="n.overdue ? 'pill--red' : 'pill--blue'">{{ n.overdue ? 'Overdue · ' : 'Due ' }}{{ n.dueAt | date: 'mediumDate' }}</span> }
+                @if (needLink(n); as link) { <a class="btn btn--sm btn--primary" [routerLink]="link" [queryParams]="{ as: 'creator' }">Open</a> }
+                @else { <a class="link" href="#offers" (click)="$event.preventDefault()">See offer below</a> }
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <p class="empty">You are all caught up. New invitations and tasks will appear here.</p>
+        }
+        @if (moreNeeds() > 0 && !showAllNeeds()) { <button class="link" type="button" (click)="showAllNeeds.set(true)">Show {{ moreNeeds() }} more</button> }
+      </section>
+
+      @if (work$(); as w) {
+        @if (hasEarnings()) {
+          <section class="card">
+            <h2>Earnings</h2>
+            <dl class="kv">
+              <div><dt>Paid to you</dt><dd><strong>{{ naira(w.earnings.basePaid + w.earnings.bonusPaid) }}</strong></dd></div>
+              <div><dt>Base fees on the way</dt><dd>{{ naira(w.earnings.baseComing) }}</dd></div>
+              @if (w.earnings.bonusWaiting > 0) { <div><dt>Bonus earned, being paid</dt><dd>{{ naira(w.earnings.bonusWaiting) }}</dd></div> }
+              @if (w.earnings.nextBonusCheck) { <div><dt>Next bonus check</dt><dd>{{ w.earnings.nextBonusCheck | date: 'medium' }}</dd></div> }
+            </dl>
+            <p class="note">Base fees are paid after your post is verified live. A bonus is decided once the results window closes. Withdraw from your wallet under Profile.</p>
+            <a class="btn btn--sm" routerLink="/home/profile">Withdraw</a>
+          </section>
+        }
+      }
+
+      @if (offers().length) {
+        <section class="card">
+          <h2 id="offers">Offers for you</h2>
+          <p class="note">Accepting fixes these terms and reserves your pay from the campaign budget. They cannot be changed afterwards without your agreement.</p>
+          @for (c of offers(); track c.id) {
+            <div class="item">
+              <div class="top"><strong>{{ c.campaign }}</strong><span class="pill pill--amber">{{ label(c.state) }}</span></div>
+              @if (c.offer; as o) {
+                <dl class="kv">
+                  <div><dt>Base fee</dt><dd>{{ naira(o.base_fee_total) }}</dd></div>
+                  <div><dt>Up to in rewards</dt><dd>{{ naira(o.reward_allocation) }}</dd></div>
+                  <div><dt>Revisions</dt><dd>{{ o.revision_rounds }} rounds</dd></div>
+                  <div><dt>Results window</dt><dd>{{ windowText(o) }}</dd></div>
+                  <div><dt>Deadline</dt><dd>{{ o.due_date | date: 'mediumDate' }}</dd></div>
+                  @if (c.offerExpiresAt) { <div><dt>Respond by</dt><dd>{{ c.offerExpiresAt | date: 'mediumDate' }}</dd></div> }
+                </dl>
+                @for (l of o.lines; track $index) { <p class="note">{{ l.quantity }} × {{ l.content_type }} on {{ l.platform }} · {{ naira(l.rate_per_post) }} each</p> }
+                @for (m of o.milestones; track m.id) { <p class="note">Reward: {{ m.metric === 'trending' ? 'your post trends' : (m.threshold | number) + ' ' + m.metric }} → {{ naira(m.amount) }} (cumulative)</p> }
+                @if (o.bonus_rule) { <p class="note">Campaign bonus shared if the whole campaign reaches {{ o.bonus_rule.threshold | number }} {{ o.bonus_rule.metric.replace('_', ' ') }}.</p> }
+                <p class="hint">Brand review within {{ o.brand_review_days }} days{{ o.auto_approval_days > 0 ? ' (auto-approved after ' + o.auto_approval_days + ')' : '' }} · {{ o.cure_period_days }}-day cure period for late work · {{ o.dispute_window_days }}-day dispute window · cancellation terms {{ o.cancellation_terms_version }}.{{ o.usage_rights ? ' Usage rights: ' + o.usage_rights : '' }} Rewards depend on verified results; nothing guarantees a post will trend.</p>
+              }
+              <div class="row">
+                <label class="f">Reason if declining (optional)<input [(ngModel)]="declineReason[c.id]" /></label>
+                <div class="row row--tight">
+                  <button class="btn btn--primary" type="button" (click)="accept(c)" [disabled]="busy() !== null">Accept offer</button>
+                  <button class="btn" type="button" (click)="decline(c)" [disabled]="busy() !== null">Decline</button>
+                </div>
+              </div>
+            </div>
+          }
+        </section>
+      }
+
+      <section class="card">
+        <h2>Active work</h2>
+        @for (c of work(); track c.id) {
+          <div class="item"><div class="top"><strong>{{ c.campaign }}</strong><span class="pill" [ngClass]="'pill--' + tone(c.state)">{{ label(c.state) }}</span></div>
+            <a class="btn btn--sm" [routerLink]="['/home/collaboration', c.id]" [queryParams]="{ as: 'creator' }">Open tasks &amp; earnings</a></div>
+        } @empty { <p class="empty">Nothing yet. Apply to a campaign or wait for an invite.</p> }
+      </section>
+
+      @if (pending().length) {
+        <section class="card">
+          <h2>Applications</h2>
+          @for (c of pending(); track c.id) {
+            <div class="item"><div class="top"><span>{{ c.campaign }}</span><span class="pill pill--amber">Waiting for the brand</span></div>
+              <button class="link" type="button" (click)="withdraw(c)" [disabled]="busy() !== null">Withdraw</button></div>
+          }
+        </section>
+      }
+
+      @if (closed().length) {
+        <section class="card">
+          <h2>Closed</h2>
+          @for (c of closed(); track c.id) { <div class="item"><div class="top"><span>{{ c.campaign }}</span><span class="pill" [ngClass]="'pill--' + tone(c.state)">{{ label(c.state) }}</span></div></div> }
+        </section>
+      }
+    }
+  }
+</div>

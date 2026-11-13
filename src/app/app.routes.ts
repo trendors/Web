@@ -29,6 +29,27 @@ export const routes: Routes = [
         path: 'shares',
         loadComponent: () => import('./pages/layout/shares/shares').then((m) => m.SharesDashboard),
       },
+      { path: 'niches', redirectTo: 'profile?tab=niches', pathMatch: 'full' },
+      {
+        path: 'plan/new',
+        loadComponent: () => import('./pages/layout/package-campaign/plan-wizard').then((m) => m.PlanWizard),
+      },
+      {
+        path: 'plan/:id/edit',
+        loadComponent: () => import('./pages/layout/package-campaign/plan-wizard').then((m) => m.PlanWizard),
+      },
+      {
+        path: 'plan/:id',
+        loadComponent: () => import('./pages/layout/package-campaign/plan-manage').then((m) => m.PlanManage),
+      },
+      {
+        path: 'opportunities',
+        loadComponent: () => import('./pages/layout/package-campaign/opportunities').then((m) => m.Opportunities),
+      },
+      {
+        path: 'collaboration/:id',
+        loadComponent: () => import('./pages/layout/package-campaign/collaboration-detail').then((m) => m.CollaborationDetail),
+      },
       {
         path: 'create-campaign',
         loadComponent: () =>

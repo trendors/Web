@@ -47,9 +47,10 @@ export class SocialVerify {
       return;
     }
 
-    const apiOrigin = new URL(environment.apiUrl).origin;
+    const oauthBase = environment.oauthApiUrl || environment.apiUrl;
+    const apiOrigin = new URL(oauthBase).origin;
     const popup = window.open(
-      `${environment.apiUrl}/user/twitter?${new URLSearchParams({ trendors_id: String(trendorsId) })}`,
+      `${oauthBase}/user/twitter?${new URLSearchParams({ trendors_id: String(trendorsId) })}`,
       'twitterAuth',
       'width=500,height=600',
     );
@@ -60,7 +61,13 @@ export class SocialVerify {
 
     this.removeMessageListener();
     this.messageListener = (event: MessageEvent) => {
-      if (event.origin !== apiOrigin || event.data?.type !== 'twitter-connected') return;
+      if (event.origin !== apiOrigin) return;
+      if (event.data?.type === 'twitter-error') {
+        this.removeMessageListener();
+        this.toast.show(this.twitterErrorText(event.data?.reason), 'error', 6000);
+        return;
+      }
+      if (event.data?.type !== 'twitter-connected') return;
       this.removeMessageListener();
       this.toast.show('X account connected.', 'success');
       if (typeof user?.id === 'number') {
@@ -68,6 +75,15 @@ export class SocialVerify {
       }
     };
     window.addEventListener('message', this.messageListener);
+  }
+
+  private twitterErrorText(reason: unknown): string {
+    switch (reason) {
+      case 'missing_session': return 'Could not link X: your session was lost during sign-in. Open the app and the API on the same host (localhost or 127.0.0.1) and try again.';
+      case 'access_denied': return 'X sign-in was cancelled.';
+      case 'save_failed': return 'X sign-in worked but we could not save it. Please try again.';
+      default: return 'Could not connect X. Please try again.';
+    }
   }
 
   private removeMessageListener(): void {

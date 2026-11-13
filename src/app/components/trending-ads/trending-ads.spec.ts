@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { provideRouter } from '@angular/router';
+
 import { TrendingAds } from './trending-ads';
 
 describe('TrendingAds', () => {
@@ -8,7 +10,8 @@ describe('TrendingAds', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TrendingAds]
+      imports: [TrendingAds],
+      providers: [provideRouter([])]
     })
     .compileComponents();
 

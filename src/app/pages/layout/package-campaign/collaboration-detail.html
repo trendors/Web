@@ -1,0 +1,205 @@
+<div class="pc">
+  @if (loading()) {
+    <div class="card"><p class="empty">Loading…</p></div>
+  } @else if (error()) {
+    <div class="card"><p class="note note--bad">{{ error() }}</p>
+      <a class="btn" [routerLink]="viewer === 'brand' && campaignId ? ['/home/plan', campaignId] : ['/home/opportunities']">Back</a></div>
+  } @else {
+    <div class="pc__head">
+      <div>
+        <h1>{{ viewer === 'brand' ? (who().name || 'Creator') : (who().campaign || 'Collaboration') }}</h1>
+        <p>{{ viewer === 'brand' ? 'Review content and results' : 'Your content, deadlines and earnings' }}</p>
+      </div>
+      <div class="row row--tight">
+        @if (who().state) { <span class="pill" [ngClass]="'pill--' + tone(who().state)">{{ label(who().state) }}</span> }
+        <a class="btn btn--sm" [routerLink]="viewer === 'brand' && campaignId ? ['/home/plan', campaignId] : ['/home/opportunities']">Back</a>
+      </div>
+    </div>
+
+    @if (terms(); as t) {
+      <section class="card">
+        <h2>Accepted terms</h2>
+        <dl class="kv">
+          <div><dt>Base fees</dt><dd>{{ naira(t.base_fee_total) }}</dd></div>
+          <div><dt>Reward allocation</dt><dd>{{ naira(t.reward_allocation) }}</dd></div>
+          <div><dt>Revision rounds</dt><dd>{{ t.revision_rounds }}</dd></div>
+          <div><dt>Results window</dt><dd>{{ windowText(t) }}</dd></div>
+          <div><dt>Brand review within</dt><dd>{{ t.brand_review_days }} days</dd></div>
+          <div><dt>Cure period</dt><dd>{{ t.cure_period_days }} days</dd></div>
+          <div><dt>Dispute window</dt><dd>{{ t.dispute_window_days }} days</dd></div>
+          <div><dt>Deadline</dt><dd>{{ t.due_date | date: 'mediumDate' }}</dd></div>
+        </dl>
+        @if (t.auto_approval_days > 0) { <p class="note note--warn">Content the brand has not reviewed in {{ t.auto_approval_days }} days is approved automatically.</p> }
+        <p class="hint">If the brand stops the work: {{ t.cancel_earned_fee_policy === 'pay_earned' ? 'content already approved is still paid' : 'approved but unpublished content is not paid' }}. Cancellation terms {{ t.cancellation_terms_version }}. {{ t.usage_rights ? 'Usage rights: ' + t.usage_rights : '' }}</p>
+      </section>
+    }
+
+    <section class="card">
+      <h2>Content</h2>
+      <div class="list">
+        @for (i of items(); track i.id) {
+          <div class="item">
+            <div class="top">
+              <strong>{{ itemName(i) }}</strong>
+              <span class="row row--tight">
+                <span class="pill" [ngClass]="'pill--' + tone(i.state)">{{ label(i.state) }}</span>
+                <span class="pill" [ngClass]="'pill--' + tone(i.fee_state)">Fee {{ naira(i.base_fee) }} · {{ label(i.fee_state) }}</span>
+              </span>
+            </div>
+            <p class="hint">
+              @if (i.due_at) { Due {{ i.due_at | date: 'mediumDate' }} · }
+              Revisions {{ i.revision_count }}/{{ rounds() }}
+              @if (i.window_ends_at) { · Results window {{ windowLeft(i) }} }
+            </p>
+            @if (i.draft_url) { <p class="note">Draft: <a [href]="i.draft_url" target="_blank" rel="noopener">{{ i.draft_url }}</a>@if (i.draft_note) { <br />{{ i.draft_note }} }</p> }
+            @if (i.post_url) { <p class="note">Live post: <a [href]="i.post_url" target="_blank" rel="noopener">{{ i.post_url }}</a></p> }
+            @if (hasOpenDispute(i)) { <p class="note note--warn">There is an open dispute on this fee. Only that amount is held.</p> }
+
+            <!-- Creator -->
+            @if (viewer === 'creator' && isActive()) {
+              @if (i.state === 'revision_requested') {
+                <p class="note note--warn"><strong>The brand asked for changes:</strong> {{ lastFeedback(i) ?? 'No details were given. Check History or message the brand.' }}</p>
+              }
+              @if (i.state === 'awaiting_submission' || i.state === 'revision_requested') {
+                <div class="row">
+                  <label class="f">Link to your draft or preview<input [(ngModel)]="fv(i.id).url" placeholder="https://" /></label>
+                  <label class="f">Note to the brand<input [(ngModel)]="fv(i.id).note" /></label>
+                  <button class="btn btn--primary" type="button" (click)="draft(i)" [disabled]="busy() !== null || !fv(i.id).url.trim()">Submit for review</button>
+                </div>
+              }
+              @if (i.state === 'awaiting_publication') {
+                <p class="note">Approved. Publish it as agreed, then send the live link. Your base fee is paid once Trendors verifies the post is live.</p>
+                <div class="row">
+                  <label class="f">Live post link<input [(ngModel)]="fv(i.id).url" placeholder="https://" /></label>
+                  <label class="f">Screenshot link (optional)<input [(ngModel)]="fv(i.id).screenshot" /></label>
+                  <button class="btn btn--primary" type="button" (click)="publish(i)" [disabled]="busy() !== null || !fv(i.id).url.trim()">I have published</button>
+                </div>
+              }
+              @if (i.state === 'published') { <p class="note">Proof received. Waiting for Trendors to verify the post is live. Saying "published" does not verify it.</p> }
+              @if (i.state === 'verified') {
+                <details>
+                  <summary class="link">Send results ({{ windowLeft(i) }})</summary>
+                  <div class="row">
+                    <label class="f">Views<input type="number" min="0" [(ngModel)]="mv(i.id).views" /></label>
+                    <label class="f">Likes<input type="number" min="0" [(ngModel)]="mv(i.id).likes" /></label>
+                    <label class="f">Comments<input type="number" min="0" [(ngModel)]="mv(i.id).comments" /></label>
+                    <label class="f">Shares<input type="number" min="0" [(ngModel)]="mv(i.id).shares" /></label>
+                  </div>
+                  <div class="row">
+                    <label class="f">Link or screenshot showing these numbers<input [(ngModel)]="mv(i.id).evidence_url" placeholder="https://" /></label>
+                    <label class="chips"><input type="checkbox" [(ngModel)]="mv(i.id).trending" /> The post trended</label>
+                    <button class="btn btn--primary" type="button" (click)="sendMetrics(i)" [disabled]="busy() !== null">Send results</button>
+                  </div>
+                  <p class="hint">Results count toward rewards only after a reviewer verifies them, and only inside the measurement window.</p>
+                </details>
+              }
+            }
+
+            <!-- Brand -->
+            @if (viewer === 'brand' && isActive() && i.state === 'in_review') {
+              <div class="row">
+                <label class="f">Feedback or reason<input [(ngModel)]="fv(i.id).note" placeholder="What should change?" /></label>
+                <div class="row row--tight">
+                  <button class="btn btn--primary btn--sm" type="button" (click)="approve(i)" [disabled]="busy() !== null">Approve</button>
+                  <button class="btn btn--sm" type="button" (click)="revise(i)" [disabled]="busy() !== null || i.revision_count >= rounds()">Request revision ({{ rounds() - i.revision_count }} left)</button>
+                  <button class="btn btn--danger btn--sm" type="button" (click)="fv(i.id).reason = fv(i.id).note; rejectItem(i)" [disabled]="busy() !== null">Reject</button>
+                </div>
+              </div>
+              @if (i.revision_count >= rounds()) { <p class="hint">The included revision rounds are used up. Approve the work, or reject it with a reason.</p> }
+            }
+
+            <div class="row row--tight">
+              @if (canDispute(i)) { <button class="link" type="button" (click)="startDispute({ itemId: i.id })">Dispute this fee</button> }
+              <button class="link" type="button" (click)="toggle(i.id)">{{ openItem() === i.id ? 'Hide history' : 'History' }}</button>
+            </div>
+            @if (openItem() === i.id) {
+              <div class="list">
+                @for (h of histories()[i.id] ?? []; track h.id) {
+                  <p class="hint">{{ h.createdAt | date: 'medium' }} · {{ label(h.from_state) }} → {{ label(h.to_state) }} ({{ h.actor_type }}){{ h.reason ? ': ' + h.reason : '' }}</p>
+                }
+              </div>
+            }
+          </div>
+        } @empty {
+          <p class="empty">No content tasks yet.</p>
+        }
+      </div>
+    </section>
+
+    @if (rewards(); as r) {
+      <section class="card">
+        <h2>Results &amp; rewards</h2>
+        @if (nextWindow(); as next) {
+          <p class="note">
+            <strong>{{ timeLeft(next).replace(' left', '') }} until the bonus is decided.</strong>
+            @if (viewer === 'creator') { Reach the target below by then to earn the extra on top of your base fee. If you do not, you keep the base fee. }
+            @else { If the creator reaches the target by then, they earn the extra. Anything not earned goes back to your wallet when the campaign is settled. }
+          </p>
+        }
+        <dl class="kv">
+          <div><dt>Verified views</dt><dd>{{ r.totals.views | number }}</dd></div>
+          <div><dt>Engagement</dt><dd>{{ r.totals.engagement | number }}</dd></div>
+          <div><dt>Trending posts</dt><dd>{{ r.totals.trending }}</dd></div>
+        </dl>
+        @for (m of r.milestones; track m.id) {
+          <div class="item">
+            <div class="top">
+              <span>{{ m.metric === 'trending' ? 'Post trends' : (m.threshold | number) + ' ' + m.metric }} → <strong>{{ naira(m.amount) }}</strong></span>
+              <span class="pill" [ngClass]="'pill--' + tone(m.state)">{{ label(m.state) }}</span>
+            </div>
+            <div class="bar"><i [style.width.%]="m.progress * 100"></i></div>
+            <p class="hint">{{ m.current | number }} of {{ m.threshold | number }} · milestones are cumulative and each is paid once</p>
+            @for (rw of r.rewards; track rw.id) {
+              @if (rw.milestone_id === m.id && viewer === 'creator' && isActive() && rw.state !== 'paid' && rw.state !== 'disputed') {
+                <button class="link" type="button" (click)="startDispute({ rewardId: rw.id })">Dispute this reward</button>
+              }
+            }
+          </div>
+        } @empty {
+          <p class="empty">This collaboration has no reward milestones.</p>
+        }
+        @for (w of r.windows; track w.itemId) { <p class="hint">{{ itemOf(w.itemId) }}: results window {{ timeLeft(w.endsAt) }}</p> }
+      </section>
+    }
+
+    @if (disputeFor) {
+      <section class="card">
+        <h2>Open a dispute</h2>
+        <p class="note">Only the disputed amount is held. The rest of your earnings and the campaign carry on.</p>
+        <label class="f">What is the problem?<textarea [(ngModel)]="disputeReason"></textarea></label>
+        <label class="f">Link to evidence (optional)<input [(ngModel)]="disputeUrl" /></label>
+        <div class="row row--end row--tight">
+          <button class="btn" type="button" (click)="disputeFor = null">Cancel</button>
+          <button class="btn btn--primary" type="button" (click)="sendDispute()" [disabled]="busy() !== null">Open dispute</button>
+        </div>
+      </section>
+    }
+
+    @if (disputes().length) {
+      <section class="card">
+        <h2>Disputes</h2>
+        @for (d of disputes(); track d.id) {
+          <div class="item">
+            <div class="top"><span>{{ d.content_item_id ? itemOf(d.content_item_id) : 'Reward' }} · {{ naira(d.amount) }} · opened by {{ d.opened_by }}</span><span class="pill" [ngClass]="'pill--' + (d.status === 'open' ? 'amber' : 'green')">{{ d.status }}</span></div>
+            <p class="note">{{ d.reason }}</p>
+            @if (d.status === 'resolved') { <p class="note">Decision: creator {{ naira(d.to_creator) }}, brand {{ naira(d.to_brand) }}. {{ d.resolution_note }}</p> }
+            @else {
+              <div class="row"><label class="f">Add evidence<input [(ngModel)]="evidenceNote[d.id]" /></label><button class="btn btn--sm" type="button" (click)="addEvidence(d)" [disabled]="busy() !== null">Add</button></div>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    @if (isActive()) {
+      <section class="card">
+        <h2>Stop this collaboration</h2>
+        <p class="note">Work already earned is paid. Anything only reserved goes back to the campaign. This cannot be undone.</p>
+        <div class="row">
+          <label class="f">Reason (optional)<input [(ngModel)]="stopReason" /></label>
+          <button class="btn btn--danger" type="button" (click)="stop()" [disabled]="busy() !== null">Stop collaboration</button>
+        </div>
+      </section>
+    }
+  }
+</div>

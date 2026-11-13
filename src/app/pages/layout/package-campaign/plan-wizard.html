@@ -1,0 +1,326 @@
+<div class="pc">
+  <div class="pc__head">
+    <div>
+      <h1>{{ campaignId() ? 'Edit campaign' : 'New package campaign' }}</h1>
+      <p>Pick a package, describe the work and set what creators earn. Nothing is charged until you review and pay.</p>
+    </div>
+    <a class="btn" routerLink="/home/view-campaign">Back to campaigns</a>
+  </div>
+
+  @if (loading()) {
+    <div class="card"><p class="empty">Loading…</p></div>
+  } @else {
+    @if (priceLine()) { <p class="price-strip" role="status">{{ priceLine() }}</p> }
+    <nav class="steps" aria-label="Steps">
+      @for (s of steps; track s; let i = $index) {
+        <button type="button" [class.on]="step() === i" [class.done]="i < step()" (click)="openStep(i)">{{ i + 1 }}. {{ s }}</button>
+      }
+    </nav>
+
+    @if (problems().length) {
+      <ul class="errors">@for (p of problems(); track p) { <li>{{ p }}</li> }</ul>
+    }
+
+    <!-- 1. Package -->
+    @if (step() === 0) {
+      <section class="card">
+        <h2>Choose a package</h2>
+        <p class="note">Ranges and follower bands are guidelines, not a promise of who will take part or what results you will get.</p>
+        <div class="pkgs">
+          @for (p of packages(); track p.id) {
+            <button type="button" class="pkg" [class.on]="form.package_key === p.key" (click)="pickPackage(p)">
+              <strong>{{ p.name }}</strong>
+              <span class="rng">{{ range(p) }}</span>
+              @if (followers(p)) { <small>{{ followers(p) }}</small> }
+              @if (p.description) { <small>{{ p.description }}</small> }
+              @if (p.features?.length) { <ul>@for (f of p.features; track f) { <li>{{ f }}</li> }</ul> }
+              @if (p.managed) { <span class="pill pill--amber">Managed · reviewed by Trendors</span> }
+            </button>
+          } @empty {
+            <p class="empty">No packages are available yet.</p>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- 2. About the campaign -->
+    @if (step() === 1) {
+      <section class="card">
+        <h2>The brief</h2>
+        <label class="f">Campaign name<input [(ngModel)]="form.name" maxlength="200" /></label>
+        <label class="f">Brand, product or service<input [(ngModel)]="form.product" maxlength="200" /></label>
+        <label class="f">Brief for creators<small>What to say, show and avoid.</small><textarea [(ngModel)]="form.description"></textarea></label>
+        <div class="f"><span>Goal <small>(optional)</small></span>
+          <div class="chips">
+            @for (o of objectiveChoices; track o) {
+              <button type="button" class="chip" [class.on]="form.objectives.toLowerCase().includes(o.toLowerCase())" (click)="addObjective(o)">{{ o }}</button>
+            }
+          </div>
+          <textarea [(ngModel)]="form.objectives" placeholder="Anything else you want creators to know about the goal"></textarea>
+        </div>
+        <div class="f"><span>When</span>
+          <div class="row">
+            <label class="f">Starts<input type="date" [(ngModel)]="form.start_date" /></label>
+            <label class="f">Ends<input type="date" [(ngModel)]="form.end_date" /></label>
+          </div>
+          <div class="chips">
+            <button type="button" class="chip" (click)="setDuration(2)">2 weeks</button>
+            <button type="button" class="chip" (click)="setDuration(4)">4 weeks</button>
+            <button type="button" class="chip" (click)="setDuration(8)">8 weeks</button>
+          </div>
+        </div>
+        @if (showUsage) {
+          <label class="f">Content usage rights<small>How you may reuse the content. Creators see this before they accept.</small><textarea [(ngModel)]="form.usage_rights"></textarea></label>
+        } @else {
+          <p class="note">Content rights: {{ form.usage_rights }} <button type="button" class="link" (click)="showUsage = true">Change</button></p>
+        }
+      </section>
+
+      <section class="card">
+        <h2>Who can take part</h2>
+        <p class="note">Every filter you set is applied strictly. If no creator matches, we will tell you which filter to widen. Nothing is relaxed for you.</p>
+
+        <div class="f"><span>Niches</span>
+          <div class="chips">
+            @for (n of nicheSuggestions; track n) {
+              @if (!form.niches.includes(n)) { <button type="button" class="chip" (click)="addChip('niches', n)">+ {{ n }}</button> }
+            }
+          </div>
+          <div class="chips chips--field">
+            @for (n of form.niches; track n; let i = $index) {
+              <span class="chip on">{{ n }} <button type="button" class="x" (click)="removeChip('niches', i)" [attr.aria-label]="'Remove ' + n">×</button></span>
+            }
+            <input class="chip-input" [(ngModel)]="draft.niches" (keydown)="onChipKey($event, 'niches')" (blur)="addChip('niches', draft.niches)" placeholder="Add another and press Enter" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="f"><span>Creator location <small>(optional)</small></span>
+            <div class="chips">
+              @for (c of countrySuggestions; track c) {
+                @if (!form.creator_countries.includes(c)) { <button type="button" class="chip" (click)="addChip('creator_countries', c)">+ {{ c }}</button> }
+              }
+            </div>
+            <div class="chips chips--field">
+              @for (c of form.creator_countries; track c; let i = $index) {
+                <span class="chip on">{{ c }} <button type="button" class="x" (click)="removeChip('creator_countries', i)" [attr.aria-label]="'Remove ' + c">×</button></span>
+              }
+              <input class="chip-input" [(ngModel)]="draft.creator_countries" (keydown)="onChipKey($event, 'creator_countries')" (blur)="addChip('creator_countries', draft.creator_countries)" placeholder="Anywhere" />
+            </div>
+          </div>
+          <div class="f"><span>Audience location <small>(optional)</small></span>
+            <div class="chips">
+              @for (c of countrySuggestions; track c) {
+                @if (!form.audience_countries.includes(c)) { <button type="button" class="chip" (click)="addChip('audience_countries', c)">+ {{ c }}</button> }
+              }
+            </div>
+            <div class="chips chips--field">
+              @for (c of form.audience_countries; track c; let i = $index) {
+                <span class="chip on">{{ c }} <button type="button" class="x" (click)="removeChip('audience_countries', i)" [attr.aria-label]="'Remove ' + c">×</button></span>
+              }
+              <input class="chip-input" [(ngModel)]="draft.audience_countries" (keydown)="onChipKey($event, 'audience_countries')" (blur)="addChip('audience_countries', draft.audience_countries)" placeholder="Anywhere" />
+            </div>
+          </div>
+        </div>
+
+        <div class="f"><span>Followers <small>(optional){{ chosenPackage() && followers(chosenPackage()!) ? ' · suggested for ' + chosenPackage()!.name + ': ' + followers(chosenPackage()!) : '' }}</small></span>
+          <div class="row">
+            <label class="f">At least<input type="number" min="0" [(ngModel)]="form.follower_min" placeholder="No minimum" /></label>
+            <label class="f">At most<input type="number" min="0" [(ngModel)]="form.follower_max" placeholder="No maximum" /></label>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- 3. Platforms and creators -->
+    @if (step() === 2) {
+      @if (priced()) {
+        <section class="card">
+          <h2>Platforms</h2>
+          <p class="note">Choose where creators should post. Each creator posts once on every platform you select, and {{ summary()?.revisionPolicy?.includedRounds ?? 2 }} revision rounds are included.</p>
+          @if (unavailableChosen().length) {
+            <p class="note note--warn" role="alert">Creators cannot connect {{ unavailableChosen().map(platformName).join(', ') }} yet, so this campaign cannot be submitted. Remove it and choose {{ connectable().map(platformName).join(' or ') }}.</p>
+          }
+          <div class="chips">
+            @for (p of packagePlatforms; track p) {
+              <button type="button" class="chip" [class.on]="form.platforms.includes(p)" [attr.aria-pressed]="form.platforms.includes(p)" [disabled]="platformLocked(p)" [attr.title]="platformLocked(p) ? 'Creators cannot connect ' + platformName(p) + ' yet' : null" (click)="togglePlatform(p)">{{ platformName(p) }}@if (platformLocked(p)) { <small> · coming soon</small> }</button>
+            }
+          </div>
+          @if (form.platforms.length > 1) {
+            <div class="f" style="margin-top:16px"><span>Priority</span>
+              <small>Put the platform that matters most first.</small>
+              <ol class="prio">
+                @for (p of form.platforms; track p; let i = $index) {
+                  <li>
+                    <span class="pill pill--blue">{{ i + 1 }}</span> {{ platformName(p) }}
+                    <button type="button" class="link" [disabled]="i === 0" (click)="movePlatform(i, -1)" [attr.aria-label]="'Move ' + platformName(p) + ' up'">Up</button>
+                    <button type="button" class="link" [disabled]="i === form.platforms.length - 1" (click)="movePlatform(i, 1)" [attr.aria-label]="'Move ' + platformName(p) + ' down'">Down</button>
+                  </li>
+                }
+              </ol>
+            </div>
+          }
+        </section>
+
+        <section class="card">
+          <h2>Base fee</h2>
+          <dl class="kv">
+            <div><dt>{{ chosenPackage()?.name }} base fee per post</dt><dd>{{ naira(fee().base) }}</dd></div>
+            <div><dt>Posts per creator</dt><dd>{{ fee().posts }}</dd></div>
+            <div><dt>Base fee per creator</dt><dd>{{ naira(fee().baseTotal) }}</dd></div>
+          </dl>
+          <p class="note">Paid to the creator after you approve the content and the post is verified live. The fee comes from your package and cannot be changed here.</p>
+          @if (fee().extra > 0) {
+            <p class="note note--warn">
+              <strong>You may be charged up to {{ naira(fee().maxTotal) }} per creator.</strong>
+              If {{ milestoneText() }} within {{ delayText() }} of going live, the creator also earns up to {{ naira(fee().extraTotal) }} on top of the base fee.
+              If the creator does not reach it, they are paid only the base fee and the rest is returned to your wallet.
+              We hold the full amount while the campaign runs.
+            </p>
+            @if (tierRows().length > 1) {
+              <p class="note">Each target the post reaches adds to what the creator earns:</p>
+              <ul class="note">
+                @for (r of tierRows(); track r.label) { <li>{{ r.label }}: +{{ naira(r.amount) }}</li> }
+              </ul>
+            }
+          }
+        </section>
+      } @else {
+        <section class="card">
+          <h2>Deliverables</h2>
+          <p class="note note--warn">{{ chosenPackage() ? 'The ' + chosenPackage()!.name + ' package has no creator fee set yet, so there is nothing to show here. Please pick another package or try again later.' : 'Choose a package first. Its base fee is shown here.' }}</p>
+          <button type="button" class="btn btn--sm" (click)="go(0)">Choose a package</button>
+        </section>
+      }
+    }
+
+        @if (step() === 2) {
+      @if (priced()) {
+        <section class="card">
+          <h2>Creators and budget</h2>
+          <p class="note">Trendors' service fee is added on top and shown before you pay. It is never taken out of creator pay.</p>
+          <label class="f">How many creators do you want?
+            <input type="number" min="1" step="1" [(ngModel)]="form.creators_count" />
+          </label>
+          <dl class="kv">
+            <div><dt>Base fees ({{ creators() }} × {{ naira(fee().baseTotal) }})</dt><dd>{{ naira(baseBudget()) }}</dd></div>
+            @if (fee().extra > 0) { <div><dt>Held for milestone extras</dt><dd>{{ naira(extraBudget()) }}</dd></div> }
+            <div><dt>Held in escrow (maximum)</dt><dd><strong>{{ naira(escrowMax()) }}</strong></dd></div>
+            @if (chosenPackage(); as p) { <div><dt>{{ p.name }} range</dt><dd>{{ range(p) }}</dd></div> }
+          </dl>
+          @if (fee().extra > 0) {
+            <p class="note">The extra is paid only if {{ milestoneText() }} within {{ delayText() }} of going live. Anything not earned is returned to your wallet when the campaign is settled.</p>
+          }
+          @if (outsideRange()) {
+            <p class="note note--warn">This budget is outside the package range. It may be sent for review before you can pay.</p>
+          }
+        </section>
+      } @else {
+        <section class="card">
+          <h2>Creators and budget</h2>
+          <p class="note note--warn">Pick a package with a creator fee first. The budget is worked out from it.</p>
+          <button type="button" class="btn btn--sm" (click)="go(0)">Choose a package</button>
+        </section>
+      }
+    }
+
+    <!-- 6. Review -->
+    @if (step() === 3) {
+      @if (summary(); as s) {
+        <section class="card">
+          <div class="spread"><h2>{{ s.name || 'Untitled campaign' }}</h2><span class="pill" [ngClass]="'pill--' + tone(s.lifecycle)">{{ label(s.lifecycle) }}</span></div>
+          <dl class="kv">
+            <div><dt>Package</dt><dd>{{ s.package?.name ?? 'None' }}</dd></div>
+            <div><dt>Platforms{{ s.platformPriority.length > 1 ? ' (by priority)' : '' }}</dt><dd>{{ (s.platformPriority.length ? s.platformPriority : s.filters.platforms).join(', ') || 'None' }}</dd></div>
+            @if (s.creators) { <div><dt>Creators</dt><dd>{{ s.creators }}</dd></div> }
+            <div><dt>Niches</dt><dd>{{ s.filters.niches.join(', ') || 'None' }}</dd></div>
+            <div><dt>Followers</dt><dd>{{ s.filters.followerMin ?? 0 }} – {{ s.filters.followerMax ?? 'no limit' }}</dd></div>
+            <div><dt>Runs</dt><dd>{{ s.deadlines.start | date: 'mediumDate' }} – {{ s.deadlines.end | date: 'mediumDate' }}</dd></div>
+            <div><dt>Revisions</dt><dd>{{ s.revisionPolicy.includedRounds }} included</dd></div>
+            <div><dt>Measurement</dt><dd>{{ s.measurement.hours ? s.measurement.hours + ' hours' : s.measurement.days + ' days' }} from {{ s.measurement.startsAt }}</dd></div>
+            <div><dt>Cancellation terms</dt><dd>{{ s.cancellationTermsVersion }}</dd></div>
+          </dl>
+          <div class="f"><span>Deliverables</span>
+            @for (d of s.deliverables; track $index) {
+              <p class="note">{{ d.quantity }} × {{ d.content_type }} on {{ d.platform }} · {{ naira(d.rate_per_post) }} each · verified by {{ s.verification[d.platform] ?? 'evidence review' }}</p>
+            }
+          </div>
+          @if (s.rewards.milestones.length) {
+            <div class="f"><span>Reward milestones (cumulative)</span>
+              @for (m of s.rewards.milestones; track m.id) {
+                <p class="note">{{ m.metric === 'trending' ? 'Post trends' : m.threshold.toLocaleString() + ' ' + m.metric }} → {{ naira(m.amount) }}</p>
+              }
+            </div>
+          }
+          @if (s.rewards.campaignBonusRule; as r) {
+            <p class="note">Campaign bonus pool {{ naira(s.compensation.campaignBonusPool) }} when the campaign reaches {{ r.threshold.toLocaleString() }} {{ r.metric.replace('_', ' ') }}.</p>
+          }
+        </section>
+
+        <section class="card">
+          <h2>What you pay</h2>
+          <div class="lines">
+            <div><span>Creator base fees</span><span>{{ naira(s.compensation.baseFee) }}</span></div>
+            <div><span>Individual performance rewards</span><span>{{ naira(s.compensation.rewardPool) }}</span></div>
+            <div><span>Campaign-wide bonus</span><span>{{ naira(s.compensation.campaignBonusPool) }}</span></div>
+            <div><span>Trendors service fee ({{ s.charges.serviceFeePct }}%)</span><span>{{ naira(s.charges.serviceFee) }}</span></div>
+            @for (o of s.charges.other; track o.label) { <div><span>{{ o.label }}</span><span>{{ naira(o.amount) }}</span></div> }
+            <div class="total"><span>Total payable</span><span>{{ naira(s.totalPayable) }}</span></div>
+          </div>
+          <p class="hint">Unspent reward and bonus money, and any service fee not earned, is returned to you when the campaign closes. {{ s.note }}</p>
+        </section>
+
+        @if (s.lifecycle === 'draft') {
+          @if (s.validation.errors.length) {
+            <section class="card">
+              <h2>Fix these before submitting</h2>
+              <ul class="errors">@for (e of s.validation.errors; track e) { <li>{{ e }}</li> }</ul>
+            </section>
+          }
+          @if (s.validation.flags.length) {
+            <p class="note note--warn">This campaign will be reviewed by Trendors before you can pay ({{ s.validation.flags.join(', ').replace('_', ' ') }}).</p>
+          }
+          <div class="row row--end row--tight">
+            <button class="btn" type="button" (click)="saveAndExit()" [disabled]="busy() !== null">Save draft</button>
+            <button class="btn btn--primary" type="button" (click)="submit()" [disabled]="busy() !== null || s.validation.errors.length > 0">
+              {{ busy() === 'submit' ? 'Submitting…' : 'Submit campaign' }}
+            </button>
+          </div>
+        }
+
+        @if (s.lifecycle === 'under_review') {
+          <section class="card">
+            <h2>Waiting for Trendors review</h2>
+            <p class="note">A person at Trendors will check this campaign. You will be told as soon as you can pay.</p>
+            <a class="btn" [routerLink]="['/home/plan', s.campaignId]">Open campaign</a>
+          </section>
+        }
+
+        @if (s.lifecycle === 'awaiting_payment') {
+          <section class="card">
+            <h2>Ready to pay</h2>
+            <p class="note">The price is fixed at {{ naira(s.totalPayable) }}. We use your wallet first and charge your card for any shortfall.</p>
+            <div class="row row--end row--tight">
+              <a class="btn" [routerLink]="['/home/plan', s.campaignId]">Pay later</a>
+              <button class="btn btn--primary" type="button" (click)="pay()" [disabled]="busy() !== null">{{ busy() === 'pay' ? (payStep() || 'Working…') : 'Pay ' + naira(s.totalPayable) }}</button>
+            </div>
+          </section>
+        }
+      } @else {
+        <section class="card"><p class="empty">Fill in the earlier steps first.</p></section>
+      }
+    }
+
+    @if (step() < steps.length - 1) {
+      <div class="spread">
+        <button class="btn" type="button" (click)="go(step() - 1)" [disabled]="step() === 0 || busy() !== null">Back</button>
+        <div class="row row--tight">
+          <button class="btn" type="button" (click)="saveAndExit()" [disabled]="busy() !== null">Save &amp; exit</button>
+          <button class="btn btn--primary" type="button" (click)="next()" [disabled]="busy() !== null">{{ busy() === 'save' ? 'Saving…' : 'Save & continue' }}</button>
+        </div>
+      </div>
+    } @else if (summary()?.lifecycle === 'draft') {
+      <button class="link" type="button" (click)="go(step() - 1)">Back</button>
+    }
+  }
+</div>

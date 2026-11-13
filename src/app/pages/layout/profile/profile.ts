@@ -26,13 +26,16 @@ import { TopupModalComponent } from '../../../components/topup-modal/topup-modal
 import { WalletService } from '../../../core/services/wallet/wallet.service';
 import { ToastService } from '../../../components/toast/toast.service';
 import { SocialVerify } from "../social-verify/social-verify";
+import { Niches } from '../niches/niches';
+import { ActiveProfileService } from '../../../core/services/activeprofile.service';
+import { ActivatedRoute } from '@angular/router';
 import { UpdateUserDto, User } from '../../../core/api';
 import { WalletService as WalletApiService } from '../../../core/api';
 import { userFirstName, userLastName } from '../../../core/utils/user-display';
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule, AsyncPipe, DecimalPipe, TopupModalComponent, SocialVerify],
+  imports: [ReactiveFormsModule, AsyncPipe, DecimalPipe, TopupModalComponent, SocialVerify, Niches],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -57,13 +60,19 @@ export class Profile implements OnInit {
   bankCodeCtrl = new FormControl('', Validators.required);
   updatingAccount = signal(false);
   showDropdown = false;
-  activeTab: 'wallet' | 'profile' | 'security' | 'socials' = 'wallet';
-  readonly tabs = [
+  private readonly activeProfile = inject(ActiveProfileService).activeProfile;
+  private readonly route = inject(ActivatedRoute);
+  activeTab: 'wallet' | 'profile' | 'security' | 'socials' | 'niches' = 'wallet';
+  private readonly allTabs = [
     { id: 'wallet', label: 'Wallet' },
     { id: 'profile', label: 'Profile' },
     { id: 'security', label: 'Security' },
     { id: 'socials', label: 'Socials' },
+    { id: 'niches', label: 'Niches' },
   ] as const;
+  /** Niches are what brands match creators on, so only a creator's profile has that tab. */
+  get isCreator() { return this.activeProfile() === 'creative'; }
+  get tabs() { return this.allTabs.filter((t) => t.id !== 'niches' || this.activeProfile() === 'creative'); }
 
 
    private passwordMatchValidator: ValidatorFn = (
@@ -111,6 +120,9 @@ export class Profile implements OnInit {
 
 
   ngOnInit(): void {
+    // Deep links such as /home/profile?tab=niches open that tab.
+    const wanted = this.route.snapshot.queryParamMap.get('tab');
+    if (wanted && this.tabs.some((t) => t.id === wanted)) this.activeTab = wanted as typeof this.activeTab;
     // Track every user emission (the full profile arrives after login/hydrate),
     // but only overwrite the form while the user hasn't started editing it.
     this.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {

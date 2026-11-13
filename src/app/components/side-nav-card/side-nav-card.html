@@ -16,6 +16,10 @@
         <span class="icon">➕</span>
         <span class="nav-label">Create Campaign</span>
       </a>
+      <a routerLink="/home/plan/new" routerLinkActive="active" class="nav-item">
+        <span class="icon">📦</span>
+        <span class="nav-label">Package Campaign</span>
+      </a>
       <a routerLink="/home/view-campaign" routerLinkActive="active" class="nav-item">
         <span class="icon">🔍</span>
         <span class="nav-label">View Campaigns</span>
@@ -27,6 +31,10 @@
     @if ( activeProfile() === 'creative') {
     <div class="nav-group">
       <div class="group-label">Influencer Hub</div>
+      <a routerLink="/home/opportunities" routerLinkActive="active" class="nav-item">
+        <span class="icon">🎯</span>
+        <span class="nav-label">My work</span>
+      </a>
       <a routerLink="/home/shares" routerLinkActive="active" class="nav-item">
         <span class="icon">📊</span>
         <span class="nav-label">My Shares</span>

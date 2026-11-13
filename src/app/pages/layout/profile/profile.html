@@ -261,4 +261,9 @@
   @if (activeTab === 'socials') {
     <app-social-verify></app-social-verify>
   }
+
+  <!-- Niches -->
+  @if (activeTab === 'niches' && isCreator) {
+    <app-niches [embedded]="true"></app-niches>
+  }
 </section>
