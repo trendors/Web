@@ -34,11 +34,19 @@
 
     <div class="ui-card">
       <h2 class="card-title">Withdrawal account</h2>
-      <p class="card-sub">Payouts are sent to this bank account.</p>
 
       @if (loadingBank()) {
         <div class="ui-empty"><span class="ui-spinner" aria-hidden="true"></span>Loading bank details…</div>
+      } @else if (savedBank() && !editingBank()) {
+        <p class="card-sub">Payouts are sent to this bank account.</p>
+        <dl class="bank-details">
+          <div><dt>Bank</dt><dd>{{ savedBank()!.bankName }}</dd></div>
+          <div><dt>Account number</dt><dd class="tabular">{{ maskAccount(savedBank()!.accountNumber) }}</dd></div>
+          <div><dt>Account name</dt><dd>{{ savedBank()!.accountName }}</dd></div>
+        </dl>
+        <button class="ui-btn secondary block" type="button" (click)="editingBank.set(true)">Change account</button>
       } @else {
+        <p class="card-sub">{{ savedBank() ? 'Enter the account payouts should go to instead.' : 'Add the bank account your payouts are sent to.' }}</p>
         <form class="ui-form" [formGroup]="bankForm" (ngSubmit)="onSaveBankAccount()" novalidate>
           <div class="ui-field bank-field">
             <label class="ui-label" for="bank">Bank</label>
@@ -119,6 +127,9 @@
               Save withdrawal account
             }
           </button>
+          @if (savedBank()) {
+            <button class="ui-btn ghost block" type="button" (click)="cancelBankEdit()">Cancel</button>
+          }
         </form>
       }
     </div>
@@ -198,6 +209,10 @@
       }
       <button class="ui-btn danger block" type="button" (click)="onDelete()">Delete account</button>
     </div>
+  }
+
+  @if (activeTab === 'profile') {
+    <app-add-profile></app-add-profile>
   }
 
   <!-- Security -->

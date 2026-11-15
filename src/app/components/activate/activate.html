@@ -21,8 +21,20 @@
         @case ('expired') {
           <i class="ti ti-clock-exclamation warn" aria-hidden="true"></i>
           <h1 class="auth-title">This link has expired</h1>
-          <p class="auth-sub">Activation links are only valid for 48 hours. Request a new one to continue.</p>
-          <button class="ui-btn block" type="button" (click)="goToLogin()">Back to sign in</button>
+          <p class="auth-sub">Activation links are only valid for 24 hours. Enter your email and we will send a new one.</p>
+          @if (resendState() === 'sent') {
+          <p class="auth-sub" role="status">If that account still needs verifying, a new link is on its way. It can take a minute.</p>
+          } @else {
+          <input class="ui-input" type="email" name="email" autocomplete="email" placeholder="you@example.com"
+            [value]="resendEmail()" (input)="resendEmail.set($any($event.target).value)" (keydown.enter)="resend()" />
+          @if (resendState() === 'error') {
+          <p class="auth-sub" role="alert">Could not send it right now. Try again in a moment.</p>
+          }
+          <button class="ui-btn block" type="button" (click)="resend()" [disabled]="!resendEmail().trim() || resendState() === 'sending'">
+            {{ resendState() === 'sending' ? 'Sending…' : 'Send a new link' }}
+          </button>
+          }
+          <button class="ui-btn secondary block" type="button" (click)="goToLogin()">Back to sign in</button>
         }
         @case ('invalid') {
           <i class="ti ti-alert-circle warn" aria-hidden="true"></i>

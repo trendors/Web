@@ -32,7 +32,7 @@ export class LoginEffects {
             return LoginActions.loginSuccess({ response });
           }),
           catchError((error) =>
-            of(LoginActions.loginFailure({ error: error?.message || 'Login failed' })),
+            of(LoginActions.loginFailure({ error: error?.message || 'Login failed', code: error?.code })),
           ),
         ),
       ),

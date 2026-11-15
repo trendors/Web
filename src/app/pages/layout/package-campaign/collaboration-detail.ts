@@ -83,7 +83,7 @@ export class CollaborationDetail implements OnInit {
       this.terms.set(terms.length ? terms[terms.length - 1].terms : null);
       this.items.set(items);
       // A creator whose work was sent back needs to see why without opening History.
-      for (const it of items) if (it.state === 'revision_requested') void this.loadHistory(it.id, true);
+      for (const it of items) if (it.state === 'revision_requested' || it.state === 'awaiting_publication') void this.loadHistory(it.id, true);
       this.rewards.set(rewards);
       this.disputes.set(disputes);
       this.error.set('');
@@ -160,6 +160,12 @@ export class CollaborationDetail implements OnInit {
     const ev = [...(this.histories()[i.id] ?? [])].reverse().find((h) => h.to_state === 'revision_requested' && h.reason);
     return ev?.reason ?? null;
   }
+  /** Why the last published post was not accepted (by Trendors or the platform check), while the creator is asked to publish again. */
+  lastPostRejection(i: ContentItem): string | null {
+    if (i.state !== 'awaiting_publication') return null;
+    const ev = [...(this.histories()[i.id] ?? [])].reverse().find((h) => h.from_state === 'published' && h.to_state === 'awaiting_publication' && h.reason);
+    return ev?.reason ?? null;
+  }
   toggle(id: number) {
     if (this.openItem() === id) { this.openItem.set(null); return; }
     this.openItem.set(id);
@@ -189,6 +195,8 @@ export class CollaborationDetail implements OnInit {
   canDispute(i: ContentItem) { return this.isActive() && !['paid', 'disputed', 'released'].includes(i.fee_state) && i.state !== 'cancelled'; }
   hasOpenDispute(i: ContentItem) { return this.disputes().some((d) => d.content_item_id === i.id && d.status === 'open'); }
   windowLeft(i: ContentItem) { return timeLeft(i.window_ends_at); }
+  /** The platform reads this post's numbers for us (X), with the latest reading if there is one. */
+  reading(i: ContentItem) { return (this.rewards()?.readings ?? []).find((r) => r.itemId === i.id) ?? null; }
   itemName(i: ContentItem) { return `${i.content_type} on ${i.platform}${i.unit > 1 ? ' #' + i.unit : ''}`; }
   itemOf(id: number | null) { const i = this.items().find((x) => x.id === id); return i ? this.itemName(i) : 'a reward'; }
 }

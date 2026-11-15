@@ -15,8 +15,17 @@
       <h1>Check your email</h1>
       <p class="sub">
         We sent an activation link to <strong>{{ data.email }}</strong>.
-        Activate your profile from that email before signing in.
+        Open the link in that email to activate your profile.
       </p>
+      <p class="sub activation-sent__waiting" role="status">Waiting for activation…</p>
+      <div class="actions actions--stack">
+        <button type="button" class="ui-btn" (click)="login()">I've activated, sign in</button>
+        <button type="button" class="ui-btn ghost" (click)="resend()" [disabled]="resendState === 'sending' || resendState === 'sent'">
+          {{ resendState === 'sending' ? 'Sending…' : resendState === 'sent' ? 'New link sent' : 'Resend email' }}
+        </button>
+        <p class="sub" role="alert" *ngIf="resendState === 'error'">Could not send it right now. Try again in a moment.</p>
+        <p class="sub" role="status" *ngIf="resendState === 'sent'">A new link is on its way. It can take a minute.</p>
+      </div>
     </div>
 
     <ng-container *ngIf="!activationSent">

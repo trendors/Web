@@ -19,7 +19,7 @@
 
   <div class="earnings__divider"></div>
 
-  <button class="earnings__withdraw-btn" [routerLink]="['/profile']">
+  <button class="earnings__withdraw-btn" [routerLink]="['/home/profile']" [queryParams]="{ tab: 'wallet' }">
     <i class="ti ti-wallet" aria-hidden="true"></i>
     Withdraw
   </button>

@@ -29,6 +29,12 @@
       <div class="platform-right">
         @if(!(user$ | async)?.twitter_handle) {
         <button class="btn-connect" (click)="openTwitter()" type="button">Connect</button>
+        } @else {
+        @if (user$ | async; as me) {
+        <button class="btn-connect" (click)="disconnectTwitter(me.id)" [disabled]="disconnecting()" type="button">
+          {{ disconnecting() ? 'Disconnecting…' : 'Disconnect' }}
+        </button>
+        }
         }
       </div>
     </div>

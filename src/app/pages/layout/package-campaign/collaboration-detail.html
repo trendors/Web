@@ -68,15 +68,32 @@
                 </div>
               }
               @if (i.state === 'awaiting_publication') {
-                <p class="note">Approved. Publish it as agreed, then send the live link. Your base fee is paid once Trendors verifies the post is live.</p>
+                @if (lastPostRejection(i); as why) {
+                  <div class="callout callout--bad" role="alert"><strong>Your last post was not accepted</strong><p>{{ why }}</p></div>
+                }
+                <div class="callout callout--action" role="status">
+                  <strong>Next step: publish your post</strong>
+                  <p>Your draft is approved. Publish it exactly as agreed, then send the live link below.</p>
+                  <p>Your base fee is held until the measurement window ends, and paid if the post is still live then. Keep it up until then.</p>
+                </div>
                 <div class="row">
                   <label class="f">Live post link<input [(ngModel)]="fv(i.id).url" placeholder="https://" /></label>
                   <label class="f">Screenshot link (optional)<input [(ngModel)]="fv(i.id).screenshot" /></label>
                   <button class="btn btn--primary" type="button" (click)="publish(i)" [disabled]="busy() !== null || !fv(i.id).url.trim()">I have published</button>
                 </div>
               }
-              @if (i.state === 'published') { <p class="note">Proof received. Waiting for Trendors to verify the post is live. Saying "published" does not verify it.</p> }
-              @if (i.state === 'verified') {
+              @if (i.state === 'published') { <div class="callout" role="status"><strong>Proof received</strong><p>Waiting for Trendors to verify the post is live. Saying "published" does not verify it. Keep the post up through the measurement window.</p></div> }
+              @if (i.state === 'verified' && reading(i)?.automatic) {
+                <div class="callout" role="status">
+                  <strong>Numbers are collected automatically</strong>
+                  @if (reading(i)?.latest; as r) {
+                    <p>Latest reading: {{ r.views | number }} views · {{ r.likes | number }} likes · {{ r.comments | number }} comments · {{ r.shares | number }} shares (as of {{ r.at | date: 'medium' }}).</p>
+                  }
+                  <p>Trendors checks the post again when the measurement window ends ({{ windowLeft(i) }}). Rewards and the base fee are decided then, so keep the post up until it closes. Nothing to send.</p>
+                  @if (reading(i)?.inReview) { <p><strong>A reading is being reviewed</strong> by Trendors before it counts. That is routine for unusually high numbers.</p> }
+                </div>
+              }
+              @if (i.state === 'verified' && !reading(i)?.automatic) {
                 <details>
                   <summary class="link">Send results ({{ windowLeft(i) }})</summary>
                   <div class="row">
@@ -97,9 +114,9 @@
 
             <!-- Brand -->
             @if (viewer === 'brand' && isActive() && i.state === 'in_review') {
-              <div class="row">
+              <div class="stack">
                 <label class="f">Feedback or reason<input [(ngModel)]="fv(i.id).note" placeholder="What should change?" /></label>
-                <div class="row row--tight">
+                <div class="btns">
                   <button class="btn btn--primary btn--sm" type="button" (click)="approve(i)" [disabled]="busy() !== null">Approve</button>
                   <button class="btn btn--sm" type="button" (click)="revise(i)" [disabled]="busy() !== null || i.revision_count >= rounds()">Request revision ({{ rounds() - i.revision_count }} left)</button>
                   <button class="btn btn--danger btn--sm" type="button" (click)="fv(i.id).reason = fv(i.id).note; rejectItem(i)" [disabled]="busy() !== null">Reject</button>

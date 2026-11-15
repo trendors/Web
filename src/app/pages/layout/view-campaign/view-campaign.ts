@@ -10,6 +10,7 @@ import {
   selectCampaignLoading,
 } from '../../../store/campaign/campaign.selector';
 import { CampaignInfluencerService } from '../../../core/api';
+import { PackageCampaignService } from '../../../core/services/package/package-campaign.service';
 import { Campaign } from '../../../core/models/campaign/campaign.model';
 import { environment } from '../../../../environments/environment';
 import { extractApiList } from '../../../core/utils/api-response';
@@ -26,6 +27,7 @@ import {
   Subject,
   distinctUntilChanged,
   filter,
+  from,
   switchMap,
   takeUntil,
 } from 'rxjs';
@@ -38,6 +40,8 @@ export interface CampaignCounts {
 
 const ACTIVE_STATUSES = ['active', 'contracted'];
 const DONE_STATUSES = ['completed'];
+/** For a package campaign: who counts as involved (declined, expired and withdrawn do not). */
+const PACKAGE_INVOLVED = ['applied', 'invited', 'selected', 'active', 'completed'];
 
 @Component({
   selector: 'app-view-campaign',
@@ -49,6 +53,7 @@ export class ViewCampaign implements OnInit, OnDestroy {
   private store = inject(Store);
   private router = inject(Router);
   private campaignInfluencerApi = inject(CampaignInfluencerService);
+  private packageApi = inject(PackageCampaignService);
   private destroy$ = new Subject<void>();
 
   campaigns$ = this.store.select(selectCampaignList);
@@ -134,7 +139,13 @@ export class ViewCampaign implements OnInit, OnDestroy {
         switchMap((campaigns) =>
           forkJoin(
             campaigns.map((campaign) =>
-              this.campaignInfluencerApi
+              // Package campaigns keep their creators in their own roster, not in campaign-influencer records.
+              campaign.is_package
+                ? from(this.packageApi.roster(campaign.id)).pipe(
+                    map((roster) => ({ id: campaign.id, rows: roster.filter((r) => PACKAGE_INVOLVED.includes(r.state)).map((r) => ({ status: r.state })) as any[] })),
+                    catchError(() => of({ id: campaign.id, rows: [] as any[] })),
+                  )
+                : this.campaignInfluencerApi
                 .campaignInfluencerControllerFindByCampaign(campaign.id, false, 'body', false, {
                   transferCache: false,
                 })
@@ -302,7 +313,9 @@ export class ViewCampaign implements OnInit, OnDestroy {
   }
 
   openModal(campaign: Campaign): void {
-    this.router.navigate(['/home/view-campaign', campaign.id]);
+    // Package and share campaigns have their own pages: applicants, offers and work; or how the shares are going.
+    const base = campaign.is_package ? '/home/plan' : campaign.is_share ? '/home/share-campaign' : '/home/view-campaign';
+    this.router.navigate([base, campaign.id]);
   }
 
   trackById(_i: number, campaign: Campaign) {

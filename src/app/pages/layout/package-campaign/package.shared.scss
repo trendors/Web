@@ -17,6 +17,10 @@
 .row > * { flex: 1 1 160px; min-width: 0; }
 .row--end { justify-content: flex-end; }
 .row--tight > * { flex: 0 0 auto; }
+/* A field with its action buttons: field on top, buttons grouped underneath. */
+.stack { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.stack > .f { max-width: 280px; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .spread { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 
 label.f { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-secondary); font-weight: 600; color: var(--text);
@@ -75,6 +79,14 @@ textarea { resize: vertical; min-height: 84px; }
 
 .note { margin: 0; font-size: var(--fs-secondary); color: var(--text2); line-height: 1.45; }
 .note--warn { color: var(--warning); }
+/* A message the reader must act on or not miss. */
+.callout { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--info); border-left-width: 4px; background: var(--info-soft); color: var(--text);
+  strong { font-size: var(--fs-secondary); color: var(--info); }
+  p { margin: 0; font-size: var(--fs-secondary); line-height: 1.45; }
+  &--action { border-color: var(--warning); background: var(--warning-soft); strong { color: var(--warning); } }
+  &--bad { border-color: var(--danger); background: var(--danger-soft); strong { color: var(--danger); } }
+  &--ok { border-color: var(--success); background: var(--success-soft); strong { color: var(--success); } }
+}
 .note--bad { color: var(--danger); }
 .hint { margin: 0; font-size: var(--fs-caption); color: var(--muted); }
 .errors { margin: 0; padding-left: 18px; color: var(--danger); font-size: var(--fs-secondary); }

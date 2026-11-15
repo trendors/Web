@@ -216,6 +216,18 @@ h1 {
   }
 }
 
+.actions--stack {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  max-width: 320px;
+  margin-inline: auto;
+
+  .ui-btn {
+    width: 100%;
+  }
+}
+
 .activation-sent {
   margin-block: auto;
   padding: var(--space-8) 0;

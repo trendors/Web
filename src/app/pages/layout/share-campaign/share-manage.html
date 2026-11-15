@@ -1,0 +1,65 @@
+<div class="pc">
+  @if (loading()) {
+    <div class="card"><p class="empty">Loading…</p></div>
+  } @else if (error()) {
+    <div class="card"><p class="note note--bad">{{ error() }}</p><a class="btn" routerLink="/home/view-campaign">Back</a></div>
+  } @else if (o(); as c) {
+    <div class="pc__head">
+      <div>
+        <h1>Share campaign</h1>
+        <p>₦{{ c.payPerShare | number }} per verified share · ₦{{ c.pool | number }} for creators</p>
+      </div>
+      <span class="pill" [class]="'pill pill--' + (c.settled ? 'green' : c.closed ? 'amber' : 'blue')">{{ c.settled ? 'Settled' : c.closed ? 'Stopped' : 'Running' }}</span>
+    </div>
+
+    <section class="card">
+      <h2>How it is going</h2>
+      <dl class="kv">
+        <div><dt>Waiting for a post</dt><dd>{{ c.counts.started }}</dd></div>
+        <div><dt>On hold</dt><dd>{{ c.counts.verified }}</dd></div>
+        <div><dt>Paid</dt><dd>{{ c.counts.paid }}</dd></div>
+        <div><dt>Not paid</dt><dd>{{ c.counts.released + c.counts.expired }}</dd></div>
+      </dl>
+      <dl class="kv">
+        <div><dt>Paid to creators</dt><dd>₦{{ c.paid | number }}</dd></div>
+        <div><dt>On hold</dt><dd>₦{{ c.onHold | number }}</dd></div>
+        <div><dt>Left to give out</dt><dd>@if (c.remaining != null) { ₦{{ c.remaining | number }} } @else { — }</dd></div>
+      </dl>
+      @if (!c.closed) {
+        <div class="row row--tight">
+          <button class="btn btn--danger btn--sm" type="button" [disabled]="busy()" (click)="stop()">{{ busy() ? 'Stopping…' : 'Stop campaign' }}</button>
+        </div>
+        <p class="hint">Stopping ends new shares. Posts already made are still paid, and what is left returns to your wallet once they settle.</p>
+      } @else if (!c.settled) {
+        <div class="callout" role="status"><strong>Stopped</strong><p>Waiting for the last posts to finish their hold. What is left in your budget returns to your wallet after that.</p></div>
+      } @else {
+        <div class="callout callout--ok" role="status"><strong>Settled</strong><p>Everything is paid out and what was left has returned to your wallet.</p></div>
+      }
+    </section>
+
+    <section class="card">
+      <h2>Shares ({{ c.shares.length }})</h2>
+      @if (!c.shares.length) {
+        <p class="empty">No one has started sharing yet.</p>
+      } @else {
+        <div class="list">
+          @for (s of c.shares; track s.id) {
+            <div class="item">
+              <div class="top">
+                <strong>{{ s.creator }}</strong>
+                <span class="pill" [class]="'pill pill--' + tone(s.state)">{{ stateLabel(s.state) }}</span>
+              </div>
+              <p class="note">
+                ₦{{ s.pay | number }}
+                @if (s.postUrl) { · <a [href]="s.postUrl" target="_blank" rel="noopener">View post</a> }
+                @if (s.state === 'verified' && s.holdUntil) { · paid after {{ s.holdUntil | date: 'medium' }} }
+                @if (s.state === 'paid' && s.paidAt) { · paid {{ s.paidAt | date: 'medium' }} }
+                @if (s.reason && (s.state === 'released' || s.state === 'expired')) { · {{ s.reason }} }
+              </p>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+</div>

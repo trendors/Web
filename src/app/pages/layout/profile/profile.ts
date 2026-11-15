@@ -26,6 +26,7 @@ import { TopupModalComponent } from '../../../components/topup-modal/topup-modal
 import { WalletService } from '../../../core/services/wallet/wallet.service';
 import { ToastService } from '../../../components/toast/toast.service';
 import { SocialVerify } from "../social-verify/social-verify";
+import { AddProfile } from './add-profile';
 import { Niches } from '../niches/niches';
 import { ActiveProfileService } from '../../../core/services/activeprofile.service';
 import { ActivatedRoute } from '@angular/router';
@@ -35,7 +36,7 @@ import { userFirstName, userLastName } from '../../../core/utils/user-display';
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule, AsyncPipe, DecimalPipe, TopupModalComponent, SocialVerify, Niches],
+  imports: [ReactiveFormsModule, AsyncPipe, DecimalPipe, TopupModalComponent, SocialVerify, Niches, AddProfile],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -50,6 +51,12 @@ export class Profile implements OnInit {
 
   user$ = this.store.select(selectCurrentUser);
   loadingBank = signal(false);
+  /** The bank account payouts go to, once one is saved. */
+  savedBank = signal<{ bankName: string; accountNumber: string; accountName: string } | null>(null);
+  /** While set, the form is shown (to add or change the account) instead of the saved details. */
+  editingBank = signal(false);
+  /** The saved account that is already shown, so a later profile update does not fetch it again. */
+  private loadedRecipient: string | null = null;
   isLoading$ = this.store.select(selectUserIsLoading);
   authIsLoading$ = this.store.select(selectIsLoading);
   authError$ = this.store.select(selectAuthError);
@@ -127,8 +134,11 @@ export class Profile implements OnInit {
     // but only overwrite the form while the user hasn't started editing it.
     this.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       if (user) {
-        const firstLoad = this.user == null;
         this.user = user;
+        // The full profile can arrive after the first update, so look for a saved account on every one.
+        if (user.paystackRecipientCode && user.paystackRecipientCode !== this.loadedRecipient) {
+          this.loadSavedBank(user.paystackRecipientCode);
+        }
         if (this.profileForm.dirty) return;
         this.profileForm.patchValue({
           // Brand-only accounts have no creative profile: fall back to the
@@ -143,34 +153,49 @@ export class Profile implements OnInit {
           instagram_handle: user.instagram_handle,
           facebook_username: user.facebook_username,
         });
-
-        if (firstLoad && user.paystackRecipientCode) {
-          // Load any saved account into the form; new users get an empty form.
-          this.loadingBank.set(true);
-          this.walletService
-            .getAccountDetails(user.paystackRecipientCode)
-            .pipe(
-              finalize(() => this.loadingBank.set(false)),
-              takeUntilDestroyed(this.destroyRef),
-            )
-            .subscribe({
-              next: (res) => {
-                if (res && res.success) {
-                  this.bankSearchCtrl.setValue(res.bankName, { emitEvent: false });
-                  this.bankForm.patchValue({
-                    accountNumber: res.accountNumber,
-                    accountName: res.accountName,
-                  });
-                  this.selectedBankCode = res.bankCode;
-                }
-              },
-              error: (err) => console.error('Failed to load saved recipient details:', err),
-            });
-        }
-
       }
     });
 
+  }
+
+  /** Fetch the saved account, show it, and ready the form in case the user wants to change it. */
+  private loadSavedBank(recipient: string): void {
+    this.loadedRecipient = recipient;
+    this.loadingBank.set(true);
+    this.walletService
+      .getAccountDetails(recipient)
+      .pipe(
+        finalize(() => this.loadingBank.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (res) => {
+          if (res && res.success) {
+            this.savedBank.set({ bankName: res.bankName, accountNumber: res.accountNumber, accountName: res.accountName });
+            this.bankSearchCtrl.setValue(res.bankName, { emitEvent: false });
+            this.bankForm.patchValue({ accountNumber: res.accountNumber, accountName: res.accountName });
+            this.selectedBankCode = res.bankCode;
+          } else {
+            this.loadedRecipient = null; // try again on the next update
+          }
+        },
+        error: (err) => {
+          this.loadedRecipient = null;
+          console.error('Failed to load saved recipient details:', err);
+        },
+      });
+  }
+
+  /** Only the last four digits of an account number are shown. */
+  maskAccount(number: string | null | undefined): string {
+    const n = String(number ?? '');
+    return n.length > 4 ? '•'.repeat(n.length - 4) + n.slice(-4) : n;
+  }
+
+  cancelBankEdit(): void {
+    const saved = this.savedBank();
+    if (saved) this.bankForm.patchValue({ accountNumber: saved.accountNumber, accountName: saved.accountName });
+    this.editingBank.set(false);
   }
 
   banks$: Observable<any> = this.bankSearchCtrl.valueChanges.pipe(
@@ -307,6 +332,13 @@ export class Profile implements OnInit {
       .subscribe({
         next: (res) => {
           if (res?.success) {
+            // Show what was just saved, without another round trip.
+            this.savedBank.set({
+              bankName: this.bankSearchCtrl.value ?? '',
+              accountNumber: String(this.bankForm.value.accountNumber ?? ''),
+              accountName: String(this.bankForm.value.accountName ?? ''),
+            });
+            this.editingBank.set(false);
             this.toast.show('Bank account updated.', 'success');
           } else {
             console.error('Bank account update rejected:', res?.error);

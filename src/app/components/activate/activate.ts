@@ -22,6 +22,8 @@ export class ActivateComponent implements OnInit {
   // Signals so the zoneless view updates when the HTTP response lands.
   state = signal<ActivateState>('loading');
   userName = signal('');
+  resendEmail = signal('');
+  resendState = signal<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   ngOnInit(): void {
     const token = this.route.snapshot.queryParamMap.get('token');
@@ -52,6 +54,17 @@ export class ActivateComponent implements OnInit {
           this.userName.set(res.userName ?? '');
         }
       });
+  }
+
+  /** Ask for a new activation link. The server answers the same whether or not the account exists. */
+  resend(): void {
+    const email = this.resendEmail().trim();
+    if (!email || this.resendState() === 'sending') return;
+    this.resendState.set('sending');
+    this.http.post(`${environment.apiUrl}/user/resend-verification`, { email }).subscribe({
+      next: () => this.resendState.set('sent'),
+      error: () => this.resendState.set('error'),
+    });
   }
 
   goToLogin(): void {

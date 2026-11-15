@@ -25,6 +25,10 @@ export interface Campaign {
   auto_generate_captions: boolean;
   hash_tags: string | null;
   package: string | null;
+  /** True when the campaign runs through the package workflow (managed on /home/plan/:id). */
+  is_package?: boolean;
+  /** True when the campaign pays creators per verified share (managed on /home/share-campaign/:id). */
+  is_share?: boolean;
   generate_post: boolean;
   files: string[];
   invitations: any[];

@@ -1,3 +1,5 @@
+<app-get-started />
+
 <div class="feed-controls">
   <div class="search-wrap" [class.collapsed]="searchHidden()">
   <label class="search-bar">
@@ -19,17 +21,6 @@
       type="button"
       role="tab"
       class="ui-tab"
-      [class.active]="activePostTab === 'open'"
-      [attr.aria-selected]="activePostTab === 'open'"
-      (click)="selectPostTab('open')"
-    >
-      <i class="ti ti-layout-list" aria-hidden="true"></i>
-      Feed
-    </button>
-    <button
-      type="button"
-      role="tab"
-      class="ui-tab"
       [class.active]="activePostTab === 'application'"
       [attr.aria-selected]="activePostTab === 'application'"
       (click)="selectPostTab('application')"
@@ -37,7 +28,22 @@
       <i class="ti ti-speakerphone" aria-hidden="true"></i>
       Campaigns
     </button>
+    <button
+      type="button"
+      role="tab"
+      class="ui-tab"
+      [class.active]="activePostTab === 'open'"
+      [attr.aria-selected]="activePostTab === 'open'"
+      (click)="selectPostTab('open')"
+    >
+      <i class="ti ti-share-3" aria-hidden="true"></i>
+      Share &amp; earn
+      <span class="tab-soon">Coming soon</span>
+    </button>
   </div>
+  @if (activePostTab === 'open') {
+    <p class="tab-hint">Share a brand's post on X and get paid for every share that stays up.</p>
+  }
 </div>
 
 @if (newPostsAvailable()) {
@@ -120,7 +126,15 @@
           </button>
 
           @if (post.campaign?.access === 'application') {
-            @if (applyingPostIds.has(post.id)) {
+            @if (post.campaign?.is_package) {
+              @if (packageStatus(post); as status) {
+                <a class="applied-pill" routerLink="/home/opportunities" [queryParams]="{ tab: 'mine' }">
+                  <i class="ti ti-circle-check" aria-hidden="true"></i> {{ status }}
+                </a>
+              } @else {
+                <a class="ui-btn sm apply-btn" routerLink="/home/opportunities" [queryParams]="{ tab: 'discover' }">View terms</a>
+              }
+            } @else if (applyingPostIds.has(post.id)) {
               <span class="ui-btn sm apply-btn" aria-live="polite">
                 <span class="ui-spinner" aria-hidden="true"></span> Applying…
               </span>
@@ -253,9 +267,15 @@
     </div>
   } @else {
     <div class="ui-empty">
-      <i class="ti ti-article" aria-hidden="true"></i>
-      <strong>No posts yet</strong>
-      New campaigns and posts will show up here.
+      @if (activePostTab === 'open') {
+        <i class="ti ti-share-3" aria-hidden="true"></i>
+        <strong>No campaigns to share yet</strong>
+        When brands launch share campaigns, they will show up here.
+      } @else {
+        <i class="ti ti-article" aria-hidden="true"></i>
+        <strong>No posts yet</strong>
+        New campaigns and posts will show up here.
+      }
     </div>
   }
 </div>

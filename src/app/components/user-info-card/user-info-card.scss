@@ -434,6 +434,23 @@ $space-4: 16px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  border-radius: $radius-sm;
+
+  &:hover .stat-label { color: $ink; }
+}
+
+.card-hint {
+  display: block;
+  margin: 0 0 $space-4;
+  font-size: var(--fs-caption);
+  color: $faint;
+  text-decoration: none;
+
+  &--todo { color: var(--warning); font-weight: 600; }
+  &:hover { text-decoration: underline; }
 }
 
 .stat-value {

@@ -8,7 +8,8 @@ export const LoginActions = createActionGroup({
 
     'Login Success': props<{ response: LoginResponse }>(),
 
-    'Login Failure': props<{ error: string }>(),
+    /** `code` tells the screen what kind of failure it was, e.g. EMAIL_NOT_VERIFIED, so it can offer the right next step. */
+    'Login Failure': props<{ error: string; code?: string }>(),
 
         'Hydrate Success': props<{ response: LoginResponse }>(),
 

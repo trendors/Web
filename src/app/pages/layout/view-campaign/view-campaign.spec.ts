@@ -10,6 +10,7 @@ import { CampaignInfluencerService } from '../../../core/api';
 import { selectCampaignList } from '../../../store/campaign/campaign.selector';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { environment } from '../../../../environments/environment';
+import { PackageCampaignService } from '../../../core/services/package/package-campaign.service';
 import {
   mockBrandUser,
   mockCampaigns,
@@ -28,6 +29,8 @@ describe('ViewCampaign', () => {
     ),
   };
 
+  const packageApi = { roster: vi.fn(async (_id: number): Promise<unknown[]> => []) };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ViewCampaign],
@@ -35,6 +38,7 @@ describe('ViewCampaign', () => {
         provideRouter([]),
         provideAppMockStore(),
         { provide: CampaignInfluencerService, useValue: rosterApi },
+        { provide: PackageCampaignService, useValue: packageApi },
       ],
     }).compileComponents();
 
@@ -87,6 +91,20 @@ describe('ViewCampaign', () => {
     expect(component.enrolledTotal()).toBe(6);
   });
 
+  it('counts a package campaign from its own roster, and not the old records', async () => {
+    rosterApi.campaignInfluencerControllerFindByCampaign.mockClear();
+    packageApi.roster.mockResolvedValue([
+      { id: 1, state: 'applied' }, { id: 2, state: 'selected' }, { id: 3, state: 'active' }, { id: 4, state: 'active' },
+      { id: 5, state: 'completed' }, { id: 6, state: 'declined' }, { id: 7, state: 'not_selected' },
+    ]);
+    store.overrideSelector(selectCampaignList, [{ ...mockCampaigns[0], id: 48, is_package: true }]);
+    store.refreshState();
+    await fixture.whenStable();
+    expect(packageApi.roster).toHaveBeenCalledWith(48);
+    expect(rosterApi.campaignInfluencerControllerFindByCampaign).not.toHaveBeenCalledWith(48, expect.anything(), expect.anything(), expect.anything(), expect.anything());
+    expect(component.countsFor(48)).toEqual({ total: 5, active: 2, done: 1 });
+  });
+
   it('should parse JSON-wrapped and plain platform entries', () => {
     expect(component.getPlatforms(mockCampaigns[0].platforms)).toEqual(['instagram', 'tiktok']);
     expect(component.getPlatforms(mockCampaigns[2].platforms)).toEqual(['twitter']);
@@ -108,5 +126,30 @@ describe('ViewCampaign', () => {
     const navigateSpy = vi.spyOn(router, 'navigate');
     component.openModal(mockCampaigns[2]);
     expect(navigateSpy).toHaveBeenCalledWith(['/home/view-campaign', 3]);
+  });
+
+  it('opens a share campaign on how its shares are going', () => {
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    component.openModal({ ...mockCampaigns[2], is_share: true });
+    expect(navigateSpy).toHaveBeenCalledWith(['/home/share-campaign', 3]);
+  });
+
+  it('labels package and share campaigns in the list, and leaves the rest alone', async () => {
+    store.overrideSelector(selectCampaignList, [
+      { ...mockCampaigns[0], id: 1, name: 'Plain', is_package: false, is_share: false },
+      { ...mockCampaigns[0], id: 2, name: 'Pkg', is_package: true },
+      { ...mockCampaigns[0], id: 3, name: 'Sh', is_share: true },
+    ]);
+    store.refreshState();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const chips = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('.campaign-name')).map((n) => n.querySelector('.kind-chip')?.textContent?.trim() ?? null);
+    expect(chips).toEqual([null, 'Package', 'Share']);
+  });
+
+  it('opens a package campaign on its own management page', () => {
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    component.openModal({ ...mockCampaigns[2], is_package: true });
+    expect(navigateSpy).toHaveBeenCalledWith(['/home/plan', 3]);
   });
 });

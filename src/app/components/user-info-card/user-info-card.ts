@@ -1,19 +1,17 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 import { Store } from '@ngrx/store';
 import { AsyncPipe, CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { firstValueFrom, map, Observable } from 'rxjs';
-import { Share } from '../../core/models/shares/shares.model';
-import { selectFilteredShares, selectTotals } from '../../store/shares/shares.selector';
-import { SharesActions } from '../../store/shares/shares.action';
+import { Router, RouterLink } from '@angular/router';
+import { map } from 'rxjs';
+import { ProfileSummary, ProfileSummaryService } from '../../core/services/profile-summary/profile-summary.service';
 import { ActiveProfileService } from '../../core/services/activeprofile.service';
 import { hasBrandProfile, hasCreativeProfile } from '../../core/utils/user-display';
 
 @Component({
   selector: 'app-user-info-card',
-  imports: [CommonModule, AsyncPipe],
+  imports: [CommonModule, AsyncPipe, RouterLink],
   templateUrl: './user-info-card.html',
   styleUrls: ['./user-info-card.scss'],
 })
@@ -23,13 +21,68 @@ export class UserInfoCard {
   private destroyRef = inject(DestroyRef);
   user$ = this.store.select(selectCurrentUser);
 
+  private summaryApi = inject(ProfileSummaryService);
 
-  shares$!: Observable<Share[]>;
-  totals$!: Observable<{ totalShares: number; totalEarned: number; pendingCount: number }>;
+  /** The real numbers for the profile in use. Null while loading or if they could not be loaded. */
+  readonly summary = signal<ProfileSummary | null>(null);
+  readonly summaryState = signal<'loading' | 'ready' | 'failed'>('loading');
 
+  constructor() {
+    // Reload whenever the person switches between their creator and brand profiles.
+    effect(() => {
+      const profile = this.activeProfile();
+      if (profile) void this.loadSummary(profile);
+    });
+  }
 
-  onlyPaid: boolean = false;
-  selectedCats: Set<string> = new Set();
+  private async loadSummary(profile: 'brand' | 'creative'): Promise<void> {
+    this.summary.set(null);
+    this.summaryState.set('loading');
+    try {
+      const result = await this.summaryApi.get(profile);
+      // A late answer for the profile they just left must not overwrite the one on screen.
+      if (this.activeProfile() !== profile) return;
+      this.summary.set(result);
+      this.summaryState.set('ready');
+    } catch {
+      if (this.activeProfile() !== profile) return;
+      this.summaryState.set('failed');
+    }
+  }
+
+  /** ₦ with thousands separators; millions are shortened so it fits the card. */
+  money(value: number | null | undefined): string {
+    const n = Number(value ?? 0);
+    if (n >= 1_000_000) return `₦${Number((n / 1_000_000).toFixed(1))}M`;
+    return `₦${n.toLocaleString('en-NG', { maximumFractionDigits: 2 })}`;
+  }
+
+  // What each slot reads from the summary. Each ignores a summary that belongs to the other profile.
+  readonly brandLive = (s: ProfileSummary) => (s.profile === 'brand' ? String(s.live) : '—');
+  readonly brandCreators = (s: ProfileSummary) => (s.profile === 'brand' ? String(s.creators) : '—');
+  readonly brandPaidOut = (s: ProfileSummary) => (s.profile === 'brand' ? this.money(s.paidOut) : '—');
+  readonly creatorAvailable = (s: ProfileSummary) => (s.profile === 'creative' ? this.money(s.available) : '—');
+  readonly creatorEarned = (s: ProfileSummary) => (s.profile === 'creative' ? this.money(s.earned) : '—');
+  readonly creatorActive = (s: ProfileSummary) => (s.profile === 'creative' ? String(s.active) : '—');
+
+  /** Money still held in escrow for creators, shown under "Paid out", when there is any. */
+  brandHeld(): string | null {
+    const s = this.summary();
+    return s?.profile === 'brand' && s.inEscrow > 0 ? this.money(s.inEscrow) : null;
+  }
+
+  /** How many things wait on the creator, shown under "Active", when any do. */
+  creatorToDo(): number {
+    const s = this.summary();
+    return s?.profile === 'creative' ? s.toDo : 0;
+  }
+
+  /** A number for a stat slot: the value, or a placeholder while loading and a dash if it failed. */
+  show(read: (s: ProfileSummary) => string): string {
+    const s = this.summary();
+    if (s) return read(s);
+    return this.summaryState() === 'failed' ? '—' : '…';
+  }
 
   // some.component.ts
   private profileService = inject(ActiveProfileService);
@@ -67,10 +120,7 @@ export class UserInfoCard {
   }
 
   ngOnInit() {
-    this.shares$ = this.store.select(selectFilteredShares);
-    this.totals$ = this.store.select(selectTotals);
     this.user$ = this.store.select(selectCurrentUser);
-    this.loadShares();
     // Re-run profile selection on every user emission (not just the first):
     // the login payload often lacks relations, which arrive later via refresh.
     // init() keeps a stored choice whenever it is still valid, so manual
@@ -88,13 +138,6 @@ export class UserInfoCard {
     this.profileService.init(user);
   }
 
-  async loadShares() {
-    const user = await firstValueFrom(this.user$);
-    if (!user) {
-      return;
-    }
-    this.store.dispatch(SharesActions.loadShares({ userId: user.id as number }));
-  }
   routeTo(path: string) {
     this.router.navigate([path]);
   }

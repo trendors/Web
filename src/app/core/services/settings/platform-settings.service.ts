@@ -6,6 +6,9 @@ export interface PlatformSettings {
   platform_fee_pct: number;
   open_rate_per_click: number;
   open_min_budget: number;
+  share_min_pay: number;
+  share_campaign_fee_pct: number;
+  share_hold_hours: number;
   tier_prices: Record<string, number>;
   invite_expiry_days: number;
 }
@@ -15,6 +18,9 @@ export const DEFAULT_SETTINGS: PlatformSettings = {
   platform_fee_pct: 0,
   open_rate_per_click: 70,
   open_min_budget: 25000,
+  share_min_pay: 50,
+  share_campaign_fee_pct: 20,
+  share_hold_hours: 24,
   tier_prices: { Nano: 8000, Micro: 18000, Mid: 40000, Macro: 90000 },
   invite_expiry_days: 7,
 };
@@ -32,6 +38,9 @@ export class PlatformSettingsService {
   readonly values = this._values.asReadonly();
   readonly openRate = computed(() => this._values().open_rate_per_click);
   readonly openMinBudget = computed(() => this._values().open_min_budget);
+  readonly shareMinPay = computed(() => this._values().share_min_pay);
+  readonly shareFeePct = computed(() => this._values().share_campaign_fee_pct);
+  readonly shareHoldHours = computed(() => this._values().share_hold_hours);
   readonly tierPrices = computed(() => this._values().tier_prices);
   readonly inviteExpiryDays = computed(() => this._values().invite_expiry_days);
   readonly platformFeePct = computed(() => this._values().platform_fee_pct);

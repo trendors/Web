@@ -15,6 +15,8 @@ export interface AuthState {
   isLoggedIn: boolean;
   isLoading: boolean;
   error: string | null;
+  /** What kind of failure `error` describes, when the server said (see LoginActions.loginFailure). */
+  errorCode: string | null;
 }
 
 export const initiaState: AuthState = {
@@ -23,6 +25,7 @@ export const initiaState: AuthState = {
   isLoggedIn: false,
   isLoading: false,
   error: null,
+  errorCode: null,
 };
 
 export const authReducer = createReducer(
@@ -54,6 +57,7 @@ export const authReducer = createReducer(
     ...state,
     isLoading: true,
     error: null,
+    errorCode: null,
   })),
 
   // Handle BOTH login and hydration
@@ -70,10 +74,11 @@ export const authReducer = createReducer(
     }),
   ),
 
-  on(LoginActions.loginFailure, (state, { error }) => ({
+  on(LoginActions.loginFailure, (state, { error, code }) => ({
     ...state,
     isLoading: false,
     error: error || 'Login failed',
+    errorCode: code ?? null,
   })),
 
   // Logout

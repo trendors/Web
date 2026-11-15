@@ -14,6 +14,7 @@ import {
 import { ToastService } from '../../../components/toast/toast.service';
 import { Router } from '@angular/router';
 import { CampaignCheckoutService } from '../../../core/services/payment/campaign-checkout.service';
+import { ShareCampaignApiService } from '../../../core/services/share-campaign/share-campaign.service';
 import { CampaignActions } from '../../../store/campaign/campaign.action';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 
@@ -30,6 +31,7 @@ describe('CreateCampaign', () => {
 
   let assignmentApi: { campaignInfluencerControllerCreate: ReturnType<typeof vi.fn> };
   let checkout: { pay: ReturnType<typeof vi.fn> };
+  let shareApi: { setTerms: ReturnType<typeof vi.fn> };
   let router: { navigate: ReturnType<typeof vi.fn> };
 
   /** Valid step-0 basics so a test can focus on the later steps. */
@@ -52,6 +54,8 @@ describe('CreateCampaign', () => {
     assignmentApi = { campaignInfluencerControllerCreate: vi.fn(() => of({})) };
     toast = { show: vi.fn() };
     checkout = { pay: vi.fn(async () => 'paid') };
+    // The server adds its 20% fee on top of the creators' budget.
+    shareApi = { setTerms: vi.fn(async (_id: number, input: { pool: number }) => ({ totalPayable: Math.round(input.pool * 1.2 * 100) / 100 })) };
     router = { navigate: vi.fn(async () => true) };
     walletApi = {
       walletControllerGetUserWallet: vi.fn(() => of({ data: { balance: 60000 } })),
@@ -67,6 +71,7 @@ describe('CreateCampaign', () => {
         { provide: ToastService, useValue: toast },
         { provide: WalletApiService, useValue: walletApi },
         { provide: CampaignCheckoutService, useValue: checkout },
+        { provide: ShareCampaignApiService, useValue: shareApi },
         { provide: Router, useValue: router },
       ],
     }).compileComponents();
@@ -90,15 +95,36 @@ describe('CreateCampaign', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should expose five steps including deliverables', () => {
-    expect(component.totalSteps).toBe(5);
-    expect(component.steps.map((s) => s.label)).toEqual([
-      'Basics',
-      'Access',
-      'Media',
-      'Deliverables',
-      'Review',
-    ]);
+  it('has four steps for a share campaign: no deliverables, since creators just share what the brand provides', () => {
+    expect(component.totalSteps).toBe(4);
+    expect(component.steps.map((s) => s.label)).toEqual(['Basics', 'Pay', 'Media', 'Review']);
+  });
+
+  it('puts Review last, and its summary no longer lists deliverables', () => {
+    fillBasics();
+    component.selectedAccess = 'open';
+    component.openBudget.set(50000);
+    component.payPerShare.set(100);
+    component.goToStep(3);
+    expect(component.currentStep).toBe(3);
+    fixture.detectChanges();
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('Campaign Basics');
+    expect(text).not.toContain('Deliverables');
+  });
+
+  it('says what a share campaign is, in a short description under its title', () => {
+    const head = (fixture.nativeElement as HTMLElement).querySelector('.page-head');
+    expect(head?.querySelector('h1')?.textContent).toBe('New share campaign');
+    expect(head?.querySelector('p')?.textContent).toContain('you pay only for shares that stay up');
+    expect(head?.querySelector('p')?.textContent).toContain('Nothing is charged until you review and pay');
+  });
+
+  it('offers only the share kind on this page; package campaigns have their own tab', () => {
+    expect(component.accessTypes.map((a) => a.value)).toEqual(['open']);
+    expect(component.accessTypes[0].title).toBe('Share');
+    expect(component.accessLabel).toBe('Share');
+    expect(component.selectedAccess).toBe('open');
   });
 
   it('should track deliverables per platform, format, qty and fee', () => {
@@ -158,6 +184,7 @@ describe('CreateCampaign', () => {
     fillBasics();
     component.selectedAccess = 'open';
     component.openBudget.set(null);
+    component.payPerShare.set(100);
     const created = await component.createCampaign();
     expect(created).toBe(false);
     expect(component.submitStatus()).toBe('error');
@@ -189,6 +216,7 @@ describe('CreateCampaign', () => {
     fillBasics();
     component.selectedAccess = 'open';
     component.openBudget.set(50000);
+    component.payPerShare.set(100);
     const pending = component.createCampaign();
     await untilDispatched();
     expect(component.isSubmitting()).toBe(true);
@@ -203,6 +231,7 @@ describe('CreateCampaign', () => {
     fillBasics();
     component.selectedAccess = 'open';
     component.openBudget.set(50000);
+    component.payPerShare.set(100);
     const pending = component.createCampaign();
     await untilDispatched();
     actions$.next(CampaignActions.createCampaignFailure({ error: 'Something broke' }));
@@ -218,6 +247,7 @@ describe('CreateCampaign', () => {
     fillBasics('Paid Campaign');
     component.selectedAccess = 'open';
     component.openBudget.set(budget);
+    component.payPerShare.set(100);
     component.onCheckout();
     await untilDispatched();
     actions$.next(
@@ -239,7 +269,9 @@ describe('CreateCampaign', () => {
 
   it('saves an open campaign FIRST, then opens the pay sheet for it (nothing charged yet)', async () => {
     await saveOpenCampaign(50000);
-    expect(component.pendingPayment()).toEqual({ id: 7, name: 'Paid Campaign', budget: 50000 });
+    // The terms are saved first, and the amount to pay is what the server says: the pool plus its fee.
+    expect(shareApi.setTerms).toHaveBeenCalledWith(7, { payPerShare: 100, pool: 50000, maxSharesPerCreator: 1, hashtag: '', minFollowers: 0 });
+    expect(component.pendingPayment()).toEqual({ id: 7, name: 'Paid Campaign', budget: 60000 });
     expect(component.submitMessage()).toBe('Campaign saved. Complete payment to launch it.');
     expect(checkout.pay).not.toHaveBeenCalled();
   });
@@ -248,6 +280,7 @@ describe('CreateCampaign', () => {
     fillBasics();
     component.selectedAccess = 'open';
     component.openBudget.set(50000);
+    component.payPerShare.set(100);
     component.onCheckout();
     await untilDispatched();
     actions$.next(CampaignActions.createCampaignFailure({ error: 'boom' }));
@@ -308,7 +341,7 @@ describe('CreateCampaign', () => {
     fillBasics();
     component.selectedAccess = 'open';
     component.openBudget.set(null);
-    component.goTo(4);
+    component.goTo(3);
     component.onCheckout();
     expect(component.currentStep).toBe(1);
   });
@@ -337,13 +370,111 @@ describe('CreateCampaign', () => {
   });
 
   it('splits the cost between wallet and card using the live balance', async () => {
-    await saveOpenCampaign(90000); // balance 60,000
-    expect(component.payBreakdown).toEqual({ budget: 90000, fromWallet: 60000, byCard: 30000 });
-    walletApi.walletControllerGetUserWallet.mockReturnValueOnce(of({ data: { balance: 89950 } }));
+    await saveOpenCampaign(90000); // pays 108,000 with the fee; balance 60,000
+    expect(component.payBreakdown).toEqual({ budget: 108000, fromWallet: 60000, byCard: 48000 });
+    walletApi.walletControllerGetUserWallet.mockReturnValueOnce(of({ data: { balance: 107950 } }));
     component.openPayAlert();
-    await vi.waitFor(() => expect(component.walletBalance()).toBe(89950));
+    await vi.waitFor(() => expect(component.walletBalance()).toBe(107950));
     // Paystack's ₦100 minimum; the extra ₦50 stays in the wallet
     expect(component.payBreakdown.byCard).toBe(100);
+  });
+
+  describe('share terms', () => {
+    it('works out the shares funded, the fee on top and the total', () => {
+      component.payPerShare.set(100);
+      component.openBudget.set(10000);
+      expect(component.sharesFunded).toBe(100);
+      expect(component.shareFee).toBe(2000); // 20% default
+      expect(component.shareTotal).toBe(12000);
+      component.selectedAccess = 'open';
+      expect(component.costDisplay).toBe('₦12,000');
+    });
+
+    it('funds no shares until a pay and a budget are set', () => {
+      expect(component.sharesFunded).toBe(0);
+      component.openBudget.set(50000);
+      expect(component.sharesFunded).toBe(0);
+    });
+
+    type Terms = { pay: number | null; pool: number; per?: number; tag?: string; followers?: number };
+    it.each<[Terms, string]>([
+      [{ pay: null, pool: 50000 }, 'Say what you will pay'],
+      [{ pay: 10, pool: 50000 }, 'at least ₦50'],
+      [{ pay: 100, pool: 1000 }, 'at least ₦25,000'],
+      [{ pay: 30000, pool: 25000 }, 'at least one share'],
+      [{ pay: 100, pool: 50000, per: 0 }, 'Shares per creator'],
+      [{ pay: 100, pool: 50000, per: 11 }, 'Shares per creator'],
+      [{ pay: 100, pool: 50000, tag: 'bad tag!' }, 'letters, numbers'],
+      [{ pay: 100, pool: 50000, followers: -5 }, 'Minimum followers'],
+    ])('refuses %j', (v, message) => {
+      component.payPerShare.set(v.pay);
+      component.openBudget.set(v.pool);
+      component.maxSharesPerCreator.set(v.per ?? 1);
+      component.shareHashtag.set(v.tag ?? '');
+      component.shareMinFollowers.set(v.followers ?? 0);
+      expect(component.shareTermsError()).toContain(message);
+    });
+
+    it('accepts good terms, with or without a leading # on the hashtag', () => {
+      component.payPerShare.set(100);
+      component.openBudget.set(50000);
+      component.shareHashtag.set('#NewDrop');
+      expect(component.shareTermsError()).toBeNull();
+      component.shareHashtag.set('');
+      expect(component.shareTermsError()).toBeNull();
+    });
+
+    it('stops the Access step until the terms are good', () => {
+      fillBasics();
+      component.selectedAccess = 'open';
+      component.openBudget.set(50000);
+      expect(component.stepError(1)).toContain('Say what you will pay');
+      component.payPerShare.set(100);
+      expect(component.stepError(1)).toBeNull();
+    });
+
+    it('sends the pay, the hashtag and the limits to the server before any payment', async () => {
+      fillBasics('Hashtag push');
+      component.selectedAccess = 'open';
+      component.openBudget.set(40000);
+      component.payPerShare.set(200);
+      component.maxSharesPerCreator.set(2);
+      component.shareHashtag.set('#Push');
+      component.shareMinFollowers.set(500);
+      component.onCheckout();
+      await untilDispatched();
+      actions$.next(CampaignActions.createCampaignSuccess({ campaign: { id: 11, name: 'Hashtag push', budget: '40000', payment_status: 'awaiting_payment' } as any }));
+      await vi.waitFor(() => expect(component.showPayAlert()).toBe(true));
+      expect(shareApi.setTerms).toHaveBeenCalledWith(11, { payPerShare: 200, pool: 40000, maxSharesPerCreator: 2, hashtag: '#Push', minFollowers: 500 });
+      expect(checkout.pay).not.toHaveBeenCalled();
+    });
+
+    it('clears the share fields when the form is reset', () => {
+      component.payPerShare.set(100); component.shareHashtag.set('x'); component.maxSharesPerCreator.set(4); component.shareMinFollowers.set(9);
+      component.resetForm();
+      expect(component.payPerShare()).toBeNull();
+      expect(component.shareHashtag()).toBe('');
+      expect(component.maxSharesPerCreator()).toBe(1);
+      expect(component.shareMinFollowers()).toBe(0);
+    });
+
+    it('keeps the pay sheet open with the reason when the terms cannot be saved, and retries them before paying', async () => {
+      shareApi.setTerms.mockRejectedValueOnce({ error: { message: 'The pay per share must be at least ₦50' } });
+      await saveOpenCampaign(50000);
+      expect(component.showPayAlert()).toBe(true);
+      expect(component.payError()).toContain('at least ₦50');
+      await component.payNow(); // retries the terms, then pays
+      expect(shareApi.setTerms).toHaveBeenCalledTimes(2);
+      expect(checkout.pay).toHaveBeenCalledWith(7, expect.any(Function));
+    });
+
+    it('does not pay while the terms still cannot be saved', async () => {
+      shareApi.setTerms.mockRejectedValue({ error: { message: 'Server unavailable' } });
+      await saveOpenCampaign(50000);
+      await component.payNow();
+      expect(component.payError()).toBe('Server unavailable');
+      expect(checkout.pay).not.toHaveBeenCalled();
+    });
   });
 
   it('pays, then takes the brand to their live campaign', async () => {

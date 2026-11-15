@@ -1,8 +1,7 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ShareService } from '../../../core/services/shares/share.service';
-import { ToastService } from '../../../components/toast/toast.service';
 import { Store } from '@ngrx/store';
+import { RouterLink } from '@angular/router';
 import { firstValueFrom, interval, Observable } from 'rxjs';
 import { Share } from '../../../core/models/shares/shares.model';
 import {
@@ -26,17 +25,14 @@ export interface ShareViewModel extends Share {
 
 @Component({
   selector: 'app-main',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './shares.html',
   styleUrl: './shares.scss',
 })
 export class SharesDashboard {
   private store = inject(Store);
-  private shareService = inject(ShareService);
-  private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
-  claimingShareId = signal<string | number | null>(null);
 
   shares$!: Observable<Share[]>;
   totals$ = this.store.select(selectTotals);
@@ -83,7 +79,8 @@ export class SharesDashboard {
       const elapsed = now - sharedAt;
       const remaining = Math.max(0, this.HOLD_MS - elapsed);
       const progress = Math.min(100, Math.round((elapsed / this.HOLD_MS) * 100));
-      const canClaim = remaining === 0 && share.status === 'pending' && !share.paid;
+      // The flat reward has ended: nothing can be claimed.
+      const canClaim = false;
 
       return {
         ...share,
@@ -102,31 +99,11 @@ export class SharesDashboard {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 
-  claimReward(share: ShareViewModel): void {
-    if (!share.canClaim) return;
-    this.claimingShareId.set(share.id);
-    this.shareService.claimReward(share.id).subscribe({
-      next: (res) => {
-        this.toast.show(res?.message || 'Claim submitted', 'success');
-        this.claimingShareId.set(null);
-        this.loadShares();
-      },
-      error: (err: any) => {
-        console.error('Claim reward failed', err);
-        const msg = err?.error?.message || err?.message || 'Failed to claim reward';
-        this.toast.show(msg, 'error');
-        this.claimingShareId.set(null);
-        this.loadShares();
-      }
-    });
-  }
-
   getStatusLabel(share: any): string {
     if (share.paid) return 'Claimed';
     if (share.status === 'verified') return 'Claimed';
     if (share.status === 'rejected') return 'Rejected';
-    if (share.canClaim) return 'Ready to claim';
-    return 'Waiting';
+    return 'Recorded';
   }
 
   getSocialIcon(social: string): string {

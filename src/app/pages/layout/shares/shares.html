@@ -1,31 +1,27 @@
 <div class="shares-page">
 
 
+  <div class="shares-notice" role="status">
+    <strong>The flat share reward has ended.</strong>
+    <p>Campaigns now pay per verified share, from the brand's own budget. Find them under <a routerLink="/home">Share &amp; earn</a> on Home. This page keeps your earlier shares for reference.</p>
+  </div>
+
   <div class="shares-stats">
     <div class="stat-card">
       <div class="stat-val">{{ viewModels().length }}</div>
-      <div class="stat-lbl">Total shares</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val">${{ totalUnclaimed.toFixed(2) }}</div>
-      <div class="stat-lbl">Unclaimed</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val">${{ totalEarned.toFixed(2) }}</div>
-      <div class="stat-lbl">Total earned</div>
+      <div class="stat-lbl">Earlier shares</div>
     </div>
   </div>
 
   <div class="empty-state" *ngIf="viewModels().length === 0">
     <i class="ti ti-share-off"></i>
-    <p>No shares yet. Share an ad to start earning!</p>
+    <p>No earlier shares.</p>
   </div>
 
 
 
   @for (share of viewModels(); track share.id) {
   <div class="share-card">
-
     <div class="card-top">
       <div class="ad-info">
         <div class="ad-icon">
@@ -33,109 +29,19 @@
         </div>
         <div>
           <div class="ad-title">Post #{{ share.postId }}</div>
-          <div class="ad-meta">
-            {{ share.social_media }} &middot;
-            <span class="tracking-code">{{ share.tracking_code }}</span>
-          </div>
+          <div class="ad-meta">{{ share.social_media }} &middot; {{ timeAgo(share.createdAt.toString()) }}</div>
         </div>
       </div>
-      <span class="status-pill" [class.status-ready]="share.canClaim"
-        [class.status-pending]="!share.canClaim && share.status === 'pending'"
+      <span class="status-pill"
         [class.status-claimed]="share.paid || share.status === 'verified'"
         [class.status-failed]="share.status === 'rejected'">
         {{ getStatusLabel(share) }}
       </span>
     </div>
-
-    <div class="divider"></div>
-
-    <div class="card-mid">
-
-      @if (share.canClaim) {
-      <div class="timer-block">
-        <i class="ti ti-circle-check timer-icon ready-icon"></i>
-        <div>
-          <div class="timer-label">Hold period complete</div>
-          <div class="timer-val ready-val">{{ HOLD_HOURS }}h requirement met</div>
-        </div>
-      </div>
-      }
-
-      @if (!share.canClaim && share.status === 'pending') {
-      <div class="timer-block">
-        <i class="ti ti-clock timer-icon"></i>
-        <div>
-          <div class="timer-label">Keep post live for</div>
-          <div class="timer-val">{{ share.countdownDisplay }}</div>
-        </div>
-      </div>
-      }
-
-      @if (share.paid || share.status === 'verified') {
-      <div class="timer-block">
-        <i class="ti ti-circle-check timer-icon claimed-icon"></i>
-        <div>
-          <div class="timer-label">Reward paid out</div>
-          <span>{{ timeAgo(share.createdAt.toString()) }}</span>
-        </div>
-      </div>
-      }
-
-      @if (share.status === 'rejected') {
-      <div class="timer-block">
-        <i class="ti ti-alert-circle timer-icon failed-icon"></i>
-        <div>
-          <div class="timer-label">Tweet not found</div>
-          <div class="timer-val failed-val">Verification failed</div>
-        </div>
-      </div>
-      }
-
-      <div class="reward-block">
-        <div class="reward-val" [class.reward-claimed]="share.paid" [class.reward-failed]="share.status === 'rejected'">
-          +${{ share.rewardAmount }}
-        </div>
-        <div class="reward-lbl">{{ share.paid ? 'Paid' : 'Reward' }}</div>
-      </div>
-    </div>
-
-    <div class="progress-wrap">
-      <div class="progress-bar">
-        <div class="progress-fill" [class.fill-pending]="!share.canClaim && share.status === 'pending'"
-          [class.fill-failed]="share.status === 'rejected'"
-          [class.fill-claimed]="share.paid || share.status === 'verified'" [style.width.%]="share.progressPercent">
-        </div>
-      </div>
-    </div>
-
-
-    @if (share.canClaim) {
-    <button class="btn btn-claim" (click)="claimReward(share)" [disabled]="claimingShareId() === share.id">
-      <span *ngIf="claimingShareId() === share.id" class="button-spinner" aria-hidden="true"></span>
-      <span *ngIf="claimingShareId() !== share.id"><i class="ti ti-coin"></i> Claim ₦{{ share.rewardAmount }}</span>
-    </button>
-    }
-
-    @if (!share.canClaim && share.status === 'pending' && !share.paid) {
-    <button class="btn btn-waiting" disabled>
-      <i class="ti ti-lock"></i> Locked
-    </button>
-    }
-
     @if (share.paid || share.status === 'verified') {
-    <button class="btn btn-claimed" disabled>
-      <i class="ti ti-check"></i> Claimed
-    </button>
-    }
-
-    @if (share.status === 'rejected' || share.status === 'flagged') {
-    <button class="btn btn-failed" disabled>
-      <i class="ti ti-x"></i> Tweet deleted
-    </button>
+    <div class="card-mid"><div class="reward-block"><div class="reward-val reward-claimed">+₦{{ share.rewardAmount }}</div><div class="reward-lbl">Paid</div></div></div>
     }
   </div>
   }
-
-
 
 </div>

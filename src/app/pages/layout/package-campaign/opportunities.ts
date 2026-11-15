@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ToastService } from '../../../components/toast/toast.service';
 import { Discover, DiscoverRow, MyCollab, MyWork } from '../../../core/models/package/package.model';
 import { PackageCampaignService } from '../../../core/services/package/package-campaign.service';
@@ -44,7 +45,17 @@ export class Opportunities implements OnInit {
   pitches: Record<number, string> = {};
   declineReason: Record<number, string> = {};
 
-  ngOnInit() { this.reload(); }
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+
+  ngOnInit() {
+    // A sidebar link or a notification can ask for a tab; it wins over the "open on My work if something needs you" default.
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((q) => {
+      const t = q.get('tab');
+      if (t === 'discover' || t === 'mine') { this.tab.set(t); this.opened = true; }
+    });
+    this.reload();
+  }
 
   async reload() {
     try {

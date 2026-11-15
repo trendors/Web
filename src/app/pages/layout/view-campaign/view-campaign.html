@@ -63,7 +63,7 @@
               </div>
 
               <div class="campaign-info">
-                <div class="campaign-name" [title]="campaign.name">{{ campaign.name }}</div>
+                <div class="campaign-name" [title]="campaign.name">{{ campaign.name }}@if (campaign.is_package) { <span class="kind-chip">Package</span> } @else if (campaign.is_share) { <span class="kind-chip">Share</span> }</div>
                 <div class="campaign-meta">
                   @for (platform of getPlatforms(campaign.platforms); track platform) {
                     <span class="platform-icon" [title]="platformName(platform)">

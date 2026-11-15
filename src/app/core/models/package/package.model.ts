@@ -140,6 +140,8 @@ export interface WorkflowEvent { id: number; from_state: string; to_state: strin
 export interface RewardsView {
   totals: { views: number; engagement: number; trending: number; verifiedPosts: number };
   milestones: (Milestone & { progress: number; current: number; state: string })[];
+  /** The newest automatic reading of each post. `automatic` means the platform is read for us, so nobody types numbers in. */
+  readings?: { itemId: number; automatic: boolean; latest: { views: number; likes: number; comments: number; shares: number; at: string } | null; inReview: boolean }[];
   windows: { itemId: number; endsAt: string; msLeft: number }[];
   rewards: { id: number; milestone_id: string; amount: number | string; kind: string; state: string }[];
 }

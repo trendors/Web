@@ -1,5 +1,5 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -11,6 +11,7 @@ import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector
 import { userDisplayName } from '../../../core/utils/user-display';
 import { environment } from '../../../../environments/environment';
 import { UserAction } from '../../../store/user/user.action';
+import { UserService } from '../../../core/services/users/user.service';
 import { ToastService } from '../../../components/toast/toast.service';
 
 @Component({
@@ -28,6 +29,8 @@ export class SocialVerify {
   private store = inject(Store);
   private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
+  private users = inject(UserService);
+  disconnecting = signal(false);
 
   user$ = this.store.select(selectCurrentUser);
   protected readonly displayName = userDisplayName;
@@ -75,6 +78,24 @@ export class SocialVerify {
       }
     };
     window.addEventListener('message', this.messageListener);
+  }
+
+  /** Unlink X. Without it the creator stops matching X campaigns, so ask first. */
+  disconnectTwitter(userId: unknown): void {
+    if (typeof userId !== 'number' || this.disconnecting()) return;
+    if (!window.confirm('Disconnect your X account? You will stop matching X campaigns until you reconnect.')) return;
+    this.disconnecting.set(true);
+    this.users.disconnectTwitter().subscribe({
+      next: () => {
+        this.disconnecting.set(false);
+        this.toast.show('X account disconnected.', 'success');
+        this.store.dispatch(UserAction.loadCurrentUser({ userId }));
+      },
+      error: (e: Error) => {
+        this.disconnecting.set(false);
+        this.toast.show(e.message || 'Could not disconnect X. Try again.', 'error', 6000);
+      },
+    });
   }
 
   private twitterErrorText(reason: unknown): string {

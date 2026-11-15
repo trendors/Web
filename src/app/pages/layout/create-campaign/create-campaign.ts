@@ -24,6 +24,8 @@ import { MatIcon } from "@angular/material/icon";
 import { Router } from '@angular/router';
 import { PlatformSettingsService } from '../../../core/services/settings/platform-settings.service';
 import { CampaignCheckoutService, CheckoutStep } from '../../../core/services/payment/campaign-checkout.service';
+import { ShareCampaignApiService } from '../../../core/services/share-campaign/share-campaign.service';
+import { ShareTermsInput } from '../../../core/models/share-campaign/share-campaign.model';
 
 interface CampaignFile {
   file: File;
@@ -63,9 +65,17 @@ export class CreateCampaign implements OnDestroy {
 
   private platformSettings = inject(PlatformSettingsService);
 
+  private shareApi = inject(ShareCampaignApiService);
+
   /** Admin-controlled; the server applies the same values on its own. */
-  get OPEN_RATE(): number {
-    return this.platformSettings.openRate();
+  get SHARE_MIN_PAY(): number {
+    return this.platformSettings.shareMinPay();
+  }
+  get SHARE_FEE_PCT(): number {
+    return this.platformSettings.shareFeePct();
+  }
+  get SHARE_HOLD_HOURS(): number {
+    return this.platformSettings.shareHoldHours();
   }
   get OPEN_MIN_BUDGET(): number {
     return this.platformSettings.openMinBudget();
@@ -80,19 +90,17 @@ export class CreateCampaign implements OnDestroy {
   ];
   steps: Step[] = [
     { label: 'Basics', sub: 'Name, dates, link' },
-    { label: 'Access', sub: 'Who can join' },
+    { label: 'Pay', sub: 'What creators earn' },
     { label: 'Media', sub: 'Photos & files' },
-    { label: 'Deliverables', sub: 'Content per creator' },
     { label: 'Review', sub: 'Confirm & launch' },
   ];
 
 
   get accessTypes() {
-    const minSlot = Math.min(...Object.values(this.platformSettings.tierPrices()));
+    // Share campaigns are the only kind made on this page. Package campaigns have their own tab, and the older
+    // invite-only and application kinds are no longer offered (their code is kept, not deleted).
     return [
-      { value: 'open', icon: '🌍', title: 'Open', desc: 'Pay per verified click. Fast, high-volume reach.', extra: `From ₦${this.OPEN_RATE.toLocaleString('en-NG')}/click · ₦${this.OPEN_MIN_BUDGET.toLocaleString('en-NG')} min spend` },
-      { value: 'invite_only', icon: '📩', title: 'Invite Only', desc: 'Invite creators directly. Each deal is held in escrow.', extra: 'From ₦200,000 per deal' },
-      { value: 'application', icon: '📋', title: 'Application', desc: 'Vetted creator slots, priced by reach.', extra: `From ₦${minSlot.toLocaleString('en-NG')}/slot · 1 slot min` },
+      { value: 'open', icon: '🌍', title: 'Share', desc: 'Creators share your content on X. You pay only for shares that stay up.', extra: `From ₦${this.SHARE_MIN_PAY.toLocaleString('en-NG')}/share · ₦${this.OPEN_MIN_BUDGET.toLocaleString('en-NG')} min budget` },
     ];
   }
 
@@ -114,7 +122,7 @@ export class CreateCampaign implements OnDestroy {
   selectedAccess = 'open';
   autoAssignTier = true;
   currentStep = 0;
-  totalSteps = 5;
+  totalSteps = 4;
   selectedTier = '';
 
   selectedType = signal<'paid' | 'free' | null>(null);
@@ -124,7 +132,11 @@ export class CreateCampaign implements OnDestroy {
   ratePerSlot = signal<number | null>(null); // system-set rate for open/application
   negotiatedAmount = signal<number | null>(null); // invite-only negotiated base
   maxSlots = signal<number | null>(null);
-  openBudget = signal<number | null>(null); // total budget for open campaigns; clicks are derived from this
+  openBudget = signal<number | null>(null); // the creators' pool for an open (share) campaign
+  payPerShare = signal<number | null>(null);
+  maxSharesPerCreator = signal<number>(1);
+  shareHashtag = signal('');
+  shareMinFollowers = signal<number>(0);
   status = signal<'draft' | 'active' | 'paused' | 'closed'>('draft');
   campaignTitle = signal('');
   campaignDescription = signal('');
@@ -212,16 +224,35 @@ export class CreateCampaign implements OnDestroy {
     if (campaign && Number.isFinite(id)) void this.router.navigate(['/home/view-campaign', id]);
   }
 
+  /** Share terms still to be saved on the server. Set only if saving them failed, so paying can try again. */
+  private pendingTerms: ShareTermsInput | null = null;
+
   private async createThenPay(): Promise<void> {
+    // Read the terms now: saving the campaign clears the form.
+    const terms = this.shareTermsInput();
+    const total = this.shareTotal;
     const campaign = await this.createCampaignRecord();
     if (!campaign) return; // nothing was charged
     if (campaign.payment_status !== 'awaiting_payment') return;
-    this.pendingPayment.set({
-      id: Number(campaign.id),
-      name: campaign.name ?? 'your campaign',
-      budget: Number(campaign.budget ?? 0),
-    });
+    const id = Number(campaign.id);
+    let budget = total;
+    let failure = '';
+    // What the campaign pays is set on the server before any money moves; the server refuses payment without it.
+    try {
+      budget = (await this.shareApi.setTerms(id, terms)).totalPayable;
+      this.pendingTerms = null;
+    } catch (error: any) {
+      this.pendingTerms = terms;
+      failure = this.messageOf(error, 'We could not save what this campaign pays. Press pay to try again.');
+    }
+    this.pendingPayment.set({ id, name: campaign.name ?? 'your campaign', budget });
     this.openPayAlert();
+    if (failure) this.payError.set(failure);
+  }
+
+  private messageOf(error: any, fallback: string): string {
+    const message = error?.error?.message;
+    return (Array.isArray(message) ? message.join(', ') : message) || error?.message || fallback;
   }
 
   /** Pay for the saved campaign: wallet if it covers it, otherwise card for the shortfall. */
@@ -229,6 +260,16 @@ export class CreateCampaign implements OnDestroy {
     const pending = this.pendingPayment();
     if (!pending || this.payStep()) return;
     this.payError.set('');
+    if (this.pendingTerms) {
+      try {
+        const saved = await this.shareApi.setTerms(pending.id, this.pendingTerms);
+        this.pendingTerms = null;
+        this.pendingPayment.set({ ...pending, budget: saved.totalPayable });
+      } catch (error: any) {
+        this.payError.set(this.messageOf(error, 'We could not save what this campaign pays. Please try again.'));
+        return;
+      }
+    }
     try {
       const outcome = await this.checkout.pay(pending.id, (step) => this.payStep.set(step));
       this.payStep.set(null);
@@ -521,8 +562,9 @@ export class CreateCampaign implements OnDestroy {
       if (!['open', 'invite_only', 'application'].includes(this.selectedAccess)) {
         return 'Choose how creators join the campaign.';
       }
-      if (this.selectedAccess === 'open' && Number(this.openBudget() ?? 0) < this.OPEN_MIN_BUDGET) {
-        return `Open campaigns need a budget of at least ₦${this.OPEN_MIN_BUDGET.toLocaleString('en-US')}.`;
+      if (this.selectedAccess === 'open') {
+        const problem = this.shareTermsError();
+        if (problem) return problem;
       }
       if (this.selectedAccess === 'application' && this.totalTierSlots <= 0) {
         return 'Select at least one creator tier slot.';
@@ -579,9 +621,10 @@ export class CreateCampaign implements OnDestroy {
 
   /** Invite-only fees are agreed per creator, so there is no up-front total. */
   get costDisplay(): string {
-    return this.selectedAccess === 'invite_only'
-      ? 'Agreed per creator'
-      : '₦' + this.computedBudget.toLocaleString('en-NG');
+    if (this.selectedAccess === 'invite_only') return 'Agreed per creator';
+    // An open campaign's total is the creators' pool plus the platform's fee.
+    if (this.selectedAccess === 'open') return '₦' + this.shareTotal.toLocaleString('en-NG');
+    return '₦' + this.computedBudget.toLocaleString('en-NG');
   }
 
   private showError(message: string): void {
@@ -728,6 +771,10 @@ export class CreateCampaign implements OnDestroy {
     this.negotiatedAmount.set(null);
     this.maxSlots.set(null);
     this.openBudget.set(null);
+    this.payPerShare.set(null);
+    this.maxSharesPerCreator.set(1);
+    this.shareHashtag.set('');
+    this.shareMinFollowers.set(0);
     this.status.set('draft');
 
     this.tierSlots.set(
@@ -738,10 +785,47 @@ export class CreateCampaign implements OnDestroy {
     this.link = '';
   }
 
-  get estimatedClicks(): number {
-    const b = Number(this.openBudget() ?? 0);
-    if (!this.OPEN_RATE || b <= 0) return 0;
-    return Math.floor(b / this.OPEN_RATE);
+  /** How many verified shares the creators' pool can pay for. */
+  get sharesFunded(): number {
+    const pool = Number(this.openBudget() ?? 0);
+    const pay = Number(this.payPerShare() ?? 0);
+    if (pay <= 0 || pool <= 0) return 0;
+    return Math.floor(pool / pay);
+  }
+
+  /** The platform's fee, charged on top of the creators' pool. */
+  get shareFee(): number {
+    return Math.round(Number(this.openBudget() ?? 0) * this.SHARE_FEE_PCT) / 100;
+  }
+
+  /** What the brand pays: the pool plus the fee. */
+  get shareTotal(): number {
+    return Math.round((Number(this.openBudget() ?? 0) + this.shareFee) * 100) / 100;
+  }
+
+  /** The share terms as the server takes them. */
+  private shareTermsInput(): ShareTermsInput {
+    return {
+      payPerShare: Number(this.payPerShare()), pool: Number(this.openBudget()),
+      maxSharesPerCreator: Number(this.maxSharesPerCreator() || 1), hashtag: this.shareHashtag().trim(), minFollowers: Number(this.shareMinFollowers() || 0),
+    };
+  }
+
+  /** What is wrong with the share terms, or null. Mirrors the server, which checks again. */
+  shareTermsError(): string | null {
+    const pay = Number(this.payPerShare() ?? 0);
+    const pool = Number(this.openBudget() ?? 0);
+    if (!(pay > 0)) return 'Say what you will pay for each verified share.';
+    if (pay < this.SHARE_MIN_PAY) return `The pay per share must be at least ₦${this.SHARE_MIN_PAY.toLocaleString('en-US')}, so a verified share covers its own check.`;
+    if (pool < this.OPEN_MIN_BUDGET) return `Open campaigns need a budget of at least ₦${this.OPEN_MIN_BUDGET.toLocaleString('en-US')}.`;
+    if (pool < pay) return 'The budget must cover at least one share.';
+    const perCreator = Number(this.maxSharesPerCreator());
+    if (!Number.isInteger(perCreator) || perCreator < 1 || perCreator > 10) return 'Shares per creator must be a whole number from 1 to 10.';
+    const followers = Number(this.shareMinFollowers() ?? 0);
+    if (!Number.isInteger(followers) || followers < 0) return 'Minimum followers must be 0 or more.';
+    const tag = this.shareHashtag().trim().replace(/^#+/, '');
+    if (tag && !/^[A-Za-z0-9_]{1,50}$/.test(tag)) return 'A hashtag can use letters, numbers and underscores only.';
+    return null;
   }
 
   get computedBudget(): number {
@@ -851,10 +935,10 @@ export class CreateCampaign implements OnDestroy {
       if (access === 'open') {
         const budget = Number(this.openBudget());
         this.budget.set(budget);
-        this.maxSlots.set(this.estimatedClicks);
-        this.ratePerSlot.set(this.OPEN_RATE);
-        formData.append('ratePerSlot', String(this.OPEN_RATE));
-        formData.append('maxSlots', String(this.estimatedClicks));
+        this.maxSlots.set(this.sharesFunded);
+        this.ratePerSlot.set(Number(this.payPerShare()));
+        formData.append('ratePerSlot', String(Number(this.payPerShare())));
+        formData.append('maxSlots', String(this.sharesFunded));
         formData.append('totalBudget', String(budget));
       } else if (access === 'application') {
         const budget = this.applicationBudget;

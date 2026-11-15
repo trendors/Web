@@ -23,6 +23,16 @@
   color: var(--muted);
 }
 
+.bank-details {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+
+  div { display: flex; justify-content: space-between; gap: var(--space-3); }
+  dt { color: var(--muted); font-size: var(--fs-secondary); }
+  dd { margin: 0; font-weight: 600; text-align: right; }
+}
+
 .balance-card {
   display: flex;
   flex-direction: column;

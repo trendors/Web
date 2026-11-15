@@ -13,3 +13,6 @@ export const selectIsLoading = createSelector(selectAuthState, (state) => state.
 
 export const selectAuthError = createSelector(selectAuthState, (state) => state.error);
 
+/** The kind of the current error, only while there is one. */
+export const selectAuthErrorCode = createSelector(selectAuthState, (state) => (state.error ? state.errorCode : null));
+

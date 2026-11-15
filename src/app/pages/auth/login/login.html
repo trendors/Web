@@ -35,6 +35,18 @@
       <form class="ui-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
         @if (error$ | async; as error) {
           <div class="ui-alert" role="alert">{{ error }}</div>
+          @if ((errorCode$ | async) === 'EMAIL_NOT_VERIFIED') {
+            <div class="auth-verify">
+              @if (resendState() === 'sent') {
+                <p role="status">We have sent a new link. Open it from your inbox (check spam too), then sign in.</p>
+              } @else {
+                <button type="button" class="ui-btn secondary sm" [disabled]="resendState() === 'sending'" (click)="resend()">
+                  {{ resendState() === 'sending' ? 'Sending…' : 'Resend verification email' }}
+                </button>
+                @if (resendState() === 'error') { <span class="ui-error">Could not send it just now. Please try again in a minute.</span> }
+              }
+            </div>
+          }
         }
 
         <div class="ui-field">

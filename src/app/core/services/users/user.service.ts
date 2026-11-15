@@ -30,6 +30,18 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
+  addProfile(role: 'brand' | 'influencer', brandName?: string): Observable<{ error: boolean; message: string; data?: { brandProfile?: unknown; influncerProfile?: unknown } }> {
+    return this.http
+      .post<{ error: boolean; message: string; data?: { brandProfile?: unknown; influncerProfile?: unknown } }>(`${this.apiUrl}/me/profiles`, { role, brand_name: brandName || undefined })
+      .pipe(catchError(this.handleError));
+  }
+
+  disconnectTwitter(): Observable<{ error: boolean; message: string }> {
+    return this.http
+      .delete<{ error: boolean; message: string }>(`${this.apiUrl}/twitter`)
+      .pipe(catchError(this.handleError));
+  }
+
   deleteUser(userId: number): Observable<ApiResponse<null>> {
     return this.http
       .delete<ApiResponse<null>>(`${this.apiUrl}/${userId}`)

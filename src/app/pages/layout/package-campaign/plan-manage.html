@@ -101,11 +101,11 @@
                   <div class="top"><strong>{{ r.name }}</strong><span class="pill" [ngClass]="'pill--' + tone(r.state)">{{ label(r.state) }}</span></div>
                   @if (r.pitch) { <p class="note">{{ r.pitch }}</p> }
                   @if (c.lifecycle === 'active') {
-                    <div class="row">
+                    <div class="stack">
                       @if (defaultAllocation() > 0) {
                         <label class="f">Reward allocation (₦)<input type="number" min="0" [ngModel]="alloc(r.id)" (ngModelChange)="allocations[r.id] = $event" /></label>
                       }
-                      <div class="row row--tight">
+                      <div class="btns">
                         <button class="btn btn--primary btn--sm" type="button" (click)="select(r)" [disabled]="busy() !== null">Select</button>
                         <button class="btn btn--sm" type="button" (click)="notSelected(r)" [disabled]="busy() !== null">Not this time</button>
                       </div>

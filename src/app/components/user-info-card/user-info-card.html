@@ -44,20 +44,42 @@
 
   <hr class="divider" />
 
-  <div class="stats-grid">
-    <div class="stat-item">
-      <span class="stat-value">{{ (shares$ | async)?.length || 0 }}</span>
-      <span class="stat-label">Shares</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">${{ (totals$ | async)?.totalEarned | number:'1.2-2' }}</span>
+  <div class="stats-grid" aria-live="polite">
+    @if (activeProfile() === 'brand') {
+    <a class="stat-item" routerLink="/home/view-campaign">
+      <span class="stat-value">{{ show(brandLive) }}</span>
+      <span class="stat-label">Live</span>
+    </a>
+    <a class="stat-item" routerLink="/home/view-campaign">
+      <span class="stat-value">{{ show(brandCreators) }}</span>
+      <span class="stat-label">Creators</span>
+    </a>
+    <a class="stat-item" routerLink="/home/transactions">
+      <span class="stat-value">{{ show(brandPaidOut) }}</span>
+      <span class="stat-label">Paid out</span>
+    </a>
+    } @else {
+    <a class="stat-item" routerLink="/home/profile" [queryParams]="{ tab: 'wallet' }">
+      <span class="stat-value">{{ show(creatorAvailable) }}</span>
+      <span class="stat-label">Available</span>
+    </a>
+    <a class="stat-item" routerLink="/home/transactions">
+      <span class="stat-value">{{ show(creatorEarned) }}</span>
       <span class="stat-label">Earned</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">0</span>
-      <span class="stat-label">Rate</span>
-    </div>
+    </a>
+    <a class="stat-item" routerLink="/home/opportunities" [queryParams]="{ tab: 'mine' }">
+      <span class="stat-value">{{ show(creatorActive) }}</span>
+      <span class="stat-label">Active</span>
+    </a>
+    }
   </div>
+
+  @if (brandHeld(); as held) {
+  <a class="card-hint" routerLink="/home/view-campaign">{{ held }} held for creators</a>
+  }
+  @if (creatorToDo(); as todo) {
+  <a class="card-hint card-hint--todo" routerLink="/home/opportunities" [queryParams]="{ tab: 'mine' }">{{ todo }} {{ todo === 1 ? 'thing needs' : 'things need' }} you</a>
+  }
 
   <button (click)="routeTo('home/profile')" class="btn-profile">View Profile</button>
 </aside>

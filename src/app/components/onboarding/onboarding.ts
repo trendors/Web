@@ -12,6 +12,7 @@
 
 
 import { CreateUserDto, UserService } from '../../core/api';
+import { environment } from '../../../environments/environment';
 import { Observable, finalize } from 'rxjs';
 
 type AccountType = 'creator' | 'brand';
@@ -33,9 +34,10 @@ interface OnboardingData {
 }
 
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output, inject, Inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output, inject, Inject, PLATFORM_ID } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
    selector: 'app-onboarding',
@@ -48,6 +50,11 @@ export class Onboarding implements OnInit {
 
   private readonly userService = inject(UserService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  // The app renders without zone.js: plain fields changed in an HTTP callback do not redraw on their own.
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly http = inject(HttpClient);
+  resendState: 'idle' | 'sending' | 'sent' | 'error' = 'idle';
   private readonly onboardingCompletedKey = 'trendors_onboarding_completed';
 
   isSaving = false;
@@ -72,7 +79,8 @@ export class Onboarding implements OnInit {
   ngOnInit(): void {
 
         if (isPlatformBrowser(this.platformId)) {
-          if (localStorage.getItem(this.onboardingCompletedKey) === 'true') {
+          const wantsNewAccount = this.route.snapshot.queryParamMap.has('signup');
+          if (!wantsNewAccount && localStorage.getItem(this.onboardingCompletedKey) === 'true') {
             this.router.navigate(['/login']);
           }
         }
@@ -144,6 +152,16 @@ export class Onboarding implements OnInit {
     if (this.stepIndex > 0) this.stepIndex--;
   }
 
+  /** Ask for another activation link; the server answers the same whether or not the account exists. */
+  resend(): void {
+    if (this.resendState === 'sending') return;
+    this.resendState = 'sending';
+    this.http.post(`${environment.apiUrl}/user/resend-verification`, { email: this.data.email.trim() }).subscribe({
+      next: () => { this.resendState = 'sent'; this.cdr.markForCheck(); },
+      error: () => { this.resendState = 'error'; this.cdr.markForCheck(); },
+    });
+  }
+
   login(){
     this.router.navigate(['/login']);
   }
@@ -166,6 +184,7 @@ export class Onboarding implements OnInit {
           ? this.data.contactName
           : this.data.firstName,
       last_name: this.data.accountType === 'brand' ? undefined : this.data.lastName,
+      brand_name: this.data.accountType === 'brand' ? this.data.brandName.trim() : undefined,
       profileType:
         this.data.accountType === 'brand'
           ? CreateUserDto.ProfileTypeEnum.Brand
@@ -180,21 +199,24 @@ export class Onboarding implements OnInit {
     this.saveError = '';
 
     this.saveUser()
-      .pipe(finalize(() => (this.isSaving = false)))
+      .pipe(finalize(() => { this.isSaving = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: (response) => {
           if (response?.error) {
             this.saveError = response.message || 'Unable to create your account.';
+            this.cdr.markForCheck();
             return;
           }
 
           localStorage.setItem(this.onboardingCompletedKey, 'true');
           this.activationSent = true;
           this.completed.emit(this.data);
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.saveError =
             error?.error?.message || error?.message || 'Unable to create your account.';
+          this.cdr.markForCheck();
         },
       });
   }

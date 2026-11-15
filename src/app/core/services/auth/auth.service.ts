@@ -36,7 +36,8 @@ export class AuthService {
       errorMessage = `Server returned code: ${error.status}, error message is: ${error.message}`;
     }
 
-    return throwError(() => new Error(errorMessage));
+    // Keep the server's reason code, so a screen can offer the right next step (for example, resend the link).
+    return throwError(() => Object.assign(new Error(errorMessage), { code: error.error?.code as string | undefined }));
   }
 
   login(emailOrPhone: string, password: string): Observable<LoginResponse> {

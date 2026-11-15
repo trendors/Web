@@ -54,6 +54,8 @@ describe('TopNavFilter', () => {
     const hrefs = await setup(brandUser);
     expect(hrefs).toContain('/home');
     expect(hrefs).toContain('/home/create-campaign');
+    // One way to start a campaign: the kinds are tabs on that page, not separate menu items.
+    expect(hrefs).not.toContain('/home/plan/new');
     expect(hrefs).toContain('/home/view-campaign');
     expect(hrefs).toContain('/home/notifications');
     expect(hrefs).toContain('/home/profile');

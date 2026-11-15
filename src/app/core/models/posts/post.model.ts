@@ -63,6 +63,10 @@ export interface Post {
     endDate: string | Date;
     access?: string;
     platforms?: string[];
+    /** True when the campaign runs through the package workflow: creators apply under Find campaigns. */
+    is_package?: boolean;
+    /** True when the campaign pays creators per verified share: they share it from the sheet that opens. */
+    is_share?: boolean;
   };
   user?: User;
   likes?: LikePost[];

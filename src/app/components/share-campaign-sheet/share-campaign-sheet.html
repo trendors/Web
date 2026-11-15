@@ -1,0 +1,77 @@
+<div class="scs" role="dialog" aria-label="Share this campaign">
+  <div class="scs__handle"></div>
+
+  @if (loading()) {
+    <p class="scs__muted">Loading…</p>
+  } @else if (!terms()) {
+    <p class="scs__error" role="alert">{{ error() || 'This campaign is not taking shares.' }}</p>
+  } @else {
+    @let t = terms()!;
+    <header class="scs__head">
+      <h3>Earn ₦{{ t.payPerShare | number }} per verified share</h3>
+      <ul class="scs__rules">
+        @if (t.hashtag) { <li>Include <strong>#{{ t.hashtag }}</strong> in your post</li> }
+        <li>Post on X, then send us the link to your post</li>
+        <li>Keep it live for {{ t.holdHours }} hours; you are paid after that</li>
+        <li>{{ used() }} of {{ maxShares() }} share{{ maxShares() === 1 ? '' : 's' }} used@if (t.remaining != null) { · ₦{{ t.remaining | number }} of budget left }</li>
+      </ul>
+    </header>
+
+    @if (error()) { <p class="scs__error" role="alert">{{ error() }}</p> }
+
+    @if (openShare(); as share) {
+      <section class="scs__step">
+        <h4>Post it on X</h4>
+        <div class="scs__preview">
+          <p>{{ composedText() }}</p>
+          <small [class.scs__over]="length() > 280">{{ length() }}/280</small>
+        </div>
+        <button type="button" class="scs__btn scs__btn--primary" (click)="postOnX()">Open X to post</button>
+
+        <h4>Then paste the link to your post</h4>
+        <p class="scs__muted">Time left to post: {{ left(share.expiresAt) }}. Your ₦{{ share.pay | number }} is set aside for you until then.</p>
+        <input class="scs__input" type="url" inputmode="url" autocapitalize="none" spellcheck="false" placeholder="https://x.com/yourname/status/…" [ngModel]="pasteUrl()" (ngModelChange)="pasteUrl.set($event)" name="postUrl" aria-label="Link to your post on X" />
+        @if (rejection() || share.reason) {
+          <div class="scs__callout scs__callout--bad" role="alert"><strong>That post was not accepted</strong><p>{{ rejection() || share.reason }}</p></div>
+        }
+        <button type="button" class="scs__btn scs__btn--primary" [disabled]="busy() || !pasteUrl().trim()" (click)="submit()">
+          {{ busy() ? 'Checking…' : 'Send my post' }}
+        </button>
+      </section>
+    } @else if (canStart()) {
+      <section class="scs__step">
+        <h4>Choose how it reads</h4>
+        <div class="scs__versions">
+          <button type="button" class="scs__card" [class.is-selected]="selectedText() === data.post.text" (click)="choose(data.post.text)">{{ data.post.text }}</button>
+          @for (v of versions(); track $index) {
+            <button type="button" class="scs__card" [class.is-selected]="selectedText() === v" (click)="choose(v)">{{ v }}</button>
+          }
+          @if (aiLoading()) { <p class="scs__muted">Writing more versions…</p> }
+        </div>
+        <label class="scs__check"><input type="checkbox" [checked]="includeAd()" (change)="includeAd.set($any($event.target).checked)" /> Mark as sponsored (#ad)</label>
+        <button type="button" class="scs__btn scs__btn--primary" [disabled]="busy()" (click)="start()">
+          {{ busy() ? 'Starting…' : 'Start sharing' }}
+        </button>
+        <p class="scs__muted">Starting sets ₦{{ t.payPerShare | number }} aside for you. You then have 24 hours to post.</p>
+      </section>
+    } @else if (blocker()) {
+      <p class="scs__callout scs__callout--info" role="status">{{ blocker() }}</p>
+    }
+
+    @if (shares().length) {
+      <section class="scs__list">
+        <h4>Your shares</h4>
+        @for (s of shares(); track s.id) {
+          <div class="scs__row">
+            <span class="scs__pill" [attr.data-state]="s.state">{{ label(s) }}</span>
+            <span>₦{{ s.pay | number }}</span>
+            @if (s.state === 'verified' && s.holdUntil) { <small>paid after {{ s.holdUntil | date: 'medium' }}</small> }
+            @if ((s.state === 'released' || s.state === 'expired') && s.reason) { <small>{{ s.reason }}</small> }
+          </div>
+        }
+      </section>
+    }
+  }
+
+  <button type="button" class="scs__btn" (click)="close()">Close</button>
+</div>

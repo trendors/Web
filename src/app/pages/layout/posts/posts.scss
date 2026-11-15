@@ -480,3 +480,6 @@
   from { background-position: 200% 0; }
   to { background-position: -200% 0; }
 }
+
+.tab-soon { margin-left: 6px; padding: 1px 8px; border-radius: 99px; font-size: var(--fs-caption); font-weight: 600; background: var(--warning-soft); color: var(--warning); }
+.tab-hint { margin: var(--space-2) 0 0; font-size: var(--fs-secondary); color: var(--muted); }

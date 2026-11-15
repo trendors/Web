@@ -19,6 +19,8 @@ export interface CreateUserDto {
     password?: string;
     campaignInfluencers?: Array<CampaignInfluencer>;
     profileType?: CreateUserDto.ProfileTypeEnum;
+    /** The brand's own name (not the contact person). Used only for brand accounts. */
+    brand_name?: string;
 }
 export namespace CreateUserDto {
     export const ProfileTypeEnum = {

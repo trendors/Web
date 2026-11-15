@@ -30,10 +30,8 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/layout/shares/shares').then((m) => m.SharesDashboard),
       },
       { path: 'niches', redirectTo: 'profile?tab=niches', pathMatch: 'full' },
-      {
-        path: 'plan/new',
-        loadComponent: () => import('./pages/layout/package-campaign/plan-wizard').then((m) => m.PlanWizard),
-      },
+      // Old address of the package wizard: it now lives under "Create campaign".
+      { path: 'plan/new', redirectTo: '/home/create-campaign/package', pathMatch: 'full' },
       {
         path: 'plan/:id/edit',
         loadComponent: () => import('./pages/layout/package-campaign/plan-wizard').then((m) => m.PlanWizard),
@@ -41,6 +39,10 @@ export const routes: Routes = [
       {
         path: 'plan/:id',
         loadComponent: () => import('./pages/layout/package-campaign/plan-manage').then((m) => m.PlanManage),
+      },
+      {
+        path: 'share-campaign/:id',
+        loadComponent: () => import('./pages/layout/share-campaign/share-manage').then((m) => m.ShareManage),
       },
       {
         path: 'opportunities',
@@ -51,9 +53,21 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/layout/package-campaign/collaboration-detail').then((m) => m.CollaborationDetail),
       },
       {
+        // One entry for starting a campaign; the tabs choose its kind.
         path: 'create-campaign',
         loadComponent: () =>
-          import('./pages/layout/create-campaign/create-campaign').then((m) => m.CreateCampaign),
+          import('./pages/layout/create-campaign/create-campaign-shell').then((m) => m.CreateCampaignShell),
+        children: [
+          { path: '', redirectTo: 'package', pathMatch: 'full' },
+          {
+            path: 'package',
+            loadComponent: () => import('./pages/layout/package-campaign/plan-wizard').then((m) => m.PlanWizard),
+          },
+          {
+            path: 'share',
+            loadComponent: () => import('./pages/layout/create-campaign/create-campaign').then((m) => m.CreateCampaign),
+          },
+        ],
       },
       {
         path: 'notifications',
@@ -114,8 +128,10 @@ export const routes: Routes = [
   },
 
   {
+    // One front door: the onboarding asks brand or creator first. `signup=1` lets an extra account be made on this browser.
     path: 'register',
-    loadComponent: () => import('./pages/auth/register/register').then((m) => m.Register),
+    redirectTo: '/?signup=1',
+    pathMatch: 'full',
   },
   {
     path: 'login',

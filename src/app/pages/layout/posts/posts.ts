@@ -30,9 +30,13 @@ import {
 } from '../../../core/models/posts/post.model';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ShareSheet } from '../../../components/share-sheet/share-sheet';
-import { Router } from '@angular/router';
+import { ShareCampaignSheet } from '../../../components/share-campaign-sheet/share-campaign-sheet';
+import { Router, RouterLink } from '@angular/router';
+import { PackageCampaignService } from '../../../core/services/package/package-campaign.service';
+import type { MyCollab } from '../../../core/models/package/package.model';
 import { NewPostsNotifier } from "../../../components/new-posts-notifier/new-posts-notifier";
 import { Fab } from "../../../components/fab/fab";
+import { GetStarted } from '../../../components/get-started/get-started';
 import { SocketService } from '../../../socket.service';
 import { CampaignInfluencerService } from '../../../core/api';
 import { ToastService } from '../../../components/toast/toast.service';
@@ -41,7 +45,7 @@ import { TimeAgoPipe } from '../../../time-ago-pipe';
 
 @Component({
   selector: 'app-home',
-  imports: [ReactiveFormsModule, FormsModule, AsyncPipe, SlicePipe, NewPostsNotifier, Fab, TimeAgoPipe],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, AsyncPipe, SlicePipe, NewPostsNotifier, Fab, TimeAgoPipe, GetStarted],
   templateUrl: './posts.html',
   styleUrl: './posts.scss',
 })
@@ -53,6 +57,7 @@ export class Posts implements OnInit, OnDestroy {
   private socketService = inject(SocketService);
   private campaignInfluencerApi = inject(CampaignInfluencerService);
   private toast = inject(ToastService);
+  private packageApi = inject(PackageCampaignService);
   private destroy$ = new Subject<void>();
 
   readonly PAGE_SIZE = 20;
@@ -66,7 +71,8 @@ export class Posts implements OnInit, OnDestroy {
   postsError$ = this.store.select(selectPostsError);
   user$ = this.store.select(selectCurrentUser);
 
-  activePostTab: 'open' | 'application' = 'open';
+  /** Campaigns open first; Share & earn (the 'open' posts) is the second tab. */
+  activePostTab: 'open' | 'application' = 'application';
   newPostsAvailable = signal(false);
   pendingPosts = signal<any[]>([]);
   searchControl = new FormControl('', { nonNullable: true });
@@ -80,6 +86,8 @@ export class Posts implements OnInit, OnDestroy {
   applyingPostIds = new Set<number>();
   /** Campaigns this user already has an assignment on (loaded from the server). */
   appliedCampaignIds = signal(new Set<number>());
+  /** The signed-in creator's standing on each package campaign, by campaign id. */
+  private packageStanding = signal(new Map<number, string>());
 
   newCommentTexts: { [postId: number]: string } = {};
   expandedComments: { [postId: number]: boolean } = {};
@@ -98,7 +106,7 @@ export class Posts implements OnInit, OnDestroy {
       this.currentUserId = user?.id;
       this.currentTrendorsId = user?.trendors_id;
       this.currentUserName = this.userNameOf(user);
-      if (changed && user?.id) this.loadAppliedCampaigns(user.id);
+      if (changed && user?.id) { this.loadAppliedCampaigns(user.id); void this.loadPackageStanding(); }
     });
 
     this.searchControl.valueChanges
@@ -243,6 +251,11 @@ export class Posts implements OnInit, OnDestroy {
   }
 
   openShareMenu(post: Post): void {
+    // A campaign that pays per verified share has its own flow: start, post, send the link.
+    if (post.campaign?.is_share) {
+      this.bottomSheet.open(ShareCampaignSheet, { data: { post }, panelClass: 'custom-share-sheet' });
+      return;
+    }
     this.bottomSheet.open(ShareSheet, {
       data: { post },
       panelClass: 'custom-share-sheet',
@@ -331,6 +344,28 @@ export class Posts implements OnInit, OnDestroy {
   }
 
   /** Seed "Applied" state from the user's existing assignments. */
+  /** Where the creator stands on package campaigns, so the feed says "Applied" instead of offering to apply again. */
+  private async loadPackageStanding(): Promise<void> {
+    try {
+      const rows: MyCollab[] = await this.packageApi.mine();
+      this.packageStanding.set(new Map(rows.map((r) => [r.campaignId, r.state])));
+    } catch {
+      // Not a creator, or the call failed: the feed simply shows "View terms".
+    }
+  }
+
+  /** What to show instead of "View terms" for a package campaign the creator is already part of, or null. */
+  packageStatus(post: Post): string | null {
+    const state = this.packageStanding().get(this.campaignIdOf(post));
+    switch (state) {
+      case 'applied': return 'Applied';
+      case 'invited': case 'selected': return 'Offer waiting';
+      case 'active': return 'In progress';
+      case 'completed': return 'Completed';
+      default: return null;
+    }
+  }
+
   private loadAppliedCampaigns(userId: number): void {
     this.campaignInfluencerApi
       .campaignInfluencerControllerFindByUser(userId, false)
@@ -374,6 +409,12 @@ export class Posts implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Failed to apply to campaign', err);
           this.applyingPostIds.delete(post.id);
+          // Package campaigns are applied to under Find campaigns, where the terms and your fit are shown.
+          if (/package campaign/i.test(String(err?.error?.message ?? ''))) {
+            this.toast.show('This is a package campaign. Opening it where you can see the terms and apply.', 'info');
+            void this.router.navigate(['/home/opportunities'], { queryParams: { tab: 'discover' } });
+            return;
+          }
           this.toast.show(err?.error?.message ?? 'Could not send your application.', 'error');
         },
       });
