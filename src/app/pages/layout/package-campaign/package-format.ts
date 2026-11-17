@@ -43,3 +43,29 @@ export function errText(err: any, fallback = 'Something went wrong. Please try a
   const m = body?.message ?? err?.message;
   return (Array.isArray(m) ? m.join(', ') : m) || fallback;
 }
+
+/** Platform names as people know them; "twitter" is X now. */
+export function platformName(p: string | null | undefined): string {
+  const key = String(p ?? '').toLowerCase();
+  const names: Record<string, string> = { twitter: 'X', x: 'X', instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', facebook: 'Facebook' };
+  return names[key] ?? (key ? key[0].toUpperCase() + key.slice(1) : '');
+}
+
+/** Follower counts short and readable: 980, 15.4k, 1.2M. */
+export function compact(n: number | null | undefined): string {
+  const v = Number(n) || 0;
+  if (v < 1000) return String(v);
+  if (v < 1_000_000) return `${+(v / 1000).toFixed(v < 10_000 ? 1 : 0)}k`;
+  return `${+(v / 1_000_000).toFixed(1)}M`;
+}
+
+/** Money short enough for a tile: ₦1,500, ₦99,999, ₦272.7k, ₦1.2M. The exact amount belongs in a tooltip. */
+export function nairaShort(n: number | string | null | undefined): string {
+  const v = Number(n) || 0;
+  const sign = v < 0 ? '-' : '';
+  const a = Math.abs(v);
+  if (a < 100_000) return `${sign}₦${Math.round(a).toLocaleString('en-NG')}`;
+  if (a < 1_000_000) return `${sign}₦${+(a / 1000).toFixed(1)}k`;
+  if (a < 1_000_000_000) return `${sign}₦${+(a / 1_000_000).toFixed(1)}M`;
+  return `${sign}₦${+(a / 1_000_000_000).toFixed(1)}B`;
+}

@@ -112,3 +112,10 @@ textarea { resize: vertical; min-height: 84px; }
 .chips--field { margin-top: 8px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); align-items: center; }
 .chips--field .chip-input { border: 0; outline: 0; background: transparent; flex: 1; min-width: 160px; padding: 6px 4px; font: inherit; color: inherit; }
 .chip .x { border: 0; background: transparent; cursor: pointer; font-size: 16px; line-height: 1; margin-left: 4px; color: inherit; }
+
+.tab-hint { margin: 0; }
+.card.legacy app-applications-invites { display: block; margin-top: 8px; }
+.find-form { display: flex; gap: 8px; align-items: center; }
+.find-input { flex: 1; min-width: 0; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; }
+.followers { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
+.follower { padding: 2px 10px; border-radius: 99px; background: var(--surface-2); font-size: var(--fs-caption); b { font-weight: 700; margin-right: 2px; } .verified { margin-left: 3px; color: var(--info); font-weight: 700; } }

@@ -9,9 +9,13 @@ export class CampaignService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/campaign`;
 
-  getCampaigns(userId: string | number): Observable<Campaign[]> {
+  /**
+   * The signed-in brand's own campaigns, in every state. The server takes the owner from the session;
+   * the id is only what the store passes along, and is not sent.
+   */
+  getCampaigns(_userId?: string | number): Observable<Campaign[]> {
     return this.http
-      .get<ApiResponse<{ list: Campaign[] }>>(`${this.apiUrl}?creator_id=${userId}`)
+      .get<ApiResponse<{ list: Campaign[] }>>(`${this.apiUrl}/mine`)
       .pipe(map((res) => res.data?.list || []));
   }
 

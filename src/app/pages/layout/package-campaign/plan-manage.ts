@@ -3,9 +3,11 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '../../../components/toast/toast.service';
-import { Matches, MyWork, PlanSummary, RosterRow, Transition } from '../../../core/models/package/package.model';
+import { CampaignPulse, CreatorMatch, CreatorSearch, Matches, MyWork, PlanSummary, RosterRow, Transition } from '../../../core/models/package/package.model';
 import { PackageCampaignService } from '../../../core/services/package/package-campaign.service';
-import { errText, label, naira, timeLeft, tone } from './package-format';
+import { compact, errText, label, naira, platformName, timeLeft, tone } from './package-format';
+import { CreatorSummaryPanel } from './creator-summary/creator-summary';
+import { CampaignPulsePanel } from './campaign-pulse/campaign-pulse';
 
 type Tab = 'creators' | 'find' | 'terms' | 'history' | 'report';
 
@@ -17,7 +19,7 @@ type Tab = 'creators' | 'find' | 'terms' | 'history' | 'report';
 @Component({
   selector: 'app-plan-manage',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, CreatorSummaryPanel, CampaignPulsePanel],
   templateUrl: './plan-manage.html',
   styleUrl: './package.shared.scss',
 })
@@ -35,8 +37,17 @@ export class PlanManage implements OnInit {
   readonly s = signal<PlanSummary | null>(null);
   readonly roster = signal<RosterRow[]>([]);
   readonly matches = signal<Matches | null>(null);
+  /** Looking for a particular creator, whether or not they pass the filters. */
+  searchText = '';
+  readonly search = signal<CreatorSearch | null>(null);
+  /** The creator whose profile is open. */
+  readonly viewing = signal<number | null>(null);
+  readonly compact = compact;
+  readonly platformName = platformName;
   readonly history = signal<Transition[]>([]);
   readonly money = signal<MyWork['earnings'] | null>(null);
+  /** The campaign at a glance; the page still works if it cannot be loaded. */
+  readonly pulse = signal<CampaignPulse | null>(null);
   readonly report = signal<Record<string, any> | null>(null);
   readonly tab = signal<Tab>('creators');
   readonly loading = signal(true);
@@ -63,7 +74,11 @@ export class PlanManage implements OnInit {
       this.error.set('');
       this.history.set(await this.api.history(this.id));
       if (s.lifecycle !== 'draft' && s.lifecycle !== 'cancelled') this.roster.set(await this.api.roster(this.id));
-      if (['active', 'closing', 'disputed'].includes(s.lifecycle)) this.money.set(await this.api.money(this.id));
+      if (['active', 'closing', 'disputed', 'completed'].includes(s.lifecycle)) {
+        const [money, pulse] = await Promise.all([this.api.money(this.id), this.api.pulse(this.id).catch(() => null)]);
+        this.money.set(money);
+        this.pulse.set(pulse);
+      }
       if (s.lifecycle === 'completed') { this.report.set(await this.api.report(this.id)); }
     } catch (e: any) {
       this.error.set(errText(e, 'Could not load this campaign.'));
@@ -142,8 +157,26 @@ export class PlanManage implements OnInit {
   }
 
   invite(userId: number, name: string) {
-    return this.run(`inv${userId}`, async () => { await this.api.invite(this.id, userId, this.alloc(-1)); this.matches.set(await this.api.matches(this.id)); }, `${name} has been invited.`);
+    return this.run(`inv${userId}`, async () => {
+      await this.api.invite(this.id, userId, this.alloc(-1));
+      this.matches.set(await this.api.matches(this.id));
+      this.viewing.set(null);
+    }, `${name} has been invited.`);
   }
+
+  async findCreator() {
+    const q = this.searchText.trim().replace(/^@+/, '');
+    if (q.length < 2) { this.toast.show('Type at least 2 characters of a name or handle.', 'info'); return; }
+    this.busy.set('search');
+    try { this.search.set(await this.api.searchCreators(this.id, q)); }
+    catch (e: any) { this.toast.show(errText(e), 'error'); }
+    finally { this.busy.set(null); }
+  }
+
+  clearSearch() { this.searchText = ''; this.search.set(null); }
+
+  /** The biggest few accounts, for a card. The profile shows them all. */
+  topAccounts(x: CreatorMatch) { return (x.accounts ?? []).slice(0, 3); }
 
   already(userId: number) { return this.roster().some((r) => r.userId === userId); }
 

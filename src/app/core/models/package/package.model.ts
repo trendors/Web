@@ -126,7 +126,23 @@ export interface Check { key: string; passed: boolean; detail: string }
 export interface Evaluation { eligible: boolean; checks: Check[]; failed: string[]; score: number }
 export interface DiscoverRow { campaignId: number; name: string; product: string | null; platforms: string[]; baseFeeBudget: number; endsAt: string | null; evaluation: Evaluation }
 export interface Discover { eligible: DiscoverRow[]; ineligible?: DiscoverRow[]; ineligibleCount: number }
-export interface Matches { considered: number; total: number; matches: { userId: number; name: string; score: number; checks: Check[] }[]; excludedBy?: Record<string, number>; suggestion?: string }
+/** A connected social account: where, which handle, and how many follow it. */
+export interface CreatorAccount { platform: string; handle: string | null; followers: number; verified: boolean }
+export interface CreatorMatch { userId: number; name: string; displayName?: string; score: number; checks: Check[]; accounts?: CreatorAccount[] }
+export interface Matches { considered: number; total: number; matches: CreatorMatch[]; excludedBy?: Record<string, number>; suggestion?: string }
+/** A creator found by name or handle; `eligible` is false when they miss one of the campaign's filters. */
+export interface CreatorSearchHit extends CreatorMatch { eligible: boolean; /** Set when the package's follower range rules them out: they cannot be invited. */ packageProblem?: string | null }
+export interface CreatorSearch { query: string; results: CreatorSearchHit[] }
+export interface CreatorSummary {
+  userId: number; name: string; displayName: string; headline: string | null; bio: string | null; location: string | null;
+  niches: string[]; audience: { locations: string[]; gender: string | null; ageRange: string | null }; engagementRate: string | null;
+  accounts: CreatorAccount[]; totalFollowers: number;
+  fit: { score: number; eligible: boolean; checks: Check[] };
+  record: { completed: number; active: number; cancelled: number };
+  onThisCampaign: { collaborationId: number; state: string } | null;
+  /** Set when the package's follower range rules them out: they cannot be invited. */
+  packageProblem?: string | null;
+}
 
 export type ContentState = 'awaiting_submission' | 'in_review' | 'revision_requested' | 'awaiting_publication' | 'rejected' | 'published' | 'verified' | 'cancelled';
 export interface ContentItem {
@@ -154,4 +170,14 @@ export interface Need { key: string; kind: 'offer' | 'draft' | 'revision' | 'pub
 export interface MyWork {
   needsYou: Need[];
   earnings: { basePaid: number; baseComing: number; bonusPaid: number; bonusWaiting: number; nextBonusCheck: string | null };
+}
+
+/** A package campaign at a glance, for its brand. Only verified readings count. */
+export interface CampaignPulse {
+  reach: { views: number; engagements: number; engagementRate: number | null; viewsLast24h: number; automaticPosts: number; reportedPosts: number; updatedAt: string | null };
+  posts: { live: number; promised: number };
+  money: { funded: number; paidToCreators: number; reserved: number; bonusPool: number; available: number; returned: number; costPer1000Views: number | null; costPer1000ViewsWithFee?: number | null; costPerEngagement: number | null } | null;
+  topPost: { itemId: number; collaborationId: number; creator: string; platform: string; url: string | null; views: number; engagements: number } | null;
+  milestones: { reached: number; total: number; next: { creator: string; metric: string; threshold: number; current: number; progress: number; amount: number } | null };
+  needsYou: { draftsToReview: number; applicants: number; offersWaiting: number };
 }

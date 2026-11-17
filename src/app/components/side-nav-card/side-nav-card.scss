@@ -159,3 +159,16 @@
 .theme-slot {
   margin: 8px 0;
 }
+
+.nav-item .nav-label { white-space: nowrap; }
+
+.soon {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--warning-soft);
+  color: var(--warning);
+}

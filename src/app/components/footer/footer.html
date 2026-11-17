@@ -15,16 +15,17 @@
       <span class="nav-label">Campaigns</span>
     </a>
   } @else {
-    <a class="nav-item" routerLink="/home/invites-and-applications" routerLinkActive="active" ariaCurrentWhenActive="page">
+    <a class="nav-item" routerLink="/home/opportunities" [queryParams]="{ tab: 'mine' }" routerLinkActive="active"
+       [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }" ariaCurrentWhenActive="page">
       <span class="icon-wrap">
-        <i class="ti ti-mail" aria-hidden="true"></i>
+        <i class="ti ti-target" aria-hidden="true"></i>
         @if (pendingInvites() > 0) {
-          <span class="counter tabular" [attr.aria-label]="pendingInvites() + ' pending'">
+          <span class="counter tabular" [attr.aria-label]="pendingInvites() + ' requests to answer'">
             {{ pendingInvites() > 99 ? '99+' : pendingInvites() }}
           </span>
         }
       </span>
-      <span class="nav-label">Invites</span>
+      <span class="nav-label">My work</span>
     </a>
   }
 

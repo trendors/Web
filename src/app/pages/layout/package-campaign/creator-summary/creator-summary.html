@@ -1,0 +1,84 @@
+<div class="cs-backdrop" (click)="close()"></div>
+<aside class="cs" role="dialog" aria-modal="true" [attr.aria-label]="summary()?.displayName ?? 'Creator profile'">
+  <button class="cs__close" type="button" (click)="close()" aria-label="Close">×</button>
+
+  @if (loading()) {
+    <p class="cs__muted">Loading…</p>
+  } @else if (error()) {
+    <p class="cs__error" role="alert">{{ error() }}</p>
+  } @else if (summary(); as s) {
+    <header class="cs__head">
+      <div class="cs__avatar" aria-hidden="true">{{ s.displayName.charAt(0).toUpperCase() }}</div>
+      <div>
+        <h2>{{ s.displayName }}</h2>
+        <p class="cs__muted">&#64;{{ s.name }}@if (s.location) { · {{ s.location }} }</p>
+        @if (s.headline) { <p class="cs__headline">{{ s.headline }}</p> }
+      </div>
+    </header>
+
+    <section class="cs__fit" [class.cs__fit--out]="!s.fit.eligible">
+      <div class="cs__fit-top">
+        <strong class="cs__score">Fit {{ s.fit.score }}%</strong>
+        <span class="cs__tag" [class.cs__tag--out]="!s.fit.eligible">{{ s.fit.eligible ? 'Meets every filter' : 'Outside your filters' }}</span>
+      </div>
+      <ul class="cs__checks">
+        @for (ch of s.fit.checks; track ch.key) {
+          <li [class.ok]="ch.passed" [class.no]="!ch.passed">{{ ch.passed ? '✓' : '✗' }} {{ ch.detail }}</li>
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h3>Followers</h3>
+      @if (s.accounts.length) {
+        <ul class="cs__accounts">
+          @for (a of s.accounts; track a.platform + a.handle) {
+            <li>
+              <span class="cs__platform">{{ platformName(a.platform) }}</span>
+              <span class="cs__handle">@if (a.handle) { &#64;{{ a.handle }} }@if (a.verified) { <span class="cs__verified" title="Verified account">✓</span> }</span>
+              <strong class="cs__count">{{ compact(a.followers) }}</strong>
+            </li>
+          }
+        </ul>
+        @if (s.accounts.length > 1) { <p class="cs__muted">{{ compact(s.totalFollowers) }} followers across {{ s.accounts.length }} accounts.</p> }
+      } @else {
+        <p class="cs__muted">No social account connected yet, so we cannot show followers.</p>
+      }
+    </section>
+
+    @if (s.niches.length || s.engagementRate || s.audience.locations.length || s.audience.ageRange || s.audience.gender) {
+      <section>
+        <h3>Content and audience</h3>
+        @if (s.niches.length) { <div class="cs__chips">@for (n of s.niches; track n) { <span>{{ n }}</span> }</div> }
+        <dl class="cs__kv">
+          @if (s.engagementRate) { <div><dt>Engagement rate</dt><dd>{{ s.engagementRate }}</dd></div> }
+          @if (s.audience.locations.length) { <div><dt>Audience in</dt><dd>{{ s.audience.locations.join(', ') }}</dd></div> }
+          @if (s.audience.ageRange) { <div><dt>Audience age</dt><dd>{{ s.audience.ageRange }}</dd></div> }
+          @if (s.audience.gender) { <div><dt>Audience gender</dt><dd>{{ s.audience.gender }}</dd></div> }
+        </dl>
+      </section>
+    }
+
+    @if (s.bio) { <section><h3>About</h3><p class="cs__bio">{{ s.bio }}</p></section> }
+
+    <section>
+      <h3>On Trendors</h3>
+      <dl class="cs__kv">
+        <div><dt>Campaigns completed</dt><dd>{{ s.record.completed }}</dd></div>
+        <div><dt>In progress</dt><dd>{{ s.record.active }}</dd></div>
+        @if (s.record.cancelled) { <div><dt>Cancelled or disputed</dt><dd>{{ s.record.cancelled }}</dd></div> }
+      </dl>
+    </section>
+
+    <footer class="cs__foot">
+      @if (onCampaign(s)) {
+        <p class="cs__muted">Already on this campaign@if (s.onThisCampaign) { ({{ label(s.onThisCampaign.state) }}) }.</p>
+      } @else if (s.packageProblem) {
+        <p class="cs__error">{{ s.packageProblem }}</p>
+      } @else if (canInvite()) {
+        @if (!s.fit.eligible) { <p class="cs__muted">They miss one of your filters. You can still invite them.</p> }
+        <button class="cs__btn" type="button" (click)="onInvite(s)" [disabled]="inviting()">{{ inviting() ? 'Inviting…' : 'Invite ' + s.displayName }}</button>
+      }
+    </footer>
+  }
+</aside>

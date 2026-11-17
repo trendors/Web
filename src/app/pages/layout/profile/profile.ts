@@ -6,13 +6,14 @@ import {
   AbstractControl,
   FormBuilder,
   FormControl,
+  FormGroup,
   ReactiveFormsModule,
   ValidationErrors,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { catchError, debounceTime, distinctUntilChanged, finalize, map, Observable, of, shareReplay, startWith, switchMap, take } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, Observable, of, shareReplay, startWith, switchMap, take, tap } from 'rxjs';
 // import { User, UpdateUserDto } from '../../../core/models/users/user.model';
 import {
   selectAuthError,
@@ -225,6 +226,7 @@ export class Profile implements OnInit {
           ? this.walletApi.walletControllerGetUserWallet(String(user.trendors_id)).pipe(
               map((res: any) => res?.data ?? { balance: 0 }),
               catchError(() => of({ balance: 0 })),
+              tap((w) => this.balance.set(Number(w?.balance) || 0)),
               shareReplay(1),
             )
           : of({ balance: 0 }),
@@ -245,6 +247,50 @@ export class Profile implements OnInit {
       ?.writeText(String(id))
       .then(() => this.toast.show('Trendors ID copied', 'success'))
       .catch(() => this.toast.show('Could not copy. Long-press the ID to copy it.', 'error'));
+  }
+
+  /** The current balance, for checking a withdrawal before it is sent. */
+  balance = signal(0);
+  showWithdraw = signal(false);
+  withdrawing = signal(false);
+  withdrawForm = new FormGroup({ amount: new FormControl<number | null>(null) });
+  get withdrawCtrl() { return this.withdrawForm.controls.amount; }
+  withdrawError = signal<string | null>(null);
+
+  openWithdraw(): void {
+    this.withdrawCtrl.setValue(null);
+    this.withdrawError.set(null);
+    this.showWithdraw.set(true);
+  }
+
+  withdrawAll(): void {
+    this.withdrawCtrl.setValue(this.balance());
+  }
+
+  /** Send the amount to the saved bank account; the server checks the balance and refunds a failed transfer. */
+  withdraw(): void {
+    const amount = Number(this.withdrawCtrl.value);
+    const id = this.user?.trendors_id;
+    if (!id || this.withdrawing()) return;
+    if (!Number.isFinite(amount) || amount <= 0) return this.withdrawError.set('Enter an amount to withdraw.');
+    if (amount > this.balance()) return this.withdrawError.set('That is more than your available balance.');
+    this.withdrawError.set(null);
+    this.withdrawing.set(true);
+    this.walletService
+      .withdraw(String(id), Math.round(amount * 100) / 100)
+      .pipe(finalize(() => this.withdrawing.set(false)))
+      .subscribe({
+        next: () => {
+          this.toast.show(`₦${amount.toLocaleString('en-NG')} is on its way to your bank account.`, 'success', 5000);
+          this.showWithdraw.set(false);
+          this.wallet$ = this.buildWallet$();
+        },
+        error: (err) => {
+          const msg = err?.error?.message;
+          this.withdrawError.set(typeof msg === 'string' && msg ? msg : 'The withdrawal could not be completed. Please try again.');
+          this.wallet$ = this.buildWallet$();
+        },
+      });
   }
 
   onTopupSuccess(data:any): void {

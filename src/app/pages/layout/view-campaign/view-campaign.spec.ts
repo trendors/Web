@@ -147,6 +147,33 @@ describe('ViewCampaign', () => {
     expect(chips).toEqual([null, 'Package', 'Share']);
   });
 
+  it("says why a campaign of the owner's is not live", () => {
+    const c = (over: Record<string, unknown>) => ({ ...mockCampaigns[0], ...over }) as any;
+    expect(component.stateChip(c({ lifecycle: 'draft' }))?.label).toBe('Draft');
+    expect(component.stateChip(c({ lifecycle: 'under_review' }))?.label).toBe('In review');
+    expect(component.stateChip(c({ lifecycle: 'active', payment_status: 'awaiting_payment' }))?.label).toBe('Awaiting payment');
+    expect(component.stateChip(c({ lifecycle: 'cancelled' }))?.label).toBe('Cancelled');
+    expect(component.stateChip(c({ lifecycle: 'completed' }))?.label).toBe('Ended');
+    expect(component.stateChip(c({ lifecycle: 'active', status: 'paused' }))?.label).toBe('Paused');
+    expect(component.stateChip(c({ lifecycle: 'active', payment_status: 'paid' }))).toBeNull();
+  });
+
+  it('does not count a campaign that is not live as active, whatever its dates', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const live = { ...mockCampaigns[0], start_date: today, end_date: '2999-01-01', lifecycle: 'active', payment_status: 'paid' } as any;
+    expect(component.isActiveCampaign(live)).toBe(true);
+    expect(component.isActiveCampaign({ ...live, payment_status: 'awaiting_payment' })).toBe(false);
+    expect(component.isActiveCampaign({ ...live, lifecycle: 'draft' })).toBe(false);
+  });
+
+  it('shows the state beside the name', async () => {
+    store.overrideSelector(selectCampaignList, [{ ...mockCampaigns[0], id: 9, name: 'Unpaid', payment_status: 'awaiting_payment' } as any]);
+    store.refreshState();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.campaign-name .state-chip')?.textContent?.trim()).toBe('Awaiting payment');
+  });
+
   it('opens a package campaign on its own management page', () => {
     const navigateSpy = vi.spyOn(router, 'navigate');
     component.openModal({ ...mockCampaigns[2], is_package: true });

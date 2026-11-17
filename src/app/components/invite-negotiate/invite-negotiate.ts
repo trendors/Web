@@ -166,7 +166,7 @@ export class InviteNegotiate implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/home/invites-and-applications']);
+    this.router.navigate(['/home/opportunities'], { queryParams: { tab: 'requests' } });
   }
 }
 

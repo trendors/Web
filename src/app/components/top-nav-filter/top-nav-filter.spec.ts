@@ -68,7 +68,9 @@ describe('TopNavFilter', () => {
     expect(hrefs).toContain('/home');
     expect(hrefs).toContain('/home/shares');
     expect(hrefs).toContain('/home/transactions');
-    expect(hrefs).toContain('/home/invites-and-applications');
+    expect(hrefs).toContain('/home/opportunities?tab=discover');
+    expect(hrefs).toContain('/home/opportunities?tab=mine');
+    expect(hrefs).not.toContain('/home/invites-and-applications');
     expect(hrefs).not.toContain('/home/create-campaign');
     expect(hrefs).not.toContain('/home/view-campaign');
   });

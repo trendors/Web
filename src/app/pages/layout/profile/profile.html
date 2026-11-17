@@ -19,9 +19,38 @@
     <div class="ui-card balance-card">
       <span class="balance-label">Available balance</span>
       <span class="balance tabular">₦{{ ((wallet$ | async)?.balance ?? 0) | number: '1.0-2' }}</span>
-      <button class="ui-btn block" type="button" (click)="showTopup = true">
-        <i class="ti ti-plus" aria-hidden="true"></i> Top up
-      </button>
+      <div class="balance-actions">
+        <button class="ui-btn" type="button" (click)="showTopup = true">
+          <i class="ti ti-plus" aria-hidden="true"></i> Top up
+        </button>
+        <button class="ui-btn secondary" type="button" (click)="openWithdraw()" [disabled]="!savedBank() || balance() <= 0 || showWithdraw()">
+          <i class="ti ti-arrow-up-right" aria-hidden="true"></i> Withdraw
+        </button>
+      </div>
+      @if (!loadingBank() && !savedBank()) {
+        <p class="ui-hint">Add a withdrawal account below to withdraw your balance.</p>
+      }
+
+      @if (showWithdraw() && savedBank()) {
+        <form class="withdraw-form" [formGroup]="withdrawForm" (ngSubmit)="withdraw()" novalidate>
+          <label class="ui-label" for="withdraw-amount">Amount to withdraw</label>
+          <div class="withdraw-row">
+            <input id="withdraw-amount" class="ui-input tabular" type="number" inputmode="decimal" min="1" [max]="balance()"
+                   placeholder="0" formControlName="amount" />
+            <button class="ui-btn ghost sm" type="button" (click)="withdrawAll()">All</button>
+          </div>
+          <p class="ui-hint">Sent to {{ savedBank()!.bankName }} {{ maskAccount(savedBank()!.accountNumber) }} ({{ savedBank()!.accountName }}).</p>
+          @if (withdrawError()) {
+            <p class="ui-alert" role="alert">{{ withdrawError() }}</p>
+          }
+          <div class="withdraw-actions">
+            <button class="ui-btn ghost" type="button" (click)="showWithdraw.set(false)" [disabled]="withdrawing()">Cancel</button>
+            <button class="ui-btn" type="submit" [disabled]="withdrawing()">
+              @if (withdrawing()) { <span class="ui-spinner" aria-hidden="true"></span> Sending… } @else { Withdraw }
+            </button>
+          </div>
+        </form>
+      }
     </div>
 
     @if (showTopup && user?.email) {

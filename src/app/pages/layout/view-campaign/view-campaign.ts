@@ -197,7 +197,22 @@ export class ViewCampaign implements OnInit, OnDestroy {
   }
 
   isActiveCampaign(campaign: Campaign): boolean {
-    return campaignPhase(campaign) === 'active';
+    return !this.stateChip(campaign) && campaignPhase(campaign) === 'active';
+  }
+
+  /**
+   * The owner sees every campaign, live or not, so anything that is not live says why.
+   * Null means live, and the dates decide the rest.
+   */
+  stateChip(campaign: Campaign): { label: string; tone: 'muted' | 'amber' | 'red' } | null {
+    const life = String(campaign.lifecycle ?? 'active').toLowerCase();
+    if (life === 'cancelled') return { label: 'Cancelled', tone: 'red' };
+    if (life === 'draft') return { label: 'Draft', tone: 'muted' };
+    if (life === 'submitted' || life === 'under_review') return { label: 'In review', tone: 'amber' };
+    if (life === 'awaiting_payment' || campaign.payment_status === 'awaiting_payment') return { label: 'Awaiting payment', tone: 'amber' };
+    if (life === 'closing' || life === 'completed' || campaign.status === 'closed') return { label: 'Ended', tone: 'muted' };
+    if (campaign.status === 'paused') return { label: 'Paused', tone: 'muted' };
+    return null;
   }
 
   getPlatforms(raw: unknown): string[] {

@@ -26,3 +26,19 @@ describe('where a brand starts a campaign', () => {
     expect(paths.indexOf('plan/new')).toBeLessThan(paths.indexOf('plan/:id/edit'));
   });
 });
+
+describe('the old Invites and Applications address', () => {
+  it('lands on My work → Requests, keeping the tab in the address', async () => {
+    const { Component } = await import('@angular/core');
+    const { TestBed } = await import('@angular/core/testing');
+    const { Router, provideRouter } = await import('@angular/router');
+    @Component({ template: '' }) class Page {}
+    const redirect = child('invites-and-applications')!;
+    TestBed.configureTestingModule({
+      providers: [provideRouter([{ path: 'home', children: [redirect, { path: 'opportunities', component: Page }] }])],
+    });
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/home/invites-and-applications');
+    expect(router.url).toBe('/home/opportunities?tab=requests');
+  });
+});

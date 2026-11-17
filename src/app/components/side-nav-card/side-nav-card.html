@@ -27,30 +27,25 @@
     @if ( activeProfile() === 'creative') {
     <div class="nav-group">
       <div class="group-label">Influencer Hub</div>
-      <a routerLink="/home/opportunities" [queryParams]="{ tab: 'discover' }" routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: false, paths: 'subset', queryParams: 'subset', fragment: 'ignored', matrixParams: 'ignored' }" class="nav-item">
+      <a routerLink="/home/opportunities" [queryParams]="{ tab: 'discover' }" class="nav-item" [class.active]="onFindCampaigns()">
         <span class="icon">🔎</span>
         <span class="nav-label">Find campaigns</span>
       </a>
-      <a routerLink="/home/opportunities" [queryParams]="{ tab: 'mine' }" routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: false, paths: 'subset', queryParams: 'subset', fragment: 'ignored', matrixParams: 'ignored' }" class="nav-item">
+      <a routerLink="/home/opportunities" [queryParams]="{ tab: 'mine' }" class="nav-item" [class.active]="onMyWork()">
         <span class="icon">🎯</span>
         <span class="nav-label">My work</span>
+        @if (pendingInvites() > 0) {
+          <span class="badge" [attr.aria-label]="pendingInvites() + ' requests to answer'">{{ pendingInvites() }}</span>
+        }
       </a>
       <a routerLink="/home/shares" routerLinkActive="active" class="nav-item">
         <span class="icon">📊</span>
-        <span class="nav-label">My Shares</span>
+        <span class="nav-label">My shares</span>
+        <span class="soon">Coming soon</span>
       </a>
       <a routerLink="/home/transactions" routerLinkActive="active" class="nav-item">
         <span class="icon">💳</span>
         <span class="nav-label">Transactions</span>
-      </a>
-      <a routerLink="/home/invites-and-applications" routerLinkActive="active" class="nav-item">
-        <span class="icon">✉️</span>
-        <span class="nav-label">Invites And Applications</span>
-        @if (pendingInvites() > 0) {
-          <span class="badge">{{ pendingInvites() }}</span>
-        }
       </a>
     </div>
   }

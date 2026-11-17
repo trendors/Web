@@ -4,7 +4,7 @@ import { firstValueFrom, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { CampaignCheckoutService } from '../payment/campaign-checkout.service';
 import {
-  CheckoutResult, CollabState, ContentItem, Discover, Dispute, Matches, MetricInput,
+  CampaignPulse, CheckoutResult, CollabState, ContentItem, CreatorSearch, CreatorSummary, Discover, Dispute, Matches, MetricInput,
   MyCollab, MyWork, OfferTerms, PackageInfo, PlanForm, PlanSummary, RewardsView, RosterRow, Transition, WorkflowEvent,
 } from '../../models/package/package.model';
 
@@ -88,7 +88,11 @@ export class PackageCampaignService {
 
   money(campaignId: number) { return this.get<MyWork['earnings']>(`/collaboration/campaign/${campaignId}/money`); }
   roster(campaignId: number) { return this.get<RosterRow[]>(`/collaboration/campaign/${campaignId}`); }
+  pulse(campaignId: number) { return this.get<CampaignPulse>(`/collaboration/campaign/${campaignId}/pulse`); }
   matches(campaignId: number) { return this.get<Matches>(`/collaboration/campaign/${campaignId}/matches`); }
+  /** Any creator by name, username or social handle, with how they fit this campaign. */
+  searchCreators(campaignId: number, q: string) { return this.get<CreatorSearch>(`/collaboration/campaign/${campaignId}/creators/search`, { q }); }
+  creatorSummary(campaignId: number, userId: number) { return this.get<CreatorSummary>(`/collaboration/campaign/${campaignId}/creators/${userId}`); }
   invite(campaignId: number, userId: number, rewardAllocation: number) { return this.post<unknown>('/collaboration/invite', { campaignId, userId, reward_allocation: rewardAllocation }); }
   select(id: number, rewardAllocation: number) { return this.post<unknown>(`/collaboration/${id}/select`, { reward_allocation: rewardAllocation }); }
   notSelected(id: number, reason?: string) { return this.post<unknown>(`/collaboration/${id}/not-selected`, { reason }); }

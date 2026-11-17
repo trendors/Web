@@ -1,6 +1,6 @@
 import { RealtimeEvent, SocketService } from '../../../socket.service';
 import { ApplicationsLists } from '../../../components/applications-lists/applications-lists';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, input, OnInit, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
@@ -15,6 +15,10 @@ import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector
 import { ToastService } from '../../../components/toast/toast.service';
 import { extractApiList } from '../../../core/utils/api-response';
 
+export type WorkStage = 'requests' | 'progress' | 'done';
+/** Each list status (see applicationStatus) belongs to one My work stage. */
+const STAGE_OF: Record<string, WorkStage> = { pending: 'requests', accepted: 'progress', posted: 'progress', paid: 'done', declined: 'done' };
+
 @Component({
   selector: 'app-applications-invites',
   imports: [ApplicationsLists, InvitesLists],
@@ -28,6 +32,13 @@ export class ApplicationsInvites implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly pendingInvites = inject(PendingInvitesService);
   private readonly destroyRef = inject(DestroyRef);
+
+  /** Shown inside My work: no page heading of its own. */
+  readonly embedded = input(false);
+  /** Inside My work, only one stage is shown: requests (invites and pending applications), in progress, or done. */
+  readonly stage = input<WorkStage | null>(null);
+  /** How many items this view lists, so My work can hide the section when there are none. */
+  readonly loaded = output<number>();
   private readonly socket = inject(SocketService);
 
   /** Creator-side applications from the campaign-influencer service. */
@@ -153,8 +164,20 @@ export class ApplicationsInvites implements OnInit {
       });
   }
 
+  /** What this stage lists, worked out once per load so the bindings stay stable. Invites are always requests. */
+  stageInvites: any[] = [];
+  stageApplications: any[] = [];
+
+  private splitByStage(): void {
+    const stage = this.stage();
+    this.stageInvites = !stage || stage === 'requests' ? this.invites : [];
+    this.stageApplications = stage ? this.applications.filter((a) => STAGE_OF[a?.status as string] === stage) : this.applications;
+  }
+
   private mergeInvites(): void {
     this.invites = [...this.invitationCards, ...this.assignmentInvites];
+    this.splitByStage();
+    this.loaded.emit(this.stageInvites.length + this.stageApplications.length);
   }
 
   /** Invitation entity → invites-list card. Its `user` is the invitee, so the brand comes from the campaign. */

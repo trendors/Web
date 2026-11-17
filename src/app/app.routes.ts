@@ -83,11 +83,8 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/layout/view-campaign/view-campaign').then((m) => m.ViewCampaign),
       },
-      {
-        path: 'invites-and-applications',
-        loadComponent: () =>
-          import('./pages/layout/applications-invites/applications-invites').then((m) => m.ApplicationsInvites),
-      },
+      // Invites and applications now live under My work → Requests; old links and notifications land there.
+      { path: 'invites-and-applications', redirectTo: '/home/opportunities?tab=requests', pathMatch: 'full' },
 
       {
         path: 'invite-negotiate/:id',

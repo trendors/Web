@@ -16,7 +16,7 @@ describe('Profile: the wallet tab', () => {
   let fixture: ComponentFixture<Profile>;
   let component: Profile;
   let store: MockStore;
-  let wallet: { getAccountDetails: ReturnType<typeof vi.fn>; addBankAccount: ReturnType<typeof vi.fn>; fetchBanks: ReturnType<typeof vi.fn> };
+  let wallet: { getAccountDetails: ReturnType<typeof vi.fn>; addBankAccount: ReturnType<typeof vi.fn>; fetchBanks: ReturnType<typeof vi.fn>; withdraw: ReturnType<typeof vi.fn> };
 
   async function open(u: ReturnType<typeof user>, details: unknown = saved) {
     wallet.getAccountDetails.mockImplementation(() => (details instanceof Error ? throwError(() => details) : of(details)));
@@ -41,7 +41,7 @@ describe('Profile: the wallet tab', () => {
   const button = (label: RegExp) => Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button')).find((b) => label.test(b.textContent ?? '')) as HTMLButtonElement | undefined;
 
   beforeEach(() => {
-    wallet = { getAccountDetails: vi.fn(), addBankAccount: vi.fn(), fetchBanks: vi.fn(() => of([])) };
+    wallet = { getAccountDetails: vi.fn(), addBankAccount: vi.fn(), fetchBanks: vi.fn(() => of([])), withdraw: vi.fn() };
   });
 
   it('should create', async () => {
@@ -151,5 +151,70 @@ describe('Profile: the wallet tab', () => {
   ])('masks %j as %j', async (input, expected) => {
     await open(user());
     expect(component.maskAccount(input as any)).toBe(expected);
+  });
+
+  describe('withdrawing', () => {
+    async function openWithBalance(balance: number, u = user({ paystackRecipientCode: 'RCP_1' })) {
+      await open(u);
+      component.balance.set(balance);
+      fixture.detectChanges();
+    }
+    const withdrawBtn = () => Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('.balance-actions button')).find((b) => /Withdraw/.test(b.textContent ?? '')) as HTMLButtonElement;
+    const submit = () => (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.withdraw-form button[type=submit]')!;
+
+    it('cannot withdraw without a saved bank account, and says why', async () => {
+      await openWithBalance(5000, user());
+      expect(withdrawBtn().disabled).toBe(true);
+      expect(text()).toContain('Add a withdrawal account below to withdraw your balance.');
+    });
+
+    it('cannot withdraw an empty balance', async () => {
+      await openWithBalance(0);
+      expect(withdrawBtn().disabled).toBe(true);
+    });
+
+    it('shows where the money goes, and sends the amount to the server', async () => {
+      wallet.withdraw.mockReturnValue(of({ error: false, message: 'ok' }));
+      await openWithBalance(5000);
+      withdrawBtn().click();
+      fixture.detectChanges();
+      expect(text()).toContain('Sent to United Bank For Africa ••••••6952 (Sunday Sayil).');
+      component.withdrawCtrl.setValue(2000);
+      submit().click();
+      fixture.detectChanges();
+      expect(wallet.withdraw).toHaveBeenCalledWith('TR-25', 2000);
+      expect((fixture.nativeElement as HTMLElement).querySelector('.withdraw-form')).toBeNull();
+    });
+
+    it('fills in the whole balance with All', async () => {
+      await openWithBalance(7250.5);
+      withdrawBtn().click();
+      fixture.detectChanges();
+      button(/^All$/)!.click();
+      expect(component.withdrawCtrl.value).toBe(7250.5);
+    });
+
+    it('refuses more than the balance without asking the server', async () => {
+      await openWithBalance(1000);
+      withdrawBtn().click();
+      fixture.detectChanges();
+      component.withdrawCtrl.setValue(1500);
+      submit().click();
+      fixture.detectChanges();
+      expect(wallet.withdraw).not.toHaveBeenCalled();
+      expect(text()).toContain('That is more than your available balance.');
+    });
+
+    it("shows the server's reason when the withdrawal fails, and keeps the form open", async () => {
+      wallet.withdraw.mockReturnValue(throwError(() => ({ error: { message: 'Withdrawals are locked until tomorrow.' } })));
+      await openWithBalance(5000);
+      withdrawBtn().click();
+      fixture.detectChanges();
+      component.withdrawCtrl.setValue(100);
+      submit().click();
+      fixture.detectChanges();
+      expect(text()).toContain('Withdrawals are locked until tomorrow.');
+      expect((fixture.nativeElement as HTMLElement).querySelector('.withdraw-form')).not.toBeNull();
+    });
   });
 });

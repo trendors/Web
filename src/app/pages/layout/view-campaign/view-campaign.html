@@ -63,7 +63,7 @@
               </div>
 
               <div class="campaign-info">
-                <div class="campaign-name" [title]="campaign.name">{{ campaign.name }}@if (campaign.is_package) { <span class="kind-chip">Package</span> } @else if (campaign.is_share) { <span class="kind-chip">Share</span> }</div>
+                <div class="campaign-name" [title]="campaign.name">{{ campaign.name }}@if (campaign.is_package) { <span class="kind-chip">Package</span> } @else if (campaign.is_share) { <span class="kind-chip">Share</span> }@if (stateChip(campaign); as st) { <span class="state-chip" [class]="'state-chip state-chip--' + st.tone">{{ st.label }}</span> }</div>
                 <div class="campaign-meta">
                   @for (platform of getPlatforms(campaign.platforms); track platform) {
                     <span class="platform-icon" [title]="platformName(platform)">

@@ -1,9 +1,22 @@
-<div class="card">
+<div [class.card]="!embedded()">
+    @if (!embedded()) {
     <div class="page-head">
         <h1>My campaigns</h1>
         <p class="page-sub">Everything you've applied to or been invited into.</p>
     </div>
+    }
 
+    @if (stage()) {
+        @if (stageInvites.length) {
+        <app-invites-lists [invites]="stageInvites" [selectedId]="selectedInviteId()"
+            (selectInvite)="selectInvite($event)"
+            (respond)="respondToInvitation($event)"></app-invites-lists>
+        }
+        @if (stageApplications.length) {
+        <app-applications-lists [applications]="stageApplications" [selectedId]="selectedApplicationId()"
+            (selectApplication)="selectApplication($event)"></app-applications-lists>
+        }
+    } @else {
     <div class="tabs">
         <button class="tab" [class.active]="tab() === 'applications'" (click)="setTab('applications')">
             Applications <span class="count">{{ applications.length }}</span>
@@ -31,4 +44,5 @@
             }
         </div>
     </div>
+    }
 </div>

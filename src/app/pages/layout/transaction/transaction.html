@@ -28,7 +28,7 @@
       @if (transactions.length) {
         <ul class="tx-list ui-card">
           @for (tx of transactions; track tx.id) {
-            <li class="tx-row">
+            <li class="tx-row" [class.failed]="isFailed(tx)">
               <span
                 class="tx-icon"
                 [class.credit]="tx.type === TransactionType.CREDIT"
@@ -43,10 +43,12 @@
               <div class="tx-info">
                 <span class="tx-desc">{{ tx.description || (tx.type === TransactionType.CREDIT ? 'Credit' : 'Debit') }}</span>
                 <span class="tx-meta">
-                  {{ tx.createdAt | date: 'MMM d, y' }} · <span class="tx-status">{{ tx.status | lowercase }}</span>
+                  {{ tx.createdAt | date: 'MMM d, y' }} ·
+                  <span class="tx-status" [class.failed]="isFailed(tx)" [class.pending]="isPending(tx)">{{ tx.status | lowercase }}</span>
                 </span>
               </div>
-              <span class="tx-amount tabular" [class.credit]="tx.type === TransactionType.CREDIT">
+              <span class="tx-amount tabular" [class.credit]="tx.type === TransactionType.CREDIT && !isFailed(tx)" [class.failed]="isFailed(tx)"
+                    [attr.aria-label]="isFailed(tx) ? 'Not charged: this transaction failed' : null">
                 {{ tx.type === TransactionType.CREDIT ? '+' : '−' }}{{ tx.amount | currency: (tx.currency || 'NGN') : 'symbol-narrow' : '1.0-2' }}
               </span>
             </li>

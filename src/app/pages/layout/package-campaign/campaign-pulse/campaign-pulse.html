@@ -1,0 +1,101 @@
+@let p = pulse();
+<section class="card pulse">
+  <div class="pulse__head">
+    <h2>Campaign pulse</h2>
+    @if (p.reach.updatedAt) { <span class="pulse__updated">Updated {{ ago(p.reach.updatedAt) }}</span> }
+  </div>
+
+  <div class="tiles">
+    <div class="tile tile--hero">
+      <span class="tile__label">Views</span>
+      <strong class="tile__value">{{ compact(p.reach.views) }}</strong>
+      @if (p.reach.viewsLast24h > 0) { <span class="tile__delta">▲ {{ compact(p.reach.viewsLast24h) }} in the last 24h</span> }
+      @else { <span class="tile__sub">across {{ p.posts.live }} live post{{ p.posts.live === 1 ? '' : 's' }}</span> }
+    </div>
+    <div class="tile">
+      <span class="tile__label">Engagement</span>
+      <strong class="tile__value">{{ p.reach.engagementRate !== null ? p.reach.engagementRate + '%' : '–' }}</strong>
+      <span class="tile__sub">{{ compact(p.reach.engagements) }} likes, comments and shares</span>
+    </div>
+    <div class="tile">
+      <span class="tile__label">Posts live</span>
+      <strong class="tile__value">{{ p.posts.live }}<small> of {{ p.posts.promised }}</small></strong>
+      <div class="bar" role="img" [attr.aria-label]="p.posts.live + ' of ' + p.posts.promised + ' posts live'"><span [style.width.%]="p.posts.promised ? (p.posts.live / p.posts.promised) * 100 : 0"></span></div>
+    </div>
+    <div class="tile">
+      <span class="tile__label">Cost per 1,000 views</span>
+      @if (p.money?.costPer1000Views != null) {
+        <strong class="tile__value" [title]="naira(p.money!.costPer1000Views)">{{ nairaShort(p.money!.costPer1000Views) }}</strong>
+      } @else { <strong class="tile__value">–</strong> }
+      @if (p.money?.costPer1000ViewsWithFee) { <span class="tile__sub" [title]="naira(p.money!.costPer1000ViewsWithFee)">{{ nairaShort(p.money!.costPer1000ViewsWithFee) }} including our fee</span> }
+      <span class="tile__sub">@if (p.money?.costPerEngagement) { <span [title]="naira(p.money!.costPerEngagement)">{{ nairaShort(p.money!.costPerEngagement) }}</span> per engagement } @else { once creators are paid }</span>
+    </div>
+  </div>
+
+  @if (!started()) {
+    <p class="pulse__empty">Your numbers appear here once the first post is verified live.</p>
+  }
+
+  @if (p.topPost; as t) {
+    <div class="top-post">
+      <span class="top-post__badge" aria-hidden="true">🔥</span>
+      <div class="top-post__body">
+        <span class="tile__label">Top post</span>
+        <strong>{{ t.creator }} on {{ platformName(t.platform) }}</strong>
+        <span class="tile__sub">{{ compact(t.views) }} views · {{ compact(t.engagements) }} engagements</span>
+      </div>
+      @if (t.url) { <a class="btn btn--sm" [href]="t.url" target="_blank" rel="noopener">View post</a> }
+    </div>
+  }
+
+  @if (p.milestones.total > 0) {
+    <div class="milestone">
+      <div class="milestone__top">
+        <span class="tile__label">Milestones</span>
+        <span class="tile__sub">{{ p.milestones.reached }} of {{ p.milestones.total }} reached</span>
+      </div>
+      @if (p.milestones.next; as n) {
+        <p class="milestone__next">Next: <strong>{{ n.creator }}</strong> reaching {{ metricName(n.metric, n.threshold) }} earns {{ naira(n.amount) }}</p>
+        <div class="bar bar--accent" role="img" [attr.aria-label]="(n.progress * 100 | number: '1.0-0') + '% there'"><span [style.width.%]="n.progress * 100"></span></div>
+        <span class="tile__sub">{{ (n.progress * 100) | number: '1.0-0' }}% there · {{ compact(n.current) }} so far</span>
+      } @else {
+        <p class="milestone__next">Every milestone has been reached. 🎉</p>
+      }
+    </div>
+  }
+
+  @if (budget(); as b) {
+    <div class="budget">
+      <div class="milestone__top">
+        <span class="tile__label">Budget</span>
+        <span class="tile__sub">{{ b.usedPct }}% used or committed of {{ naira(p.money!.funded) }}</span>
+      </div>
+      <div class="budget__bar" role="img" [attr.aria-label]="b.usedPct + '% of the budget used or committed'">
+        <span class="budget__paid" [style.width.%]="b.paid"></span>
+        <span class="budget__held" [style.width.%]="b.held"></span>
+      </div>
+      <ul class="budget__legend">
+        <li><i class="dot dot--paid"></i>Paid {{ naira(p.money!.paidToCreators) }}</li>
+        <li><i class="dot dot--held"></i>Held for creators {{ naira(b.heldAmount) }}</li>
+        <li><i class="dot"></i>Free {{ naira(p.money!.available) }}</li>
+      </ul>
+      @if (onTheWay() > 0) { <p class="tile__sub">{{ naira(onTheWay()) }} is on its way to creators.@if (nextCheck()) { Next bonus is decided in {{ nextCheck() }}. }</p> }
+      <p class="tile__sub">Anything not earned is returned to your wallet when the campaign settles.</p>
+    </div>
+  }
+
+  @if (needs().length) {
+    <div class="needs">
+      <strong>Needs you:</strong>
+      @for (n of needs(); track n) { <button class="needs__chip" type="button" (click)="openTab.emit('creators')">{{ n }}</button> }
+    </div>
+  }
+
+  @if (p.reach.reportedPosts > 0 && p.reach.automaticPosts > 0) {
+    <p class="pulse__foot">{{ p.reach.automaticPosts }} post{{ p.reach.automaticPosts === 1 ? ' is' : 's are' }} read straight from the platform; {{ p.reach.reportedPosts }} from screenshots our team checked. Only verified numbers count.</p>
+  } @else if (p.reach.reportedPosts > 0) {
+    <p class="pulse__foot">These numbers come from screenshots our team checked. Only verified numbers count.</p>
+  } @else if (p.reach.automaticPosts > 0) {
+    <p class="pulse__foot">Read straight from the platform. Only verified numbers count.</p>
+  }
+</section>

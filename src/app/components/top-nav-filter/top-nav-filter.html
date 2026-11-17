@@ -84,17 +84,18 @@
 
     @if (activeProfile() === 'creative') {
       <p class="drawer__label">Creator hub</p>
-      <a class="drawer__item" routerLink="/home/opportunities" routerLinkActive="active" (click)="closeDrawer()">
+      <a class="drawer__item" routerLink="/home/opportunities" [queryParams]="{ tab: 'discover' }" (click)="closeDrawer()">
+        <i class="ti ti-search" aria-hidden="true"></i>Find campaigns
+      </a>
+      <a class="drawer__item" routerLink="/home/opportunities" [queryParams]="{ tab: 'mine' }" (click)="closeDrawer()">
         <i class="ti ti-target" aria-hidden="true"></i>My work
-      </a>
-      <a class="drawer__item" routerLink="/home/shares" routerLinkActive="active" (click)="closeDrawer()">
-        <i class="ti ti-chart-bar" aria-hidden="true"></i>My shares
-      </a>
-      <a class="drawer__item" routerLink="/home/invites-and-applications" routerLinkActive="active" (click)="closeDrawer()">
-        <i class="ti ti-mail" aria-hidden="true"></i>Invites and applications
         @if (pendingCount() > 0) {
           <span class="drawer__count">{{ pendingCount() }}</span>
         }
+      </a>
+      <a class="drawer__item" routerLink="/home/shares" routerLinkActive="active" (click)="closeDrawer()">
+        <i class="ti ti-chart-bar" aria-hidden="true"></i>My shares
+        <span class="drawer__soon">Coming soon</span>
       </a>
     }
 

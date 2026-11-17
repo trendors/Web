@@ -31,3 +31,35 @@ describe('package formatting', () => {
     expect(errText({})).toMatch(/try again/i);
   });
 });
+
+describe('platformName and compact', () => {
+  it('calls twitter X and names the others as people know them', async () => {
+    const { platformName } = await import('./package-format');
+    expect(platformName('twitter')).toBe('X');
+    expect(platformName('tiktok')).toBe('TikTok');
+    expect(platformName('youtube')).toBe('YouTube');
+    expect(platformName('snapchat')).toBe('Snapchat');
+    expect(platformName(null)).toBe('');
+  });
+
+  it('shortens follower counts', async () => {
+    const { compact } = await import('./package-format');
+    expect(compact(980)).toBe('980');
+    expect(compact(1250)).toBe('1.3k');
+    expect(compact(15400)).toBe('15k');
+    expect(compact(1_200_000)).toBe('1.2M');
+    expect(compact(null)).toBe('0');
+  });
+});
+
+describe('nairaShort', () => {
+  it('keeps tile amounts short', async () => {
+    const { nairaShort } = await import('./package-format');
+    expect(nairaShort(1500)).toBe('₦1,500');
+    expect(nairaShort(2142.86)).toBe('₦2,143');
+    expect(nairaShort(99999)).toBe('₦99,999');
+    expect(nairaShort(272727.26)).toBe('₦272.7k');
+    expect(nairaShort(1_250_000)).toBe('₦1.3M');
+    expect(nairaShort(null)).toBe('₦0');
+  });
+});

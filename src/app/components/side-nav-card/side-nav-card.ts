@@ -1,10 +1,10 @@
 import { ThemeToggle } from '../theme-toggle/theme-toggle';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { map, take } from 'rxjs';
+import { filter, map, take } from 'rxjs';
 import { selectCurrentUser } from '../../store/auth/sharedState/auth.selector';
 import { NotificationActions } from '../../store/notification/notification.action';
 import { logoutUser } from '../../store/auth/logout/logout.action';
@@ -28,6 +28,15 @@ export class SideNavCard implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   pendingInvites = inject(PendingInvitesService).count;
+
+  /** Find campaigns and My work are one page; the tab in the link says which one is open. */
+  private readonly url = toSignal(
+    this.router.events.pipe(filter((e) => e instanceof NavigationEnd), map(() => this.router.url)),
+    { initialValue: this.router.url },
+  );
+  private readonly onOpportunities = computed(() => this.url().split('?')[0] === '/home/opportunities');
+  readonly onFindCampaigns = computed(() => this.onOpportunities() && !/[?&]tab=(mine|requests|progress|done)\b/.test(this.url()));
+  readonly onMyWork = computed(() => this.onOpportunities() && !this.onFindCampaigns());
   unreadCount$ = this.store.select(selectUnreadCount);
   currentUser$ = this.store.select(selectCurrentUser);
 

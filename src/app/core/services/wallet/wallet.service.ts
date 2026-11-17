@@ -37,6 +37,11 @@ export class WalletService {
     );
   }
 
+  /** Send money from the wallet to the user's saved bank account. */
+  withdraw(trendorsId: string, amount: number): Observable<{ error: boolean; message: string; transferCode?: string }> {
+    return this.http.post<{ error: boolean; message: string; transferCode?: string }>(`${this.apiUrl}/debit`, { trendorsId, amount });
+  }
+
 getAccountDetails(recipient?: string): Observable<any> {
   if (!recipient) {
     return of(null); 

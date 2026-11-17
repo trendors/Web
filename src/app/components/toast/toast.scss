@@ -19,7 +19,7 @@
   padding: 12px 14px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  /* Solid by default: a toast sits over page content and must never be see-through. */
+  /* Always solid: the soft tints are translucent in dark mode, so they are layered over --surface. */
   background: var(--surface);
   color: var(--text);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
@@ -27,10 +27,10 @@
   overflow: hidden;
   animation: toast-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 
-  &.success { background: var(--success-soft); border-color: color-mix(in srgb, var(--success) 35%, transparent); color: var(--success); }
-  &.error   { background: var(--danger-soft); border-color: color-mix(in srgb, var(--danger) 35%, transparent); color: var(--danger); }
-  &.info    { background: var(--info-soft); border-color: color-mix(in srgb, var(--info) 35%, transparent); color: var(--info); }
-  &.warning { background: var(--warning-soft); border-color: color-mix(in srgb, var(--warning) 35%, transparent); color: var(--warning); }
+  &.success { background: linear-gradient(var(--success-soft), var(--success-soft)), var(--surface); border-color: color-mix(in srgb, var(--success) 35%, transparent); color: var(--success); }
+  &.error   { background: linear-gradient(var(--danger-soft), var(--danger-soft)), var(--surface); border-color: color-mix(in srgb, var(--danger) 35%, transparent); color: var(--danger); }
+  &.info    { background: linear-gradient(var(--info-soft), var(--info-soft)), var(--surface); border-color: color-mix(in srgb, var(--info) 35%, transparent); color: var(--info); }
+  &.warning { background: linear-gradient(var(--warning-soft), var(--warning-soft)), var(--surface); border-color: color-mix(in srgb, var(--warning) 35%, transparent); color: var(--warning); }
 }
 
 .toast-icon {

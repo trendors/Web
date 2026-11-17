@@ -69,7 +69,9 @@
       </dl>
     </section>
 
-    @if (money(); as m) {
+    @if (pulse(); as p) {
+      <app-campaign-pulse [pulse]="p" [onTheWay]="onTheWay()" [nextCheck]="nextCheck()" (openTab)="tab.set($event)" />
+    } @else if (money(); as m) {
       <section class="card">
         <h2>Money so far</h2>
         <dl class="kv">
@@ -169,6 +171,23 @@
 
       @if (tab() === 'find') {
         <section class="card">
+          <h2>Looking for someone?</h2>
+          <form class="find-form" (ngSubmit)="findCreator()">
+            <input class="find-input" name="q" [(ngModel)]="searchText" placeholder="Name, username or social handle" aria-label="Find a creator by name or handle" autocomplete="off" />
+            <button class="btn btn--primary btn--sm" type="submit" [disabled]="busy() === 'search'">{{ busy() === 'search' ? 'Searching…' : 'Search' }}</button>
+          </form>
+          @if (search(); as r) {
+            <div class="top"><p class="note">{{ r.results.length ? r.results.length + ' found for "' + r.query + '"' : 'No creator found for "' + r.query + '".' }}</p>
+              <button class="link" type="button" (click)="clearSearch()">Clear</button></div>
+            <div class="list">
+              @for (x of r.results; track x.userId) {
+                <ng-container [ngTemplateOutlet]="creatorCard" [ngTemplateOutletContext]="{ $implicit: x, outside: !x.eligible }" />
+              }
+            </div>
+          }
+        </section>
+
+        <section class="card">
           <h2>Creators who match your filters</h2>
           @if (busy() === 'matches') { <p class="empty">Looking…</p> }
           @if (matches(); as m) {
@@ -178,12 +197,7 @@
             }
             <div class="list">
               @for (x of m.matches; track x.userId) {
-                <div class="item">
-                  <div class="top"><strong>{{ x.name }}</strong><span class="pill pill--green">Fit {{ x.score }}%</span></div>
-                  @for (ch of x.checks; track ch.key) { <div class="check" [class.ok]="ch.passed" [class.no]="!ch.passed">{{ ch.passed ? '✓' : '✗' }} {{ ch.detail }}</div> }
-                  @if (already(x.userId)) { <span class="hint">Already on this campaign</span> }
-                  @else { <button class="btn btn--primary btn--sm" type="button" (click)="invite(x.userId, x.name)" [disabled]="busy() !== null">Invite</button> }
-                </div>
+                <ng-container [ngTemplateOutlet]="creatorCard" [ngTemplateOutletContext]="{ $implicit: x, outside: false }" />
               } @empty {
                 <p class="note">{{ m.suggestion }}</p>
                 @for (e of excluded(); track e.key) { <p class="note">{{ e.n }} creator(s) were excluded by <strong>{{ e.key }}</strong>.</p> }
@@ -192,6 +206,36 @@
             </div>
           }
         </section>
+
+        <ng-template #creatorCard let-x let-outside="outside">
+          <div class="item">
+            <div class="top">
+              <div><strong>{{ x.displayName || x.name }}</strong>@if (x.displayName && x.displayName !== x.name) { <span class="hint"> &#64;{{ x.name }}</span> }</div>
+              <div class="row row--tight">
+                @if (outside) { <span class="pill pill--amber">Outside your filters</span> }
+                <span class="pill" [ngClass]="outside ? 'pill--blue' : 'pill--green'">Fit {{ x.score }}%</span>
+              </div>
+            </div>
+            <div class="followers">
+              @for (a of topAccounts(x); track a.platform + a.handle) {
+                <span class="follower" [title]="platformName(a.platform) + (a.handle ? ' @' + a.handle : '')"><b>{{ platformName(a.platform) }}</b> {{ compact(a.followers) }}@if (a.verified) { <span class="verified" title="Verified">✓</span> }</span>
+              } @empty { <span class="hint">No social account connected</span> }
+            </div>
+            @for (ch of x.checks; track ch.key) { <div class="check" [class.ok]="ch.passed" [class.no]="!ch.passed">{{ ch.passed ? '✓' : '✗' }} {{ ch.detail }}</div> }
+            <div class="btns">
+              <button class="btn btn--sm" type="button" (click)="viewing.set(x.userId)">View profile</button>
+              @if (already(x.userId)) { <span class="hint">Already on this campaign</span> }
+              @else if (x.packageProblem) { <span class="hint">{{ x.packageProblem }}</span> }
+              @else { <button class="btn btn--primary btn--sm" type="button" (click)="invite(x.userId, x.displayName || x.name)" [disabled]="busy() !== null">Invite</button> }
+            </div>
+          </div>
+        </ng-template>
+
+        @if (viewing(); as uid) {
+          <app-creator-summary [campaignId]="c.campaignId" [userId]="uid" [canInvite]="c.lifecycle === 'active'"
+            [inviting]="busy() === 'inv' + uid" [alreadyOnCampaign]="already(uid)"
+            (closed)="viewing.set(null)" (invite)="invite($event.userId, $event.name)" />
+        }
       }
 
       @if (tab() === 'terms') {

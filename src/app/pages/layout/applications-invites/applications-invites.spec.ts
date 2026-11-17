@@ -186,6 +186,48 @@ describe('ApplicationsInvites', () => {
     expect(invitationApi.invitationControllerRespond).toHaveBeenCalledWith(77, 9, { status: 'Accepted' });
     expect(component.invites.some((i: any) => i.invitationId === 77)).toBe(false);
   });
+
+  describe('inside My work, one stage at a time', () => {
+    async function at(stage: 'requests' | 'progress' | 'done') {
+      const seen: number[] = [];
+      component.loaded.subscribe((n) => seen.push(n));
+      fixture.componentRef.setInput('embedded', true);
+      fixture.componentRef.setInput('stage', stage);
+      component.fetchApplications();
+      component.fetchInvitations();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      return { text, count: seen.at(-1) };
+    }
+
+    it('lists invites and applications still waiting under Requests', async () => {
+      const { text, count } = await at('requests');
+      expect(text).toContain('Ramadan promo');     // applied, waiting for review
+      expect(text).toContain('Lagos Food Fest');   // invited
+      expect(text).toContain('Glow week');         // invitation
+      expect(text).not.toContain('Savings challenge');
+      expect(count).toBe(3);
+    });
+
+    it('lists paid work under Done, and no invites', async () => {
+      const { text, count } = await at('done');
+      expect(text).toContain('Savings challenge');
+      expect(text).not.toContain('Ramadan promo');
+      expect(text).not.toContain('Glow week');
+      expect(count).toBe(1);
+    });
+
+    it('reports nothing for a stage with no items, so the section can hide', async () => {
+      const { count } = await at('progress');
+      expect(count).toBe(0);
+    });
+
+    it('drops the page heading when shown inside My work', async () => {
+      const { text } = await at('requests');
+      expect(text).not.toContain('My campaigns');
+    });
+  });
 });
 
 describe('ApplicationsInvites without a user', () => {

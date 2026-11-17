@@ -15,6 +15,8 @@ export interface Campaign {
   status?: CampaignLifecycle;
   /** Open campaigns are paid up front; unpaid ones are saved but not live. */
   payment_status?: CampaignPaymentState;
+  /** Package campaigns: draft, submitted, under_review, awaiting_payment, active, closing, completed, cancelled. */
+  lifecycle?: string;
   budget?: number | string | null;
   paid_at?: string | null;
   creator_id: number;

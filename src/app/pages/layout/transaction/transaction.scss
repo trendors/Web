@@ -74,6 +74,21 @@
   text-transform: uppercase;
 }
 
+.tx-status.failed,
+.tx-status.pending {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+}
+.tx-status.failed { background: var(--danger-soft); color: var(--danger); }
+.tx-status.pending { background: var(--warning-soft); color: var(--warning); }
+
+.tx-amount.failed {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
 .tx-amount {
   flex: none;
   font-size: var(--fs-body);

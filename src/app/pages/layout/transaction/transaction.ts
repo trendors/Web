@@ -5,7 +5,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { combineLatest, map, debounceTime, startWith, take } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { TransactionType } from '../../../core/models/transactions/transaction.model';
+import { TransactionStatus, TransactionType } from '../../../core/models/transactions/transaction.model';
 import { selectCurrentUser } from '../../../store/auth/sharedState/auth.selector';
 import { TransactionsActions } from '../../../store/transactions/transaction.action';
 import { selectAllTransactions, selectTransactionsLoading, selectTransactionsError, selectTransactionsCount } from '../../../store/transactions/transaction.selector';
@@ -35,6 +35,15 @@ export class Transaction implements OnInit {
     { value: TransactionType.DEBIT, label: 'Money out' },
   ];
   currentUserId: string | null = null;
+
+  /** A failed transaction moved no money (a failed withdrawal is returned to the wallet), so it must not read as paid. */
+  isFailed(tx: { status?: string | null }): boolean {
+    return String(tx.status ?? '').toLowerCase() === TransactionStatus.FAILED;
+  }
+
+  isPending(tx: { status?: string | null }): boolean {
+    return String(tx.status ?? '').toLowerCase() === TransactionStatus.PENDING;
+  }
 
   filterForm = this.fb.nonNullable.group({
     transaction_type: TransactionType.ALL,

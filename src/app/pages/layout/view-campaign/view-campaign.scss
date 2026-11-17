@@ -393,3 +393,7 @@
   }
 }
 .kind-chip { margin-left: 8px; padding: 1px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent-dark); font-size: var(--fs-caption); font-weight: 600; vertical-align: middle; }
+.state-chip { margin-left: 6px; padding: 1px 8px; border-radius: 99px; font-size: var(--fs-caption); font-weight: 600; vertical-align: middle;
+  &--muted { background: var(--surface-2); color: var(--muted); }
+  &--amber { background: var(--warning-soft); color: var(--warning); }
+  &--red { background: var(--danger-soft); color: var(--danger); } }
