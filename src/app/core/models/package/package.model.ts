@@ -119,12 +119,24 @@ export interface OfferTerms {
 
 export type CollabState = 'applied' | 'invited' | 'selected' | 'active' | 'completed' | 'declined' | 'not_selected' | 'expired' | 'withdrawn' | 'cancelled';
 
-export interface RosterRow { id: number; state: CollabState; source: string; pitch: string | null; userId: number; name: string; outsideFilters: boolean; offer: OfferTerms | null; offerExpiresAt: string | null }
-export interface MyCollab { id: number; state: CollabState; source: string; campaignId: number; campaign: string; offer: OfferTerms | null; offerExpiresAt: string | null; acceptedAt: string | null }
+export interface RosterRow { id: number; state: CollabState; source: string; pitch: string | null; userId: number; name: string; outsideFilters: boolean; /** For applicants outside the filters: which ones they miss. */ missed?: string[]; offer: OfferTerms | null; offerExpiresAt: string | null }
+export interface MyCollab { id: number; state: CollabState; source: string; campaignId: number; campaign: string; /** The brand's name. */ brand?: string | null; offer: OfferTerms | null; offerExpiresAt: string | null; acceptedAt: string | null; /** When they applied or were invited. */ createdAt?: string | null }
 
 export interface Check { key: string; passed: boolean; detail: string }
 export interface Evaluation { eligible: boolean; checks: Check[]; failed: string[]; score: number }
-export interface DiscoverRow { campaignId: number; name: string; product: string | null; platforms: string[]; baseFeeBudget: number; endsAt: string | null; evaluation: Evaluation }
+/** What a creator would be offered, short enough for a card. */
+export interface TermsSummary {
+  baseFee: number;
+  posts: { content_type: string; platform: string; quantity: number }[];
+  rewards: { metric: string; threshold: number; amount: number }[];
+  rewardTotal: number;
+  windowHours: number | null;
+  revisions: number | null;
+  dueDate: string | null;
+}
+/** What a campaign asks of creators; the package's follower floor is already included. */
+export interface CampaignRequirements { niches: string[]; creatorCountries: string[]; audienceCountries: string[]; followerMin: number | null; followerMax: number | null; platforms: string[] }
+export interface DiscoverRow { terms?: TermsSummary; requirements?: CampaignRequirements; campaignId: number; name: string; product: string | null; platforms: string[]; baseFeeBudget: number; endsAt: string | null; evaluation: Evaluation; /** Why the creator cannot apply at all; null means they may apply, even outside the brand's preferences. */ blockedBy?: string | null }
 export interface Discover { eligible: DiscoverRow[]; ineligible?: DiscoverRow[]; ineligibleCount: number }
 /** A connected social account: where, which handle, and how many follow it. */
 export interface CreatorAccount { platform: string; handle: string | null; followers: number; verified: boolean }

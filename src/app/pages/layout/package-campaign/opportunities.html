@@ -24,9 +24,11 @@
       @if (found(); as d) {
         <div class="list">
           @for (r of d.eligible; track r.campaignId) {
-            <div class="card">
+            <div class="card" [id]="'campaign-' + r.campaignId" [class.focused]="focusId() === r.campaignId">
               <div class="top spread"><h3>{{ r.name }}</h3><span class="pill pill--green">Fit {{ r.evaluation.score }}%</span></div>
-              <p class="note">{{ r.product }} · {{ r.platforms.join(', ') }}@if (r.endsAt) { · ends {{ r.endsAt | date: 'mediumDate' }} }</p>
+              <p class="note">{{ r.product }} · {{ platformsText(r.platforms) }}@if (r.endsAt) { · ends {{ r.endsAt | date: 'mediumDate' }} }</p>
+              @if (r.terms) { <app-campaign-terms [terms]="r.terms" /> }
+              <p class="hint">Why you fit:</p>
               <div>@for (c of r.evaluation.checks; track c.key) { <div class="check ok">✓ {{ c.detail }}</div> }</div>
               <label class="f">Why you? (optional)<input [(ngModel)]="pitches[r.campaignId]" maxlength="500" /></label>
               <button class="btn btn--primary" type="button" (click)="apply(r)" [disabled]="busy() !== null">{{ busy() === 'ap' + r.campaignId ? 'Sending…' : 'Apply' }}</button>
@@ -38,14 +40,25 @@
         </div>
 
         @if (d.ineligibleCount > 0) {
-          <button class="link" type="button" (click)="showIneligible.set(!showIneligible())">{{ showIneligible() ? 'Hide' : 'Show' }} {{ d.ineligibleCount }} campaign(s) you are not eligible for</button>
+          <button class="link" type="button" (click)="showIneligible.set(!showIneligible())">{{ showIneligible() ? 'Hide' : 'Show' }} {{ d.ineligibleCount }} campaign{{ d.ineligibleCount === 1 ? '' : 's' }} that don't fully match you</button>
           @if (showIneligible()) {
             <div class="list">
               @for (r of d.ineligible ?? []; track r.campaignId) {
-                <div class="card">
-                  <h3>{{ r.name }}</h3>
-                  <span class="pill pill--red">Not open to you</span>
-                  @for (c of failedChecks(r); track c.key) { <div class="check no">✗ {{ c.detail }}</div> }
+                <div class="card" [id]="'campaign-' + r.campaignId" [class.focused]="focusId() === r.campaignId">
+                  <div class="top spread"><h3>{{ r.name }}</h3>
+                    <span class="pill" [ngClass]="r.blockedBy ? 'pill--red' : 'pill--amber'">{{ r.blockedBy ? 'Not open to you' : 'Doesn\'t fully match' }}</span></div>
+                  <p class="note">{{ r.product }} · {{ platformsText(r.platforms) }}@if (r.endsAt) { · ends {{ r.endsAt | date: 'mediumDate' }} }</p>
+                  @if (r.terms) { <app-campaign-terms [terms]="r.terms" /> }
+                  <p class="hint">Why it doesn't fully match you:</p>
+                  <div>@for (c of whyChecks(r); track c.key) { <div class="check" [class.ok]="c.passed" [class.no]="!c.passed">{{ c.passed ? '✓' : '✗' }} {{ c.detail }}</div> }</div>
+                  @if (r.blockedBy) {
+                    <p class="note note--bad">{{ r.blockedBy }}</p>
+                    @if (blockedByPlatform(r)) { <a class="btn btn--sm" routerLink="/home/profile" [queryParams]="{ tab: 'socials' }">Connect an account</a> }
+                  } @else {
+                    <p class="note">You can still apply. The brand will see which of their preferences you don't meet, and decides.</p>
+                    <label class="f">Why you? (optional)<input [(ngModel)]="pitches[r.campaignId]" maxlength="500" placeholder="Tell the brand why you are a good fit anyway" /></label>
+                    <button class="btn btn--primary" type="button" (click)="apply(r)" [disabled]="busy() !== null">{{ busy() === 'ap' + r.campaignId ? 'Sending…' : 'Apply anyway' }}</button>
+                  }
                 </div>
               }
             </div>
@@ -55,47 +68,58 @@
     }
 
     @if (tab() === 'requests') {
-      <p class="hint tab-hint">Offers to answer, applications waiting for the brand, and invites from other campaigns.</p>
       @if (offers().length) {
         <section class="card">
-          <h2 id="offers">Offers for you</h2>
-          <p class="note">Accepting fixes these terms and reserves your pay from the campaign budget. They cannot be changed afterwards without your agreement.</p>
-          @for (c of offers(); track c.id) {
-            <div class="item">
-              <div class="top"><strong>{{ c.campaign }}</strong><span class="pill pill--amber">{{ label(c.state) }}</span></div>
-              @if (c.offer; as o) {
-                <dl class="kv">
-                  <div><dt>Base fee</dt><dd>{{ naira(o.base_fee_total) }}</dd></div>
-                  <div><dt>Up to in rewards</dt><dd>{{ naira(o.reward_allocation) }}</dd></div>
-                  <div><dt>Revisions</dt><dd>{{ o.revision_rounds }} rounds</dd></div>
-                  <div><dt>Results window</dt><dd>{{ windowText(o) }}</dd></div>
-                  <div><dt>Deadline</dt><dd>{{ o.due_date | date: 'mediumDate' }}</dd></div>
-                  @if (c.offerExpiresAt) { <div><dt>Respond by</dt><dd>{{ c.offerExpiresAt | date: 'mediumDate' }}</dd></div> }
-                </dl>
-                @for (l of o.lines; track $index) { <p class="note">{{ l.quantity }} × {{ l.content_type }} on {{ l.platform }} · {{ naira(l.rate_per_post) }} each</p> }
-                @for (m of o.milestones; track m.id) { <p class="note">Reward: {{ m.metric === 'trending' ? 'your post trends' : (m.threshold | number) + ' ' + m.metric }} → {{ naira(m.amount) }} (cumulative)</p> }
-                @if (o.bonus_rule) { <p class="note">Campaign bonus shared if the whole campaign reaches {{ o.bonus_rule.threshold | number }} {{ o.bonus_rule.metric.replace('_', ' ') }}.</p> }
-                <p class="hint">Brand review within {{ o.brand_review_days }} days{{ o.auto_approval_days > 0 ? ' (auto-approved after ' + o.auto_approval_days + ')' : '' }} · {{ o.cure_period_days }}-day cure period for late work · {{ o.dispute_window_days }}-day dispute window · cancellation terms {{ o.cancellation_terms_version }}.{{ o.usage_rights ? ' Usage rights: ' + o.usage_rights : '' }} Rewards depend on verified results; nothing guarantees a post will trend.</p>
-              }
-              <div class="row">
-                <label class="f">Reason if declining (optional)<input [(ngModel)]="declineReason[c.id]" /></label>
-                <div class="row row--tight">
-                  <button class="btn btn--primary" type="button" (click)="accept(c)" [disabled]="busy() !== null">Accept offer</button>
-                  <button class="btn" type="button" (click)="decline(c)" [disabled]="busy() !== null">Decline</button>
+          <h2 id="offers">Needs your answer ({{ offers().length }})</h2>
+          <p class="note">Brands invited you. Nothing is fixed until you accept.</p>
+          <div class="list">
+            @for (c of offers(); track c.id) {
+              <div class="item offer">
+                <div class="top">
+                  <div><strong>{{ c.campaign }}</strong>@if (c.brand) { <span class="hint"> · {{ c.brand }}</span> }</div>
+                  @if (respondBy(c); as r) { <span class="pill" [ngClass]="r.tone === 'red' ? 'pill--red' : r.tone === 'amber' ? 'pill--amber' : 'pill--blue'">⏳ {{ r.text }}</span> }
+                </div>
+                @if (c.offer; as o) {
+                  <p class="offer__line">{{ offerLine(o) }}@if (o.due_date) { · due {{ o.due_date | date: 'MMM d' }} }</p>
+                  @if (expanded().has(c.id)) {
+                    <dl class="kv">
+                      <div><dt>Base fee</dt><dd>{{ naira(o.base_fee_total) }}</dd></div>
+                      <div><dt>Up to in rewards</dt><dd>{{ naira(o.reward_allocation) }}</dd></div>
+                      <div><dt>Revisions</dt><dd>{{ o.revision_rounds }} rounds</dd></div>
+                      <div><dt>Results window</dt><dd>{{ windowText(o) }}</dd></div>
+                      <div><dt>Deadline</dt><dd>{{ o.due_date | date: 'mediumDate' }}</dd></div>
+                      @if (c.offerExpiresAt) { <div><dt>Respond by</dt><dd>{{ c.offerExpiresAt | date: 'mediumDate' }}</dd></div> }
+                    </dl>
+                    @for (l of o.lines; track $index) { <p class="note">{{ l.quantity }} × {{ l.content_type }} on {{ l.platform }} · {{ naira(l.rate_per_post) }} each</p> }
+                    @for (m of o.milestones; track m.id) { <p class="note">Reward: {{ m.metric === 'trending' ? 'your post trends' : (m.threshold | number) + ' ' + m.metric }} → {{ naira(m.amount) }} (cumulative)</p> }
+                    @if (o.bonus_rule) { <p class="note">Campaign bonus shared if the whole campaign reaches {{ o.bonus_rule.threshold | number }} {{ o.bonus_rule.metric.replace('_', ' ') }}.</p> }
+                    <p class="hint">Brand review within {{ o.brand_review_days }} days{{ o.auto_approval_days > 0 ? ' (auto-approved after ' + o.auto_approval_days + ')' : '' }} · {{ o.cure_period_days }}-day cure period for late work · {{ o.dispute_window_days }}-day dispute window · cancellation terms {{ o.cancellation_terms_version }}.{{ o.usage_rights ? ' Usage rights: ' + o.usage_rights : '' }} Rewards depend on verified results; nothing guarantees a post will trend.</p>
+                    <label class="f">Reason if declining (optional)<input [(ngModel)]="declineReason[c.id]" /></label>
+                  }
+                }
+                <div class="btns">
+                  <button class="btn btn--primary btn--sm" type="button" (click)="accept(c)" [disabled]="busy() !== null">Accept</button>
+                  <button class="btn btn--sm" type="button" (click)="decline(c)" [disabled]="busy() !== null">Decline</button>
+                  @if (c.offer) { <button class="link" type="button" (click)="toggleTerms(c.id)" [attr.aria-expanded]="expanded().has(c.id)">{{ expanded().has(c.id) ? 'Hide terms ▴' : 'See full terms ▾' }}</button> }
                 </div>
               </div>
-            </div>
-          }
+            }
+          </div>
         </section>
       }
 
       @if (pending().length) {
         <section class="card">
-          <h2>Applications</h2>
-          @for (c of pending(); track c.id) {
-            <div class="item"><div class="top"><span>{{ c.campaign }}</span><span class="pill pill--amber">Waiting for the brand</span></div>
-              <button class="link" type="button" (click)="withdraw(c)" [disabled]="busy() !== null">Withdraw</button></div>
-          }
+          <h2>Waiting for brands ({{ pending().length }})</h2>
+          <ul class="rows">
+            @for (c of pending(); track c.id) {
+              <li class="row-line">
+                <div class="row-line__main"><strong>{{ c.campaign }}</strong><span class="hint">@if (c.brand) { {{ c.brand }} · }applied {{ ago(c.createdAt) }}</span></div>
+                <span class="pill pill--amber">Waiting</span>
+                <button class="link" type="button" (click)="withdraw(c)" [disabled]="busy() !== null">Withdraw</button>
+              </li>
+            }
+          </ul>
         </section>
       }
 

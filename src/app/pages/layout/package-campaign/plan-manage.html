@@ -102,6 +102,10 @@
                 <div class="item">
                   <div class="top"><strong>{{ r.name }}</strong><span class="pill" [ngClass]="'pill--' + tone(r.state)">{{ label(r.state) }}</span></div>
                   @if (r.pitch) { <p class="note">{{ r.pitch }}</p> }
+                  @if (r.outsideFilters && r.missed?.length) {
+                    <div class="outside"><span class="pill pill--amber">Outside your filters</span>
+                      @for (m of r.missed; track m) { <div class="check no">✗ {{ m }}</div> }</div>
+                  }
                   @if (c.lifecycle === 'active') {
                     <div class="stack">
                       @if (defaultAllocation() > 0) {

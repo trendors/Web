@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
+import { platformsText } from '../../pages/layout/package-campaign/package-format';
 
 @Component({
   selector: 'app-invites-lists',
@@ -9,6 +10,7 @@ import { Router } from '@angular/router';
   styleUrl: './invites-lists.scss',
 })
 export class InvitesLists {
+  readonly platformsText = platformsText;
   @Input() invites: any[] = [];
   @Input() selectedId: string | null = null;
  @Output() selectInvite = new EventEmitter<string>();

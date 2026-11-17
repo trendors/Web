@@ -40,10 +40,11 @@ describe('Posts', () => {
     campaignInfluencerControllerCreate: vi.fn(() => of({})),
   };
 
-  const packageApi = { mine: vi.fn(async (): Promise<unknown[]> => []) };
+  const packageApi = { mine: vi.fn(async (): Promise<unknown[]> => []), discover: vi.fn(async (): Promise<unknown> => ({ eligible: [], ineligible: [], ineligibleCount: 0 })) };
 
   beforeEach(async () => {
     packageApi.mine.mockResolvedValue([]);
+    packageApi.discover.mockResolvedValue({ eligible: [], ineligible: [], ineligibleCount: 0 });
     await TestBed.configureTestingModule({
       imports: [Posts],
       providers: [
@@ -110,6 +111,7 @@ describe('Posts', () => {
     expect(link?.textContent?.trim()).toBe('View terms');
     expect(link?.getAttribute('href')).toContain('/home/opportunities');
     expect(link?.getAttribute('href')).toContain('tab=discover');
+    expect(link?.getAttribute('href')).toContain('campaign=48'); // opens that campaign, even if it doesn't fully match
     expect((fixture.nativeElement as HTMLElement).querySelector('button.apply-btn')).toBeNull();
   });
 
@@ -123,20 +125,89 @@ describe('Posts', () => {
       fixture.detectChanges();
       return (fixture.nativeElement as HTMLElement).querySelector('.applied-pill, a.apply-btn') as HTMLAnchorElement | null;
     };
-    it.each([['applied', 'Applied'], ['invited', 'Offer waiting'], ['selected', 'Offer waiting'], ['active', 'In progress'], ['completed', 'Completed']])(
-      'says %s as "%s", linking to My work', async (state, text) => {
+    it.each([['applied', 'Applied', 'mine'], ['invited', 'Offer waiting', 'mine'], ['selected', 'Offer waiting', 'mine'], ['active', 'In progress', 'mine'], ['completed', 'Completed', 'done']])(
+      'says %s as "%s", linking to My work', async (state, text, tab) => {
         const el = await show(state);
         expect(el?.textContent?.trim()).toBe(text);
-        expect(el?.getAttribute('href')).toContain('tab=mine');
+        expect(el?.getAttribute('href')).toContain(`tab=${tab}`);
       });
-    it('still offers View terms after a decline or when there is no history', async () => {
-      expect((await show('declined'))?.textContent?.trim()).toBe('View terms');
+    it.each([['withdrawn', 'You withdrew'], ['declined', 'You declined'], ['not_selected', 'Not selected'], ['expired', 'Closed']])(
+      'says %s as "%s", muted, instead of offering terms it cannot apply to', async (state, text) => {
+        const el = await show(state);
+        expect(el?.textContent?.trim()).toBe(text);
+        expect(el?.classList).toContain('applied-pill--muted');
+        expect(el?.getAttribute('href')).toContain('tab=done');
+      });
+    it('offers View terms when there is no history', async () => {
       expect((await show(null))?.textContent?.trim()).toBe('View terms');
+    });
+    it('says a campaign that has ended or paused is not taking creators', async () => {
+      const at = async (campaign: Record<string, unknown>) => {
+        packageApi.mine.mockResolvedValue([]);
+        await (component as any).loadPackageStanding();
+        store.overrideSelector(selectAllPosts, [{ ...pkg, campaign: { ...(pkg as any).campaign, ...campaign } } as unknown as Post]);
+        store.refreshState();
+        fixture.detectChanges();
+        const el = (fixture.nativeElement as HTMLElement).querySelector('.applied-pill, a.apply-btn')!;
+        return [el.textContent!.trim(), el.tagName];
+      };
+      expect(await at({ lifecycle: 'completed', status: 'active' })).toEqual(['Campaign ended', 'SPAN']);
+      expect(await at({ lifecycle: 'active', status: 'paused' })).toEqual(['Paused', 'SPAN']);
+      expect(await at({ lifecycle: 'active', status: 'active' })).toEqual(['View terms', 'A']);
     });
     it('falls back to View terms when the lookup fails', async () => {
       packageApi.mine.mockRejectedValue(new Error('403'));
       await (component as any).loadPackageStanding();
       expect((component as any).packageStatus(pkg)).toBeNull();
+    });
+  });
+
+  describe('the terms and the fit, on the card', () => {
+    const pkg = { ...post, id: 8, campaign: { id: 48, name: 'Pkg', access: 'application', is_package: true } } as unknown as Post;
+    const terms = { baseFee: 3000, posts: [{ content_type: 'post', platform: 'x', quantity: 1 }], rewards: [{ metric: 'views', threshold: 1500, amount: 3000 }], rewardTotal: 3000, windowHours: 72, revisions: 2, dueDate: '2026-11-30' };
+    const requirements = { niches: ['Fashion'], creatorCountries: [], audienceCountries: [], followerMin: 200, followerMax: 1000, platforms: ['twitter'] };
+    const row = (over: Record<string, unknown>) => ({ campaignId: 48, name: 'Pkg', product: null, platforms: ['x'], baseFeeBudget: 0, endsAt: null, terms, requirements, blockedBy: null, ...over });
+    const render = async (found: unknown) => {
+      packageApi.discover.mockResolvedValue(found);
+      await (component as any).loadPackageStanding();
+      store.overrideSelector(selectAllPosts, [pkg]);
+      store.refreshState();
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      return { strip: el.querySelector('.offer-strip'), button: el.querySelector('a.apply-btn') };
+    };
+
+    it('shows the pay and that the creator fits, and offers to apply', async () => {
+      const { strip, button } = await render({ eligible: [row({ evaluation: { eligible: true, score: 72, checks: [], failed: [] } })], ineligible: [], ineligibleCount: 0 });
+      expect(strip!.textContent).toContain('₦3,000 for 1 post on X · up to ₦3,000 more in rewards');
+      expect(strip!.querySelector('.offer-strip__fit')!.textContent!.trim()).toBe('You fit · 72%');
+      expect(button!.textContent!.trim()).toBe('Apply');
+      expect(button!.getAttribute('href')).toContain('campaign=48');
+      expect((fixture.nativeElement as HTMLElement).querySelector('.requirements')).toBeNull(); // the strip already says where
+    });
+
+    it("says when the creator doesn't fully match, or can't apply", async () => {
+      const soft = await render({ eligible: [], ineligible: [row({ evaluation: { eligible: false, score: 0, checks: [], failed: ['niche'] } })], ineligibleCount: 1 });
+      expect(soft.strip!.querySelector('.offer-strip__fit')!.textContent!.trim()).toBe("Doesn't fully match");
+      expect(soft.button!.textContent!.trim()).toBe('View terms');
+      const hard = await render({ eligible: [], ineligible: [row({ evaluation: { eligible: false, score: 0, checks: [], failed: ['platform'] }, blockedBy: 'No connected account on x.' })], ineligibleCount: 1 });
+      expect(hard.strip!.querySelector('.offer-strip__fit')!.textContent!.trim()).toBe('Not open to you');
+    });
+
+    it('lists what the campaign needs, marking what the creator meets and misses', async () => {
+      const { strip } = await render({ eligible: [], ineligible: [row({ evaluation: { eligible: false, score: 0, failed: ['followers'], checks: [{ key: 'platform', passed: true }, { key: 'niche', passed: true }, { key: 'followers', passed: false }] } })], ineligibleCount: 1 });
+      const needs = Array.from(strip!.querySelectorAll('.need')).map((n) => [n.textContent!.replace(/\s+/g, ' ').trim(), n.getAttribute('data-met')]);
+      expect(needs).toEqual([['✗ 200–1,000 followers on X', 'false'], ['✓ Fashion', 'true']]);
+    });
+
+    it('shows no strip when the lookup fails, and the feed still works', async () => {
+      packageApi.discover.mockRejectedValue(new Error('403'));
+      await (component as any).loadPackageStanding();
+      store.overrideSelector(selectAllPosts, [pkg]);
+      store.refreshState();
+      fixture.detectChanges();
+      expect((fixture.nativeElement as HTMLElement).querySelector('.offer-strip')).toBeNull();
+      expect((fixture.nativeElement as HTMLElement).querySelector('a.apply-btn')!.textContent!.trim()).toBe('View terms');
     });
   });
 

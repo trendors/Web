@@ -33,7 +33,8 @@ import { ShareSheet } from '../../../components/share-sheet/share-sheet';
 import { ShareCampaignSheet } from '../../../components/share-campaign-sheet/share-campaign-sheet';
 import { Router, RouterLink } from '@angular/router';
 import { PackageCampaignService } from '../../../core/services/package/package-campaign.service';
-import type { MyCollab } from '../../../core/models/package/package.model';
+import { platformsText, requirementsOf, termsLine } from '../package-campaign/package-format';
+import type { DiscoverRow, MyCollab } from '../../../core/models/package/package.model';
 import { NewPostsNotifier } from "../../../components/new-posts-notifier/new-posts-notifier";
 import { Fab } from "../../../components/fab/fab";
 import { GetStarted } from '../../../components/get-started/get-started';
@@ -88,6 +89,8 @@ export class Posts implements OnInit, OnDestroy {
   appliedCampaignIds = signal(new Set<number>());
   /** The signed-in creator's standing on each package campaign, by campaign id. */
   private packageStanding = signal(new Map<number, string>());
+  /** Package campaigns the creator could join, with their terms and how the creator fits. */
+  private packageOffers = signal(new Map<number, DiscoverRow>());
 
   newCommentTexts: { [postId: number]: string } = {};
   expandedComments: { [postId: number]: boolean } = {};
@@ -346,24 +349,48 @@ export class Posts implements OnInit, OnDestroy {
   /** Seed "Applied" state from the user's existing assignments. */
   /** Where the creator stands on package campaigns, so the feed says "Applied" instead of offering to apply again. */
   private async loadPackageStanding(): Promise<void> {
-    try {
-      const rows: MyCollab[] = await this.packageApi.mine();
-      this.packageStanding.set(new Map(rows.map((r) => [r.campaignId, r.state])));
-    } catch {
-      // Not a creator, or the call failed: the feed simply shows "View terms".
-    }
+    const safely = <T>(fn: () => Promise<T>) => Promise.resolve().then(fn).catch(() => null);
+    const [mine, found] = await Promise.all([safely(() => this.packageApi.mine()), safely(() => this.packageApi.discover(true))]);
+    // Not a creator, or a call failed: the feed simply shows "View terms".
+    if (mine) this.packageStanding.set(new Map(mine.map((r: MyCollab) => [r.campaignId, r.state])));
+    if (found) this.packageOffers.set(new Map([...found.eligible, ...(found.ineligible ?? [])].map((r) => [r.campaignId, r])));
+  }
+
+  /** The terms and the creator's fit for a package campaign in the feed, so they know before they click. */
+  packageOffer(post: Post): DiscoverRow | null {
+    return this.packageOffers().get(this.campaignIdOf(post)) ?? null;
+  }
+
+  readonly termsLine = termsLine;
+  readonly requirementsOf = requirementsOf;
+  readonly platformsText = platformsText;
+
+  /** "You fit · 72%", "Doesn't fully match" or "Not open to you", from the same checks Find campaigns uses. */
+  fitOf(row: DiscoverRow): { label: string; tone: 'good' | 'warn' | 'bad' } {
+    if (row.evaluation.eligible) return { label: `You fit · ${row.evaluation.score}%`, tone: 'good' };
+    return row.blockedBy ? { label: 'Not open to you', tone: 'bad' } : { label: "Doesn't fully match", tone: 'warn' };
   }
 
   /** What to show instead of "View terms" for a package campaign the creator is already part of, or null. */
-  packageStatus(post: Post): string | null {
+  packageStatus(post: Post): { label: string; tab: 'mine' | 'done' | null; muted: boolean } | null {
     const state = this.packageStanding().get(this.campaignIdOf(post));
     switch (state) {
-      case 'applied': return 'Applied';
-      case 'invited': case 'selected': return 'Offer waiting';
-      case 'active': return 'In progress';
-      case 'completed': return 'Completed';
-      default: return null;
+      case 'applied': return { label: 'Applied', tab: 'mine', muted: false };
+      case 'invited': case 'selected': return { label: 'Offer waiting', tab: 'mine', muted: false };
+      case 'active': return { label: 'In progress', tab: 'mine', muted: false };
+      case 'completed': return { label: 'Completed', tab: 'done', muted: false };
+      // One application per campaign, so after these there is nothing to apply to again.
+      case 'withdrawn': return { label: 'You withdrew', tab: 'done', muted: true };
+      case 'declined': return { label: 'You declined', tab: 'done', muted: true };
+      case 'not_selected': return { label: 'Not selected', tab: 'done', muted: true };
+      case 'expired': case 'cancelled': return { label: 'Closed', tab: 'done', muted: true };
     }
+    // Not part of it: say so when the campaign is no longer taking creators, rather than offering its terms.
+    const c = post.campaign as { lifecycle?: string; status?: string } | undefined;
+    if (c?.lifecycle && c.lifecycle !== 'active') return { label: 'Campaign ended', tab: null, muted: true };
+    if (c?.status === 'paused') return { label: 'Paused', tab: null, muted: true };
+    if (c?.status === 'closed') return { label: 'Campaign ended', tab: null, muted: true };
+    return null;
   }
 
   private loadAppliedCampaigns(userId: number): void {

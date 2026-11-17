@@ -80,12 +80,15 @@ describe('TopupModalComponent', () => {
   });
 
   it('should initialize payment in kobo via the utility API', () => {
+    // Set the user here: other specs can leave a signed-in user in the shared mock store, and the
+    // result must not depend on which ran first.
+    component.user = { trendors_id: 'trend-9' } as any;
     component.userEmail = 'ada@example.com';
     component.selectPreset(5_000);
     component.initiatePayment();
     expect(utilityApi.utilityControllerInitialize).toHaveBeenCalledWith({
       email: 'ada@example.com',
-      trendors_id: '',
+      trendors_id: 'trend-9',
       amount: 500_000,
     });
     expect(paystackSetup).toHaveBeenCalled();

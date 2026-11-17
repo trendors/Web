@@ -11,7 +11,7 @@
       <div class="info">
         <div class="brand">{{ inv.user?.user_name }} · INVITE</div>
         <div class="title">{{ inv.campaign?.name }}</div>
-        <div class="meta" *ngIf="inv.campaign?.platforms?.length">{{ inv.campaign.platforms.join(', ') }}</div>
+        <div class="meta" *ngIf="inv.campaign?.platforms?.length">{{ platformsText(inv.campaign.platforms) }}</div>
       </div>
     </div>
     <span class="badge" [ngClass]="statusClass(inv.status)">{{ statusLabel(inv.status) }}</span>

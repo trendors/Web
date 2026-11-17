@@ -42,6 +42,14 @@ describe('platformName and compact', () => {
     expect(platformName(null)).toBe('');
   });
 
+  it('reads platform lists in either stored shape', async () => {
+    const { platformsText } = await import('./package-format');
+    expect(platformsText(['["twitter"]'])).toBe('X');
+    expect(platformsText(['twitter', 'instagram'])).toBe('X, Instagram');
+    expect(platformsText(['["twitter","tiktok"]', 'twitter'])).toBe('X, TikTok');
+    expect(platformsText(null)).toBe('');
+  });
+
   it('shortens follower counts', async () => {
     const { compact } = await import('./package-format');
     expect(compact(980)).toBe('980');
@@ -61,5 +69,64 @@ describe('nairaShort', () => {
     expect(nairaShort(272727.26)).toBe('₦272.7k');
     expect(nairaShort(1_250_000)).toBe('₦1.3M');
     expect(nairaShort(null)).toBe('₦0');
+  });
+});
+
+describe('postsText, hoursText and termsLine', () => {
+  it('describes what to post and where', async () => {
+    const { postsText } = await import('./package-format');
+    expect(postsText([{ content_type: 'post', platform: 'instagram', quantity: 1 }])).toBe('1 post on Instagram');
+    expect(postsText([{ content_type: 'post', platform: 'instagram', quantity: 1 }, { content_type: 'story', platform: 'instagram', quantity: 2 }])).toBe('1 post and 2 stories on Instagram');
+    expect(postsText([{ content_type: 'post', platform: 'x', quantity: 1 }, { content_type: 'post', platform: 'tiktok', quantity: 1 }])).toBe('2 posts on X and TikTok');
+    expect(postsText([])).toBe('');
+  });
+
+  it('says a window in days or hours', async () => {
+    const { hoursText } = await import('./package-format');
+    expect(hoursText(72)).toBe('3 days');
+    expect(hoursText(24)).toBe('1 day');
+    expect(hoursText(6)).toBe('6 hours');
+    expect(hoursText(null)).toBe('');
+  });
+
+  it('puts the offer on one line, leaving out rewards when there are none', async () => {
+    const { termsLine } = await import('./package-format');
+    const posts = [{ content_type: 'post', platform: 'x', quantity: 1 }];
+    expect(termsLine({ baseFee: 3000, posts, rewardTotal: 3000 })).toBe('₦3,000 for 1 post on X · up to ₦3,000 more in rewards');
+    expect(termsLine({ baseFee: 3000, posts, rewardTotal: 0 })).toBe('₦3,000 for 1 post on X');
+  });
+});
+
+describe('requirementsOf', () => {
+  const reqs = (over: Record<string, unknown> = {}) => ({ niches: [], creatorCountries: [], audienceCountries: [], followerMin: null, followerMax: null, platforms: ['twitter'], ...over });
+  const checks = (...cs: [string, boolean][]) => ({ checks: cs.map(([key, passed]) => ({ key, passed })) });
+
+  it('says the follower range on the platform, and whether the viewer meets it', async () => {
+    const { requirementsOf } = await import('./package-format');
+    expect(requirementsOf({ requirements: reqs({ followerMin: 200, followerMax: 1000 }), evaluation: checks(['followers', false]) }))
+      .toEqual([{ key: 'followers', text: '200–1,000 followers on X', met: false }]);
+    expect(requirementsOf({ requirements: reqs({ followerMin: 25000 }), evaluation: checks(['followers', true]) })[0].text).toBe('25,000+ followers on X');
+    expect(requirementsOf({ requirements: reqs({ followerMax: 5000, platforms: ['instagram', 'tiktok'] }) })[0]).toEqual({ key: 'followers', text: 'Up to 5,000 followers on Instagram or TikTok', met: null });
+  });
+
+  it('asks for an account on the platform when there is no follower range', async () => {
+    const { requirementsOf } = await import('./package-format');
+    expect(requirementsOf({ requirements: reqs(), evaluation: checks(['platform', true]) })).toEqual([{ key: 'platform', text: 'An account on X', met: true }]);
+  });
+
+  it('lists niches and places', async () => {
+    const { requirementsOf } = await import('./package-format');
+    const items = requirementsOf({
+      requirements: reqs({ niches: ['Fashion', 'Gaming', 'Parenting'], creatorCountries: ['Nigeria'], audienceCountries: ['Nigeria', 'Ghana'] }),
+      evaluation: checks(['platform', true], ['niche', true], ['creator_location', false], ['audience_location', true]),
+    });
+    expect(items.map((i) => [i.text, i.met])).toEqual([
+      ['An account on X', true], ['Fashion, Gaming or Parenting', true], ['Based in Nigeria', false], ['Audience in Nigeria or Ghana', true],
+    ]);
+  });
+
+  it('is empty when the campaign sends no requirements', async () => {
+    const { requirementsOf } = await import('./package-format');
+    expect(requirementsOf({})).toEqual([]);
   });
 });

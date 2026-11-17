@@ -51,6 +51,25 @@ export function platformName(p: string | null | undefined): string {
   return names[key] ?? (key ? key[0].toUpperCase() + key.slice(1) : '');
 }
 
+/**
+ * Platforms as readable names: "X, Instagram". Older campaigns store the list as a JSON string inside
+ * the array (["[\"twitter\"]"]), so an entry that looks like JSON is unpacked first.
+ */
+export function platformsText(list: unknown): string {
+  const flat: string[] = [];
+  const add = (v: unknown): void => {
+    if (Array.isArray(v)) { v.forEach(add); return; }
+    const s = String(v ?? '').trim();
+    if (!s) return;
+    if (s.startsWith('[')) {
+      try { add(JSON.parse(s)); return; } catch { /* not JSON: use as written */ }
+    }
+    flat.push(s.replace(/^["']|["']$/g, ''));
+  };
+  add(list);
+  return [...new Set(flat.map(platformName).filter(Boolean))].join(', ');
+}
+
 /** Follower counts short and readable: 980, 15.4k, 1.2M. */
 export function compact(n: number | null | undefined): string {
   const v = Number(n) || 0;
@@ -68,4 +87,60 @@ export function nairaShort(n: number | string | null | undefined): string {
   if (a < 1_000_000) return `${sign}₦${+(a / 1000).toFixed(1)}k`;
   if (a < 1_000_000_000) return `${sign}₦${+(a / 1_000_000).toFixed(1)}M`;
   return `${sign}₦${+(a / 1_000_000_000).toFixed(1)}B`;
+}
+
+/** "1 post on Instagram", "1 post and 2 stories on Instagram", "2 posts on X and TikTok". */
+export function postsText(posts: { content_type: string; platform: string; quantity: number }[] | null | undefined): string {
+  const list = posts ?? [];
+  if (!list.length) return '';
+  const byType = new Map<string, number>();
+  for (const p of list) byType.set(p.content_type, (byType.get(p.content_type) ?? 0) + (Number(p.quantity) || 0));
+  const things = [...byType].map(([type, n]) => `${n} ${n === 1 ? type : type.endsWith('y') ? type.slice(0, -1) + 'ies' : type + 's'}`);
+  const where = [...new Set(list.map((p) => platformName(p.platform)))];
+  const join = (xs: string[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+  return `${join(things)} on ${join(where)}`;
+}
+
+/** "3 days", "6 hours". */
+export function hoursText(h: number | null | undefined): string {
+  if (!h) return '';
+  return h % 24 === 0 ? `${h / 24} day${h === 24 ? '' : 's'}` : `${h} hour${h === 1 ? '' : 's'}`;
+}
+
+/** The offer on one line, for a card: "₦6,000 for 1 post on Instagram · up to ₦6,000 more in rewards". */
+export function termsLine(t: { baseFee: number; posts: { content_type: string; platform: string; quantity: number }[]; rewardTotal: number } | null | undefined): string {
+  if (!t) return '';
+  const parts = [`${naira(t.baseFee)} for ${postsText(t.posts) || 'the work'}`];
+  if (t.rewardTotal > 0) parts.push(`up to ${naira(t.rewardTotal)} more in rewards`);
+  return parts.join(' · ');
+}
+
+/** "Fashion, Gaming or Parenting". */
+const orList = (xs: string[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} or ${xs[xs.length - 1]}`);
+
+/**
+ * What a campaign asks of creators, one item per requirement, each marked met (true), not met (false)
+ * or unknown (null) for the viewer, from the same checks Find campaigns shows.
+ */
+export function requirementsOf(row: {
+  requirements?: { niches: string[]; creatorCountries: string[]; audienceCountries: string[]; followerMin: number | null; followerMax: number | null; platforms: string[] };
+  evaluation?: { checks: { key: string; passed: boolean }[] };
+}): { key: string; text: string; met: boolean | null }[] {
+  const r = row.requirements;
+  if (!r) return [];
+  const met = (key: string) => { const c = row.evaluation?.checks.find((x) => x.key === key); return c ? c.passed : null; };
+  const where = r.platforms.length ? ` on ${orList(r.platforms.map((p) => platformName(p)))}` : '';
+  const out: { key: string; text: string; met: boolean | null }[] = [];
+  const fmt = (n: number) => n.toLocaleString('en-NG');
+  if (r.followerMin != null || r.followerMax != null) {
+    const range = r.followerMin != null && r.followerMax != null ? `${fmt(r.followerMin)}–${fmt(r.followerMax)}`
+      : r.followerMin != null ? `${fmt(r.followerMin)}+` : `Up to ${fmt(r.followerMax!)}`;
+    out.push({ key: 'followers', text: `${range} followers${where}`, met: met('followers') });
+  } else if (r.platforms.length) {
+    out.push({ key: 'platform', text: `An account${where}`, met: met('platform') });
+  }
+  if (r.niches.length) out.push({ key: 'niche', text: orList(r.niches), met: met('niche') });
+  if (r.creatorCountries.length) out.push({ key: 'creator_location', text: `Based in ${orList(r.creatorCountries)}`, met: met('creator_location') });
+  if (r.audienceCountries.length) out.push({ key: 'audience_location', text: `Audience in ${orList(r.audienceCountries)}`, met: met('audience_location') });
+  return out;
 }
